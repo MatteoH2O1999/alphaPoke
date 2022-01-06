@@ -24,8 +24,10 @@ async def main():
         agent_name = sys.argv[i]
         if agent_name not in used_players:
             used_players.append(agent_name)
-            players.append(create_agent(agent_name, None, battle_format, False, LocalhostServerConfiguration,
-                                        False, 50))
+            to_append = create_agent(agent_name, None, battle_format, False, LocalhostServerConfiguration,
+                                     False, 50)
+            for p in to_append:
+                players.append(p)
     results = [['Player', 'Evaluation']]
     for player in players:
         evaluation = await evaluate_player(player, challenges, math.ceil(math.log2(challenges) * 2))

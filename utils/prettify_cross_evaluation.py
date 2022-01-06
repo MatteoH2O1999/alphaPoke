@@ -1,5 +1,4 @@
 # Prettifies a poke-env cross evaluation dictionary
-
 from tabulate import tabulate
 
 

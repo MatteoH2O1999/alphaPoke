@@ -32,8 +32,10 @@ async def main():
             agent_name = sys.argv[i]
             agent_quantity = int(sys.argv[i + 1])
             for _ in range(agent_quantity):
-                players.append(create_agent(agent_name, None, battle_format, False, LocalhostServerConfiguration,
-                                            False, 30))
+                to_append = create_agent(agent_name, None, battle_format, False, LocalhostServerConfiguration,
+                                         False, 30)
+                for p in to_append:
+                    players.append(p)
     evaluation = await cross_evaluate(players, n_challenges=challenges)
     print(prettify_evaluation(evaluation))
 

@@ -1,12 +1,14 @@
 # Function to parse cli strings into agents
 from poke_env.player.player import Player
+from typing import List
+
 from agents.dad import Dad
 from agents.eight_year_old_me import EightYearOldMe
 from agents.twenty_year_old_me import TwentyYearOldMe
 
 
 def create_agent(cli_name, player_configuration, battle_format, start_timer, server_configuration,
-                 save_replay: bool, concurrent=1) -> Player:
+                 save_replay=False, concurrent=1, **others) -> List[Player]:
     agent_name = cli_name.strip()
     kwargs = dict(
         player_configuration=player_configuration,
@@ -16,12 +18,14 @@ def create_agent(cli_name, player_configuration, battle_format, start_timer, ser
         start_timer_on_battle_start=start_timer,
         server_configuration=server_configuration
     )
+    for key, value in others.items():
+        kwargs[key] = value
     if agent_name == 'dad':
-        agent = Dad(**kwargs)
+        agent = [Dad(**kwargs)]
     elif agent_name == '8-year-old-me':
-        agent = EightYearOldMe(**kwargs)
+        agent = [EightYearOldMe(**kwargs)]
     elif agent_name == '20-year-old-me':
-        agent = TwentyYearOldMe(**kwargs)
+        agent = [TwentyYearOldMe(**kwargs)]
     else:
         raise UnsupportedAgentType(f'{cli_name} is not a valid agent type')
     return agent
