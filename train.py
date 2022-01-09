@@ -7,12 +7,14 @@ import pickle
 import os
 import sys
 
-from cross_eval import InvalidArgument
-from agents.basic_rl import SimpleRLAgent
 from poke_env.player.baselines import SimpleHeuristicsPlayer, MaxBasePowerPlayer, RandomPlayer
 from poke_env.server_configuration import LocalhostServerConfiguration
 from poke_env.player.utils import evaluate_player
 from progress.bar import IncrementalBar
+
+from agents.basic_rl import SimpleRLAgent
+from agents.expert_rl import ExpertRLAgent
+from cross_eval import InvalidArgument
 
 
 async def main():
@@ -23,12 +25,18 @@ async def main():
     challenges = int(sys.argv[1])
     if agent_type == 'simpleRL':
         path = './models/simpleRL'
-        os.makedirs(path, exist_ok=True)
         agent = SimpleRLAgent(training=True, battle_format=sys.argv[2],
                               server_configuration=LocalhostServerConfiguration)
         update_agent = get_simple_rl
+    elif agent_type == 'expertRL':
+        path = './models/expertRL'
+        agent = ExpertRLAgent(training=True, battle_format=sys.argv[2],
+                              server_configuration=LocalhostServerConfiguration)
+        update_agent = get_expert_rl
     else:
         raise InvalidArgument(f'{agent_type} is not a valid RL agent')
+    if path:
+        os.makedirs(path, exist_ok=True)
     opponent1 = SimpleHeuristicsPlayer(server_configuration=LocalhostServerConfiguration)
     opponent2 = MaxBasePowerPlayer(server_configuration=LocalhostServerConfiguration)
     opponent3 = RandomPlayer(server_configuration=LocalhostServerConfiguration)
@@ -70,6 +78,13 @@ def default_update_agent(model, training=False, keep_training=False, max_concurr
 def get_simple_rl(model, training=False, keep_training=False, max_concurrent_battles=1):
     model_copy = copy.deepcopy(model)
     return SimpleRLAgent(training=training, battle_format=sys.argv[2],
+                         server_configuration=LocalhostServerConfiguration, model=model_copy,
+                         keep_training=keep_training, max_concurrent_battles=max_concurrent_battles)
+
+
+def get_expert_rl(model, training=False, keep_training=False, max_concurrent_battles=1):
+    model_copy = copy.deepcopy(model)
+    return ExpertRLAgent(training=training, battle_format=sys.argv[2],
                          server_configuration=LocalhostServerConfiguration, model=model_copy,
                          keep_training=keep_training, max_concurrent_battles=max_concurrent_battles)
 

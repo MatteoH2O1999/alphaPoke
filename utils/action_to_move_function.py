@@ -2,17 +2,8 @@
 from poke_env.environment.battle import Battle
 from poke_env.player.battle_order import BattleOrder, ForfeitBattleOrder
 
-from .action_space_init import UnsupportedBattleFormat
 
-
-def get_a2m_function(battle_format):
-    if battle_format == 'gen8randombattle':
-        return _action_to_move_gen8random
-    else:
-        raise UnsupportedBattleFormat(f'{battle_format} is not a valid battle format')
-
-
-def _action_to_move_gen8random(agent, action: int, battle: Battle) -> BattleOrder:
+def action_to_move_gen8random(agent, action: int, battle: Battle) -> BattleOrder:
     if action == -1:
         return ForfeitBattleOrder()
     elif (
