@@ -51,7 +51,7 @@ def create_agent(cli_name, player_configuration, battle_format, start_timer, ser
         for model in models:
             agent.append(SimpleRLAgent(**kwargs, keep_training=keep_training, model=model))
     elif 'expertRL-best' in agent_name:
-        with open(f'./models/simpleRL/{battle_format}/best.pokeai', 'b') as model_file:
+        with open(f'./models/expertRL/{battle_format}/best.pokeai', 'b') as model_file:
             model = pickle.load(model_file)
         keep_training = False
         if 'train' in agent_name:
@@ -59,9 +59,9 @@ def create_agent(cli_name, player_configuration, battle_format, start_timer, ser
         agent = [ExpertRLAgent(**kwargs, keep_training=keep_training, model=model)]
     elif 'expertRL-all' in agent_name:
         models = []
-        files = os.listdir(f'./models/simpleRL/{battle_format}')
+        files = os.listdir(f'./models/expertRL/{battle_format}')
         for file in files:
-            with open(f'./models/simpleRL/{battle_format}/' + file, 'b') as model_file:
+            with open(f'./models/expertRL/{battle_format}/' + file, 'b') as model_file:
                 models.append(pickle.load(model_file))
         agent = []
         keep_training = False

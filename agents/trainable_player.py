@@ -8,7 +8,7 @@ from poke_env.environment.abstract_battle import AbstractBattle
 from poke_env.environment.battle import Battle
 from poke_env.player.battle_order import BattleOrder
 from poke_env.player.player import Player
-from typing import Tuple, Callable
+from typing import Tuple, Callable, List
 
 from . import LEARNING_RATE_WHILE_PLAYING, MIN_LEARNING_RATE_WHILE_TRAINING
 from . import EPSILON_WHILE_TRAINING_AND_PLAYING, MIN_EPSILON_WHILE_TRAINING
@@ -130,6 +130,28 @@ class TrainablePlayer(Player, ABC):
         for values in self.model.values():
             values[1] = 0
 
+    def _model_to_table(self, model):
+        headers = []
+        for h in self._state_headers():
+            headers.append(h)
+        for h in self._action_space_headers():
+            headers.append(h)
+        table = [headers]
+        for state, actions in model.items():
+            to_append = []
+            for s in state:
+                to_append.append(s)
+            for a in actions:
+                to_append.append(a)
+            table.append(to_append)
+        return table
+
     @staticmethod
-    def _model_to_table(model):
-        return model
+    @abstractmethod
+    def _state_headers() -> List[str]:
+        pass
+
+    @staticmethod
+    @abstractmethod
+    def _action_space_headers() -> List[str]:
+        pass

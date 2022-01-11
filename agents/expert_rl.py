@@ -8,6 +8,7 @@
 # 7: defensive switch (switch to a pokémon resistant to the enemy's active pokémon)
 # 8: offensive switch (switch to a pokémon supereffective against the enemy's active pokémon or really strong)
 # 9: fight predict (use a move predicting a switch)
+from typing import List
 from poke_env.environment.battle import Battle
 from poke_env.player.battle_order import BattleOrder
 from poke_env.player.player import Player
@@ -31,9 +32,9 @@ class ExpertRLAgent(SimpleRLAgent):
             raise InvalidArgument(f'{self.b_format} is not a valid battle format for this RL agent')
 
     @staticmethod
-    def _model_to_table(model):
+    def _action_space_headers() -> List[str]:
         # TODO
-        return model
+        pass
 
 
 def _action_to_move_gen8random(agent: Player, action: int, battle: Battle) -> BattleOrder:

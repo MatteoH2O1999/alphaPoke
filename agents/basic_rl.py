@@ -1,4 +1,5 @@
 # AI trained with a simple RL algorithm
+from typing import List
 from poke_env.environment.abstract_battle import AbstractBattle
 
 from . import VICTORY_REWARD, MON_HP_REWARD, MON_FAINTED_REWARD
@@ -66,9 +67,14 @@ class SimpleRLAgent(TrainablePlayer):
         return reward
 
     @staticmethod
-    def _model_to_table(model):
+    def _state_headers() -> List[str]:
         # TODO
-        return model
+        pass
+
+    @staticmethod
+    def _action_space_headers() -> List[str]:
+        # TODO
+        pass
 
 
 def _battle_to_state_gen8random(battle: AbstractBattle):
