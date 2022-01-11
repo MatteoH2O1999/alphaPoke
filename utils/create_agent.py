@@ -9,6 +9,7 @@ from agents.dad import Dad
 from agents.eight_year_old_me import EightYearOldMe
 from agents.twenty_year_old_me import TwentyYearOldMe
 from agents.basic_rl import SimpleRLAgent
+from agents.expert_rl import ExpertRLAgent
 
 
 def create_agent(cli_name, player_configuration, battle_format, start_timer, server_configuration,
@@ -31,7 +32,7 @@ def create_agent(cli_name, player_configuration, battle_format, start_timer, ser
     elif agent_name == '20-year-old-me':
         agent = [TwentyYearOldMe(**kwargs)]
     elif 'simpleRL-best' in agent_name:
-        with open('./models/simpleRL/best.pokeai', 'b') as model_file:
+        with open(f'./models/simpleRL/{battle_format}/best.pokeai', 'b') as model_file:
             model = pickle.load(model_file)
         keep_training = False
         if 'train' in agent_name:
@@ -39,9 +40,9 @@ def create_agent(cli_name, player_configuration, battle_format, start_timer, ser
         agent = [SimpleRLAgent(**kwargs, keep_training=keep_training, model=model)]
     elif 'simpleRL-all' in agent_name:
         models = []
-        files = os.listdir('./models/simpleRL')
+        files = os.listdir(f'./models/simpleRL/{battle_format}')
         for file in files:
-            with open('./models/simpleRL/' + file, 'b') as model_file:
+            with open(f'./models/simpleRL/{battle_format}/' + file, 'b') as model_file:
                 models.append(pickle.load(model_file))
         agent = []
         keep_training = False
@@ -49,6 +50,25 @@ def create_agent(cli_name, player_configuration, battle_format, start_timer, ser
             keep_training = True
         for model in models:
             agent.append(SimpleRLAgent(**kwargs, keep_training=keep_training, model=model))
+    elif 'expertRL-best' in agent_name:
+        with open(f'./models/simpleRL/{battle_format}/best.pokeai', 'b') as model_file:
+            model = pickle.load(model_file)
+        keep_training = False
+        if 'train' in agent_name:
+            keep_training = True
+        agent = [ExpertRLAgent(**kwargs, keep_training=keep_training, model=model)]
+    elif 'expertRL-all' in agent_name:
+        models = []
+        files = os.listdir(f'./models/simpleRL/{battle_format}')
+        for file in files:
+            with open(f'./models/simpleRL/{battle_format}/' + file, 'b') as model_file:
+                models.append(pickle.load(model_file))
+        agent = []
+        keep_training = False
+        if 'train' in agent_name:
+            keep_training = True
+        for model in models:
+            agent.append(ExpertRLAgent(**kwargs, keep_training=keep_training, model=model))
     else:
         raise UnsupportedAgentType(f'{cli_name} is not a valid agent type')
     return agent

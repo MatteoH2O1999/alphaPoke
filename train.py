@@ -24,12 +24,12 @@ async def main():
         raise InvalidArgument(f'{sys.argv[1]} should be an integer containing the number of battles for the training')
     challenges = int(sys.argv[1])
     if agent_type == 'simpleRL':
-        path = './models/simpleRL'
+        path = f'./models/simpleRL/{agent_type}'
         agent = SimpleRLAgent(training=True, battle_format=sys.argv[2],
                               server_configuration=LocalhostServerConfiguration)
         update_agent = get_simple_rl
     elif agent_type == 'expertRL':
-        path = './models/expertRL'
+        path = f'./models/expertRL/{agent_type}'
         agent = ExpertRLAgent(training=True, battle_format=sys.argv[2],
                               server_configuration=LocalhostServerConfiguration)
         update_agent = get_expert_rl
