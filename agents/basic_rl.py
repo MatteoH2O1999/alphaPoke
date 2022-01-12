@@ -73,8 +73,11 @@ class SimpleRLAgent(TrainablePlayer):
 
     @staticmethod
     def _action_space_headers() -> List[str]:
-        # TODO
-        pass
+        return ['Use move 1', 'Use move 2', 'Use move 3', 'Use move 4',
+                'Use move 1 and mega evolve', 'Use move 2 and mega evolve', 'Use move 3 and mega evolve', 'Use move 4 and mega evolve',
+                'Use move 1 as Z move', 'Use move 2 as Z move', 'Use move 3 as Z move', 'Use move 4 as Z move',
+                'Use move 1 and Dynamax', 'Use move 2 and Dynamax', 'Use move 3 and Dynamax', 'Use move 4 and Dynamax',
+                'Switch 1', 'Switch 2', 'Switch 3', 'Switch 4', 'Switch 5']
 
 
 def _battle_to_state_gen8random(battle: AbstractBattle):

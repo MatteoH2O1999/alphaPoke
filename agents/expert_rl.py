@@ -8,6 +8,7 @@
 # 7: defensive switch (switch to a pokémon resistant to the enemy's active pokémon)
 # 8: offensive switch (switch to a pokémon supereffective against the enemy's active pokémon or really strong)
 # 9: fight predict (use a move predicting a switch)
+import random
 from typing import List
 from poke_env.environment.battle import Battle
 from poke_env.player.battle_order import BattleOrder
@@ -33,8 +34,9 @@ class ExpertRLAgent(SimpleRLAgent):
 
     @staticmethod
     def _action_space_headers() -> List[str]:
-        # TODO
-        pass
+        return ['Fight to kill', 'Fight with a weak move', 'Fight with a move to apply a status effect', 'Power up',
+                'Use a move that applies a status effect', 'Sacrifice a weak Pokémon', 'Perform a defensive switch',
+                'Perform an offensive switch', 'Use a move predicting a switch']
 
 
 def _action_to_move_gen8random(agent: Player, action: int, battle: Battle) -> BattleOrder:
@@ -62,12 +64,52 @@ def _action_to_move_gen8random(agent: Player, action: int, battle: Battle) -> Ba
 
 # 1: fight to kill
 def _fight_to_kill(agent: Player, battle: Battle):
-    pass
+    opponent_mon = battle.opponent_active_pokemon
+    stats = [sum(mon.stats.values()) for mon in battle.team.values()]
+    max_stats = max(stats)
+    mon_stats = sum(battle.active_pokemon.stats.values())
+    for t in battle.active_pokemon.types:
+        mon_stats *= opponent_mon.damage_multiplier(t)
+    dyna = battle.active_pokemon.is_dynamaxed
+    mega = False
+    z_move = False
+    if mon_stats >= max_stats and battle.can_mega_evolve and not dyna:
+        mega = True
+    if mon_stats >= max_stats and battle.can_z_move and not mega and not dyna:
+        z_move = True
+    if mon_stats >= max_stats and battle.can_dynamax and not mega and not z_move:
+        dyna = True
+    best_move = None
+    best_value = float('-inf')
+    for move in battle.available_moves:
+        if move.current_pp > 0 and move.base_power > 0:
+            move_value = move.base_power * opponent_mon.damage_multiplier(move) * move.accuracy
+            if move_value > best_value:
+                best_move = move
+                best_value = move_value
+    if best_move:
+        return agent.create_order(best_move, dynamax=dyna, mega=mega, z_move=z_move)
+    else:
+        random_move = random.randint(0, len(battle.available_moves) - 1)
+        return agent.create_order(battle.available_moves[random_move], dynamax=dyna, mega=mega, z_move=z_move)
 
 
 # 2: fight with weak move
 def _fight_weak_move(agent: Player, battle: Battle):
-    pass
+    opponent_mon = battle.opponent_active_pokemon
+    best_move = None
+    best_value = float('inf')
+    for move in battle.available_moves:
+        if move.current_pp > 0 and move.base_power > 0 and round(opponent_mon.damage_multiplier(move)) >= 1:
+            move_value = (1 / move.base_power) * opponent_mon.damage_multiplier(move) * move.accuracy
+            if move_value > best_value:
+                best_move = move
+                best_value = move_value
+    if best_move:
+        return agent.create_order(best_move)
+    else:
+        random_move = random.randint(0, len(battle.available_moves) - 1)
+        return agent.create_order(battle.available_moves[random_move])
 
 
 # 3: fight with move to apply status effect and damage
