@@ -42,8 +42,9 @@ class ExpertRLAgent(SimpleRLAgent):
 
     def _state_headers(self) -> List[str]:
         if self.b_format == 'gen8randombattle':
-            return ['Stat balance', 'Type balance', 'Boosts balance', 'Is dynamaxed', 'Forced switch',
-                    'Can apply status', 'Can power up', 'Can heal']
+            return ['Stat balance', 'Type balance', 'Attack balance', 'Defense balance', 'Special attack balance',
+                    'Special defense balance', 'Speed balance', 'Is dynamaxed', 'Forced switch', 'Can apply status',
+                    'Can power up', 'Can heal']
         else:
             raise InvalidArgument(f'{self.b_format} is not a valid battle format for this RL agent')
 
@@ -115,11 +116,20 @@ def _battle_to_state_gen8random(battle: AbstractBattle):
     type_balance = player_multiplier - opponent_multiplier
     to_embed.append(type_balance)
 
-    # Boosts balance
-    boosts = 0
-    boosts += sum(battle.active_pokemon.boosts.values())
-    boosts -= sum(battle.opponent_active_pokemon.boosts.values())
-    to_embed.append(boosts)
+    # Attack balance
+    to_embed.append(_boosts_aux(battle, 'atk'))
+
+    # Defense balance
+    to_embed.append(_boosts_aux(battle, 'def'))
+
+    # Special attack balance
+    to_embed.append(_boosts_aux(battle, 'spa'))
+
+    # Special defense balance
+    to_embed.append(_boosts_aux(battle, 'spd'))
+
+    # Speeed balance
+    to_embed.append(_boosts_aux(battle, 'spe'))
 
     # Is dynamaxed
     is_dyna = 0
@@ -168,12 +178,12 @@ def _fight_to_kill(agent: Player, battle: Battle):
     mon_stats = sum(battle.active_pokemon.stats.values())
     for t in battle.active_pokemon.types:
         mon_stats *= opponent_mon.damage_multiplier(t)
-    dyna = battle.active_pokemon.is_dynamaxed
+    dyna = False
     mega = False
     z_move = False
-    if mon_stats >= max_stats and battle.can_mega_evolve and not dyna:
+    if mon_stats >= max_stats and battle.can_mega_evolve:
         mega = True
-    if mon_stats >= max_stats and battle.can_z_move and not mega and not dyna:
+    if mon_stats >= max_stats and battle.can_z_move and not mega:
         z_move = True
     if mon_stats >= max_stats and battle.can_dynamax and not mega and not z_move:
         dyna = True
@@ -447,3 +457,17 @@ def _heal(agent: Player, battle: Battle):
 
 def _switch_aux(mon, t):
     return mon.damage_multiplier(t)**3
+
+
+def _boosts_aux(battle, boost):
+    boost_balance = 0
+    boost_balance += battle.active_pokemon.boosts[boost]
+    boost_balance -= battle.opponent_active_pokemon.boosts[boost]
+    if boost_balance < 0:
+        boost_balance = -1
+    elif boost_balance > 0:
+        boost_balance = 1
+    else:
+        boost_balance = 0
+    return boost_balance
+    
