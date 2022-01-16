@@ -7,8 +7,8 @@ from poke_env.player.utils import evaluate_player
 from poke_env.server_configuration import LocalhostServerConfiguration
 from tabulate import tabulate
 
-from cross_eval import InvalidArgument
-from utils import create_agent
+from utils import InvalidArgument
+from utils.create_agent import create_agent
 from utils.plot_eval import plot_eval
 from utils.prettify_cross_evaluation import __cut_player_number
 

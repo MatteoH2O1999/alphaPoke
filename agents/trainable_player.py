@@ -146,12 +146,10 @@ class TrainablePlayer(Player, ABC):
             table.append(to_append)
         return table
 
-    @staticmethod
     @abstractmethod
-    def _state_headers() -> List[str]:
+    def _state_headers(self) -> List[str]:
         pass
 
-    @staticmethod
     @abstractmethod
-    def _action_space_headers() -> List[str]:
+    def _action_space_headers(self) -> List[str]:
         pass

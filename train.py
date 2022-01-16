@@ -14,7 +14,7 @@ from progress.bar import IncrementalBar
 
 from agents.basic_rl import SimpleRLAgent
 from agents.expert_rl import ExpertRLAgent
-from cross_eval import InvalidArgument
+from utils import InvalidArgument
 
 
 async def main():
@@ -24,12 +24,12 @@ async def main():
         raise InvalidArgument(f'{sys.argv[1]} should be an integer containing the number of battles for the training')
     challenges = int(sys.argv[1])
     if agent_type == 'simpleRL':
-        path = f'./models/simpleRL/{agent_type}'
+        path = f'./models/simpleRL/{sys.argv[2]}'
         agent = SimpleRLAgent(training=True, battle_format=sys.argv[2],
                               server_configuration=LocalhostServerConfiguration)
         update_agent = get_simple_rl
     elif agent_type == 'expertRL':
-        path = f'./models/expertRL/{agent_type}'
+        path = f'./models/expertRL/{sys.argv[2]}'
         agent = ExpertRLAgent(training=True, battle_format=sys.argv[2],
                               server_configuration=LocalhostServerConfiguration)
         update_agent = get_expert_rl
