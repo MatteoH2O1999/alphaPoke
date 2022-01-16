@@ -141,7 +141,7 @@ class TrainablePlayer(Player, ABC):
             to_append = []
             for s in state:
                 to_append.append(s)
-            for a in actions:
+            for a in actions[0]:
                 to_append.append(a)
             table.append(to_append)
         return table
