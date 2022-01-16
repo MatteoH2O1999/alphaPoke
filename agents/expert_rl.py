@@ -42,9 +42,9 @@ class ExpertRLAgent(SimpleRLAgent):
 
     def _state_headers(self) -> List[str]:
         if self.b_format == 'gen8randombattle':
-            return ['Stat balance', 'Type balance', 'Attack balance', 'Defense balance', 'Special attack balance',
-                    'Special defense balance', 'Speed balance', 'Is dynamaxed', 'Forced switch', 'Can apply status',
-                    'Can power up', 'Can heal']
+            return ['Player HP', 'Opponent HP', 'Stat balance', 'Type balance', 'Attack balance', 'Defense balance',
+                    'Special attack balance', 'Special defense balance', 'Speed balance', 'Is dynamaxed',
+                    'Forced switch', 'Can apply status', 'Can power up', 'Can heal']
         else:
             raise InvalidArgument(f'{self.b_format} is not a valid battle format for this RL agent')
 
@@ -82,6 +82,22 @@ def _action_to_move_gen8random(agent: Player, action: int, battle: Battle) -> Ba
 
 def _battle_to_state_gen8random(battle: AbstractBattle):
     to_embed = []
+
+    # Player pokémon hp
+    player_hp = 2
+    if battle.active_pokemon.current_hp_fraction < 0.66:
+        player_hp -= 1
+    if battle.active_pokemon.current_hp_fraction < 0.33:
+        player_hp -= 1
+    to_embed.append(player_hp)
+
+    # Opponent pokémon hp
+    opponent_hp = 2
+    if battle.opponent_active_pokemon.current_hp_fraction < 0.66:
+        opponent_hp -= 1
+    if battle.opponent_active_pokemon.current_hp_fraction < 0.33:
+        opponent_hp -= 1
+    to_embed.append(opponent_hp)
 
     # Battle balance stats
     player_mon_stats = sum(battle.active_pokemon.base_stats.values())
