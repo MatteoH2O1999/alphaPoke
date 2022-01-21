@@ -130,7 +130,7 @@ def _battle_to_state_gen8random(battle: AbstractBattle):
     player_multiplier = round(player_multiplier)
     opponent_multiplier = round(opponent_multiplier)
     type_balance = player_multiplier - opponent_multiplier
-    type_balance = round(type_balance / 2)
+    type_balance = round(type_balance / 4)
     to_embed.append(type_balance)
 
     # Attack balance
