@@ -188,7 +188,7 @@ def _battle_to_state_gen8random(battle: AbstractBattle):
 # 1: fight to kill
 def _fight_to_kill(agent: Player, battle: Battle):
     if battle.force_switch:
-        return _defensive_switch(agent, battle)
+        return agent.choose_random_move(battle)
     opponent_mon = battle.opponent_active_pokemon
     stats = [sum(mon.stats.values()) for mon in battle.team.values()]
     max_stats = max(stats)
@@ -222,7 +222,7 @@ def _fight_to_kill(agent: Player, battle: Battle):
 # 2: fight with weak move
 def _fight_weak_move(agent: Player, battle: Battle):
     if battle.force_switch:
-        return _defensive_switch(agent, battle)
+        return agent.choose_random_move(battle)
     opponent_mon = battle.opponent_active_pokemon
     best_move = None
     best_value = float('inf')
@@ -242,7 +242,7 @@ def _fight_weak_move(agent: Player, battle: Battle):
 # 3: power up
 def _power_up(agent: Player, battle: Battle):
     if battle.force_switch:
-        return _defensive_switch(agent, battle)
+        return agent.choose_random_move(battle)
     boosting_moves = []
     for move in battle.available_moves:
         if move.self_boost:
@@ -266,7 +266,7 @@ def _power_up(agent: Player, battle: Battle):
 # 4: apply status effect
 def _status_effect(agent: Player, battle: Battle):
     if battle.force_switch:
-        return _defensive_switch(agent, battle)
+        return agent.choose_random_move(battle)
     status_moves = []
     for move in battle.available_moves:
         if move.status:
@@ -434,7 +434,7 @@ def _offensive_switch(agent: Player, battle: Battle):
 # 8: fight predict (use a move predicting a switch)
 def _fight_predict(agent: Player, battle: Battle):
     if battle.force_switch:
-        return _defensive_switch(agent, battle)
+        return agent.choose_random_move(battle)
     best_move = None
     best_value = float('-inf')
     strong_against_types = []
@@ -458,7 +458,7 @@ def _fight_predict(agent: Player, battle: Battle):
 # 9: heal
 def _heal(agent: Player, battle: Battle):
     if battle.force_switch:
-        return _defensive_switch(agent, battle)
+        return agent.choose_random_move(battle)
     best_move = None
     best_value = float('-inf')
     for move in battle.available_moves:
