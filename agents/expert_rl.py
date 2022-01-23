@@ -42,9 +42,8 @@ class ExpertRLAgent(SimpleRLAgent):
 
     def _state_headers(self) -> List[str]:
         if self.b_format == 'gen8randombattle':
-            return ['Player HP', 'Opponent HP', 'Stat balance', 'Type balance', 'Attack balance', 'Defense balance',
-                    'Special attack balance', 'Special defense balance', 'Speed balance', 'Is dynamaxed',
-                    'Forced switch', 'Can apply status', 'Can power up', 'Can heal']
+            return ['Player HP', 'Opponent HP', 'Stat balance', 'Type balance', 'Boosts balance', 'Speed balance',
+                    'Is dynamaxed', 'Forced switch', 'Can apply status', 'Can power up', 'Can heal']
         else:
             raise InvalidArgument(f'{self.b_format} is not a valid battle format for this RL agent')
 
@@ -104,15 +103,11 @@ def _battle_to_state_gen8random(battle: AbstractBattle):
     opponent_mon_stats = sum(battle.opponent_active_pokemon.base_stats.values())
     diff = player_mon_stats - opponent_mon_stats
     balance = 0
-    if diff < -300:
-        balance = -3
-    elif diff < -150:
+    if diff < -200:
         balance = -2
     elif diff < 0:
         balance = -1
-    elif diff > 300:
-        balance = 3
-    elif diff > 150:
+    elif diff > 200:
         balance = 2
     elif diff > 0:
         balance = 1
@@ -127,25 +122,28 @@ def _battle_to_state_gen8random(battle: AbstractBattle):
         player_multiplier *= battle.opponent_active_pokemon.damage_multiplier(t)
     for t in opponent_mon_types:
         opponent_multiplier *= battle.active_pokemon.damage_multiplier(t)
-    player_multiplier = round(player_multiplier)
-    opponent_multiplier = round(opponent_multiplier)
     type_balance = player_multiplier - opponent_multiplier
-    type_balance = round(type_balance / 4)
+    if type_balance < 0:
+        type_balance = 1
+    elif type_balance > 0:
+        type_balance = -1
+    else:
+        type_balance = 0
     to_embed.append(type_balance)
 
-    # Attack balance
-    to_embed.append(_boosts_aux(battle, 'atk'))
+    # Boosts balance
+    boost_balance = 0
+    boost_balance += sum(battle.active_pokemon.boosts.values())
+    boost_balance -= sum(battle.opponent_active_pokemon.boosts.values())
+    if boost_balance < 0:
+        boost_balance = -1
+    elif boost_balance > 0:
+        boost_balance = 1
+    else:
+        boost_balance = 0
+    to_embed.append(boost_balance)
 
-    # Defense balance
-    to_embed.append(_boosts_aux(battle, 'def'))
-
-    # Special attack balance
-    to_embed.append(_boosts_aux(battle, 'spa'))
-
-    # Special defense balance
-    to_embed.append(_boosts_aux(battle, 'spd'))
-
-    # Speeed balance
+    # Speed balance
     to_embed.append(_boosts_aux(battle, 'spe'))
 
     # Is dynamaxed
