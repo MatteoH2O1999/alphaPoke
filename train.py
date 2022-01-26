@@ -9,7 +9,9 @@ import os
 import seaborn as sns
 import sys
 
+from concurrent.futures import ProcessPoolExecutor
 from poke_env.player.baselines import SimpleHeuristicsPlayer, MaxBasePowerPlayer, RandomPlayer
+from poke_env.player_configuration import _CONFIGURATION_FROM_PLAYER_COUNTER # noqa used for parallelism
 from poke_env.server_configuration import LocalhostServerConfiguration
 from poke_env.player.utils import evaluate_player
 from progress.bar import IncrementalBar
@@ -47,11 +49,6 @@ async def main():
     evaluations = []
     cycles = []
     states = []
-    evaluation_agent = update_agent(agent.get_model(), False, False, 10)
-    evaluations.append(await evaluate_player(evaluation_agent, eval_challenges, placement))
-    cycles.append(0)
-    states.append(len(agent.get_model()))
-    evaluation_agent.reset_battles()
     bar = IncrementalBar('Training', max=challenges * 3)
     bar.width = 100
     max_group = min(math.sqrt(challenges), 10000)
@@ -61,6 +58,11 @@ async def main():
             group = j
             break
     for _ in range(challenges // group):
+        pool = ProcessPoolExecutor()
+        res = pool.submit(evaluate, update_agent, agent.get_model(), eval_challenges, placement,
+                          _CONFIGURATION_FROM_PLAYER_COUNTER.copy())
+        cycles.append(bar.index)
+        states.append(len(agent.get_model()))
         for _ in range(group):
             await agent.battle_against(opponent3, 1)
             bar.next()
@@ -72,12 +74,16 @@ async def main():
         opponent2.reset_battles()
         opponent3.reset_battles()
         agent.reset_battles()
-        evaluation_agent = update_agent(agent.get_model(), False, False, 10)
-        evaluations.append(await evaluate_player(evaluation_agent, eval_challenges, placement))
-        cycles.append(bar.index)
-        states.append(len(agent.get_model()))
-        evaluation_agent.reset_battles()
+        evaluations.append(res.result())
+        pool.shutdown(wait=True, cancel_futures=True)
         gc.collect()
+    pool = ProcessPoolExecutor()
+    res = pool.submit(evaluate, update_agent, agent.get_model(), eval_challenges, placement,
+                      _CONFIGURATION_FROM_PLAYER_COUNTER.copy())
+    cycles.append(bar.index)
+    states.append(len(agent.get_model()))
+    evaluations.append(res.result())
+    pool.shutdown(wait=True, cancel_futures=True)
     bar.finish()
     sns.set_theme()
     sns.set_palette('colorblind')
@@ -109,6 +115,15 @@ def get_expert_rl(model, training=False, keep_training=False, max_concurrent_bat
     return ExpertRLAgent(training=training, battle_format=sys.argv[2],
                          server_configuration=LocalhostServerConfiguration, model=model_copy,
                          keep_training=keep_training, max_concurrent_battles=max_concurrent_battles)
+
+
+def evaluate(update_agent_func, model, challenges, placement, counter):
+    from poke_env.player_configuration import _CONFIGURATION_FROM_PLAYER_COUNTER # noqa used for parallelism
+    _CONFIGURATION_FROM_PLAYER_COUNTER.clear()
+    _CONFIGURATION_FROM_PLAYER_COUNTER.update(counter)
+    agent = update_agent_func(model, False, False, 10)
+    evaluation = asyncio.get_event_loop().run_until_complete(evaluate_player(agent, challenges, placement))
+    return evaluation[0]
 
 
 if __name__ == '__main__':
