@@ -42,7 +42,7 @@ class ExpertRLAgent(SimpleRLAgent):
 
     def _state_headers(self) -> List[str]:
         if self.b_format == 'gen8randombattle':
-            return ['Player HP', 'Opponent HP', 'Stat balance', 'Type balance', 'Boosts balance', 'Speed balance',
+            return ['Player HP', 'Opponent HP', 'Stat balance', 'Type balance', 'Boosts balance',
                     'Is dynamaxed', 'Forced switch', 'Can apply status', 'Can power up', 'Can heal']
         else:
             raise InvalidArgument(f'{self.b_format} is not a valid battle format for this RL agent')
@@ -103,13 +103,9 @@ def _battle_to_state_gen8random(battle: AbstractBattle):
     opponent_mon_stats = sum(battle.opponent_active_pokemon.base_stats.values())
     diff = player_mon_stats - opponent_mon_stats
     balance = 0
-    if diff < -200:
-        balance = -2
-    elif diff < 0:
+    if diff < -150:
         balance = -1
-    elif diff > 200:
-        balance = 2
-    elif diff > 0:
+    elif diff > 150:
         balance = 1
     to_embed.append(balance)
 
@@ -142,9 +138,6 @@ def _battle_to_state_gen8random(battle: AbstractBattle):
     else:
         boost_balance = 0
     to_embed.append(boost_balance)
-
-    # Speed balance
-    to_embed.append(_boosts_aux(battle, 'spe'))
 
     # Is dynamaxed
     is_dyna = 0
@@ -225,7 +218,7 @@ def _fight_weak_move(agent: Player, battle: Battle):
     best_move = None
     best_value = float('inf')
     for move in battle.available_moves:
-        if move.current_pp > 0 and move.base_power > 0 and round(opponent_mon.damage_multiplier(move)) >= 1:
+        if move.current_pp > 0 and move.base_power > 0:
             move_value = (1 / move.base_power) * opponent_mon.damage_multiplier(move) * move.accuracy
             if move_value > best_value:
                 best_move = move
