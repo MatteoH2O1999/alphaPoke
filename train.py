@@ -3,8 +3,10 @@ import asyncio
 import copy
 import gc
 import math
+import matplotlib.pyplot as plt
 import pickle
 import os
+import seaborn as sns
 import sys
 
 from poke_env.player.baselines import SimpleHeuristicsPlayer, MaxBasePowerPlayer, RandomPlayer
@@ -18,6 +20,8 @@ from utils import InvalidArgument
 
 
 async def main():
+    eval_challenges = 2000
+    placement = 40
     agent_type = sys.argv[3].strip()
     update_agent = default_update_agent
     if not sys.argv[1].isnumeric():
@@ -40,6 +44,14 @@ async def main():
     opponent1 = SimpleHeuristicsPlayer(server_configuration=LocalhostServerConfiguration)
     opponent2 = MaxBasePowerPlayer(server_configuration=LocalhostServerConfiguration)
     opponent3 = RandomPlayer(server_configuration=LocalhostServerConfiguration)
+    evaluations = []
+    cycles = []
+    states = []
+    evaluation_agent = update_agent(agent.get_model(), False, False, 10)
+    evaluations.append(await evaluate_player(evaluation_agent, eval_challenges, placement))
+    cycles.append(0)
+    states.append(len(agent.get_model()))
+    evaluation_agent.reset_battles()
     bar = IncrementalBar('Training', max=challenges * 3)
     bar.width = 100
     max_group = min(math.sqrt(challenges), 10000)
@@ -60,15 +72,25 @@ async def main():
         opponent2.reset_battles()
         opponent3.reset_battles()
         agent.reset_battles()
+        evaluation_agent = update_agent(agent.get_model(), False, False, 10)
+        evaluations.append(await evaluate_player(evaluation_agent, eval_challenges, placement))
+        cycles.append(bar.index)
+        states.append(len(agent.get_model()))
+        evaluation_agent.reset_battles()
         gc.collect()
     bar.finish()
+    sns.set_theme()
+    sns.set_palette('colorblind')
+    to_plot = []
+    for evaluation in evaluations:
+        to_plot.append(evaluation[0])
+    plt.plot(cycles, to_plot)
+    plt.savefig(path + '/training.png', backend='agg')
+    plt.clf()
+    plt.plot(cycles, states)
+    plt.savefig(path + '/state number.png', backend='agg')
     with open(path + '/best.pokeai', 'wb') as file:
         pickle.dump(agent.get_model(), file)
-    eval_agent = update_agent(model=agent.get_model(), training=False, keep_training=False, max_concurrent_battles=10)
-    if eval_agent:
-        print(await evaluate_player(eval_agent, 2000, 40))
-    else:
-        print(await evaluate_player(agent, 2000, 40))
 
 
 def default_update_agent(model, training=False, keep_training=False, max_concurrent_battle=1):
