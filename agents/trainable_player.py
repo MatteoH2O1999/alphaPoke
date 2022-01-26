@@ -52,7 +52,7 @@ class TrainablePlayer(Player, ABC):
 
     def _choose_action(self, state):
         if state not in self.model.keys():
-            self.model[state] = [init_action_space(self.action_space_size), 0]
+            self.model[state] = [init_action_space(self.action_space_size), 0, init_action_space(self.action_space_size)]
         value = self.model[state]
         action_space = value[0]
         epsilon = self._get_epsilon(value[1])
