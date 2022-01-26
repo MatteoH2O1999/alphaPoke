@@ -10,6 +10,7 @@ import seaborn as sns
 import sys
 
 from concurrent.futures import ProcessPoolExecutor
+from multiprocessing import set_start_method
 from poke_env.player.baselines import SimpleHeuristicsPlayer, MaxBasePowerPlayer, RandomPlayer
 from poke_env.player_configuration import _CONFIGURATION_FROM_PLAYER_COUNTER # noqa used for parallelism
 from poke_env.server_configuration import LocalhostServerConfiguration
@@ -127,4 +128,5 @@ def evaluate(update_agent_func, model, challenges, placement, counter):
 
 
 if __name__ == '__main__':
+    set_start_method('spawn')
     asyncio.get_event_loop().run_until_complete(main())
