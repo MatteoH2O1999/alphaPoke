@@ -52,7 +52,7 @@ async def main():
     states = []
     bar = IncrementalBar('Training', max=challenges * 3)
     bar.width = 100
-    max_group = min(math.sqrt(challenges), 10000)
+    max_group = challenges**(3 / 4)
     group = 1
     for j in range(math.ceil(max_group), 1, -1):
         if challenges % j == 0:
