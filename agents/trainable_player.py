@@ -12,7 +12,7 @@ from typing import Tuple, Callable, List
 
 from . import LEARNING_RATE_WHILE_PLAYING, MIN_LEARNING_RATE_WHILE_TRAINING
 from . import EPSILON_WHILE_TRAINING_AND_PLAYING, MIN_EPSILON_WHILE_TRAINING
-from utils import init_action_space, argmax
+from utils import init_action_space
 
 
 class TrainablePlayer(Player, ABC):
@@ -56,7 +56,15 @@ class TrainablePlayer(Player, ABC):
         value = self.model[state]
         action_space = value[0]
         epsilon = self._get_epsilon(value[1])
-        optimal_action = argmax(action_space)
+        max_value = max(action_space)
+        optimal_actions = []
+        for i, action in enumerate(action_space):
+            if action == max_value:
+                optimal_actions.append(i)
+        if len(optimal_actions) > 1:
+            optimal_action = random.choice(optimal_actions)
+        else:
+            optimal_action = optimal_actions[0]
         if random.random() < epsilon:
             tmp = optimal_action
             while optimal_action == tmp:
