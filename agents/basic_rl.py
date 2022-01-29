@@ -29,11 +29,12 @@ class SimpleRLAgent(TrainablePlayer):
             raise InvalidArgument(f'{self.b_format} is not a valid battle format for this RL agent')
 
     def _train(self, last_state, last_action, reward):
-        learning_rate = self._get_learning_rate(self.model[last_state][2][last_action])
-        self.model[last_state][0][last_action] = (self.model[last_state][0][last_action] + learning_rate
-                                                  * (reward - self.model[last_state][0][last_action]))
-        self.model[last_state][1] += 1
-        self.model[last_state][2][last_action] += 1
+        model_to_edit = self.model[last_state]
+        learning_rate = self._get_learning_rate(model_to_edit[2][last_action])
+        model_to_edit[0][last_action] = (model_to_edit[0][last_action] + learning_rate
+                                         * (reward - model_to_edit[0][last_action]))
+        model_to_edit[1] += 1
+        model_to_edit[2][last_action] += 1
 
     @staticmethod
     def _calc_reward(last_battle: AbstractBattle, current_battle: AbstractBattle):
