@@ -131,7 +131,11 @@ def _battle_to_state_gen8random(battle: AbstractBattle):
     boost_balance = 0
     boost_balance += sum(battle.active_pokemon.boosts.values())
     boost_balance -= sum(battle.opponent_active_pokemon.boosts.values())
-    if boost_balance < 0:
+    if boost_balance < 4:
+        boost_balance = -2
+    elif boost_balance > 4:
+        boost_balance = 2
+    elif boost_balance < 0:
         boost_balance = -1
     elif boost_balance > 0:
         boost_balance = 1
