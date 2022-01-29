@@ -27,6 +27,7 @@ from utils import InvalidArgument
 async def main():
     current_time = datetime.datetime.now()
     current_time_string = current_time.strftime('%d-%m-%Y %H-%M-%S')
+    os.makedirs('./logs', exist_ok=True)
     eval_challenges = 2000
     placement = 40
     agent_type = sys.argv[3].strip()
@@ -63,8 +64,7 @@ async def main():
     evaluations = []
     cycles = []
     states = []
-    bar = IncrementalBar('Training', max=challenges * 3)
-    bar.width = 100
+    bar = ProgressBar('Training', max=challenges * 3)
     max_group = challenges**(3 / 4)
     group = 1
     for j in range(math.ceil(max_group), 1, -1):
@@ -105,10 +105,10 @@ async def main():
     for evaluation in evaluations:
         to_plot.append(evaluation)
     plt.plot(cycles, to_plot)
-    plt.savefig(f'./logs/training {current_time_string}.png', backend='agg')
+    plt.savefig(f'./logs/training {current_time_string}.png', backend='agg', dpi=300)
     plt.clf()
     plt.plot(cycles, states)
-    plt.savefig(f'./logs/state number {current_time_string}.png', backend='agg')
+    plt.savefig(f'./logs/state number {current_time_string}.png', backend='agg', dpi=300)
     with open(path + '/best.pokeai', 'wb') as file:
         pickle.dump(agent.get_model(), file)
 
@@ -148,6 +148,44 @@ def evaluate(update_agent_func, model, challenges, placement, counter):
     agent = update_agent_func(model, False, False, 10)
     evaluation = asyncio.get_event_loop().run_until_complete(evaluate_player(agent, challenges, placement))
     return evaluation[0]
+
+
+class ProgressBar(IncrementalBar):
+    width = 100
+    suffix = IncrementalBar.suffix + ' ETA: %(eta_str)s'
+
+    @property
+    def eta_str(self):
+        remaining_seconds = self.eta
+        if remaining_seconds == 0:
+            return '---'
+        display_years = remaining_seconds // 946_080_000
+        remaining_seconds = remaining_seconds - (display_years * 946_080_000)
+        display_months = remaining_seconds // 2_592_000
+        remaining_seconds = remaining_seconds - (display_months * 2_592_000)
+        display_days = remaining_seconds // 86_400
+        remaining_seconds = remaining_seconds - (display_days * 86_400)
+        display_hours = remaining_seconds // 3600
+        remaining_seconds = remaining_seconds - (display_hours * 3600)
+        display_minutes = remaining_seconds // 60
+        remaining_seconds = remaining_seconds - (display_minutes * 60)
+        if remaining_seconds >= 60:
+            raise RuntimeError('Error in computing ETA')
+        display_seconds = remaining_seconds
+        return_string = ''
+        if display_years > 0:
+            return_string += f'{display_years}y'
+        if display_months > 0:
+            return_string += f'{display_months}m'
+        if display_days > 0:
+            return_string += f'{display_days}d'
+        if display_hours > 0 and not display_years > 0 and not display_months > 0:
+            return_string += f'{display_hours}h'
+        if display_minutes > 0 and not display_years > 0 and not display_months > 0:
+            return_string += f'{display_minutes}m'
+        if display_seconds > 0 and not display_years > 0 and not display_months > 0 and not display_days > 0:
+            return_string += f'{display_seconds}s'
+        return return_string
 
 
 if __name__ == '__main__':
