@@ -27,6 +27,11 @@ class SarsaStark(SimpleRLAgent):
         model_to_edit[1] += 1
         model_to_edit[2][last_action] += 1
 
+    def _battle_finished_callback(self, battle: AbstractBattle) -> None:
+        self.current_state = self._copy_battle(battle)
+        super()._battle_finished_callback(battle)
+        self.current_state = None
+
 
 class ExpertSarsaStark(ExpertRLAgent):
 
@@ -48,3 +53,8 @@ class ExpertSarsaStark(ExpertRLAgent):
                                                              - model_to_edit[0][last_action])))
         model_to_edit[1] += 1
         model_to_edit[2][last_action] += 1
+
+    def _battle_finished_callback(self, battle: AbstractBattle) -> None:
+        self.current_state = self._copy_battle(battle)
+        super()._battle_finished_callback(battle)
+        self.current_state = None
