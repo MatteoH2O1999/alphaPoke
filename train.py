@@ -1,6 +1,7 @@
 # Manages the training cycle for RL agents
 import asyncio
 import copy
+import datetime
 import gc
 import math
 import matplotlib.pyplot as plt
@@ -19,14 +20,16 @@ from progress.bar import IncrementalBar
 
 from agents.basic_rl import SimpleRLAgent
 from agents.expert_rl import ExpertRLAgent
+from agents.sarsa_stark import SarsaStark, ExpertSarsaStark
 from utils import InvalidArgument
 
 
 async def main():
+    current_time = datetime.datetime.now()
+    current_time_string = current_time.strftime('%d-%m-%Y %H-%M-%S')
     eval_challenges = 2000
     placement = 40
     agent_type = sys.argv[3].strip()
-    update_agent = default_update_agent
     if not sys.argv[1].isnumeric():
         raise InvalidArgument(f'{sys.argv[1]} should be an integer containing the number of battles for the training')
     challenges = int(sys.argv[1])
@@ -40,6 +43,16 @@ async def main():
         agent = ExpertRLAgent(training=True, battle_format=sys.argv[2],
                               server_configuration=LocalhostServerConfiguration)
         update_agent = get_expert_rl
+    elif agent_type == 'SarsaStark':
+        path = f'./models/SarsaStark/{sys.argv[2]}'
+        agent = SarsaStark(training=True, battle_format=sys.argv[2],
+                           server_configuration=LocalhostServerConfiguration)
+        update_agent = get_sarsa_stark
+    elif agent_type == 'expertSarsaStark':
+        path = f'./models/expertSarsaStark/{sys.argv[2]}'
+        agent = ExpertSarsaStark(training=True, battle_format=sys.argv[2],
+                                 server_configuration=LocalhostServerConfiguration)
+        update_agent = get_expert_sarsa_stark
     else:
         raise InvalidArgument(f'{agent_type} is not a valid RL agent')
     if path:
@@ -90,18 +103,14 @@ async def main():
     sns.set_palette('colorblind')
     to_plot = []
     for evaluation in evaluations:
-        to_plot.append(evaluation[0])
+        to_plot.append(evaluation)
     plt.plot(cycles, to_plot)
-    plt.savefig(path + '/training.png', backend='agg')
+    plt.savefig(f'./logs/training {current_time_string}.png', backend='agg')
     plt.clf()
     plt.plot(cycles, states)
-    plt.savefig(path + '/state number.png', backend='agg')
+    plt.savefig(f'./logs/state number {current_time_string}.png', backend='agg')
     with open(path + '/best.pokeai', 'wb') as file:
         pickle.dump(agent.get_model(), file)
-
-
-def default_update_agent(model, training=False, keep_training=False, max_concurrent_battle=1):
-    return None
 
 
 def get_simple_rl(model, training=False, keep_training=False, max_concurrent_battles=1):
@@ -116,6 +125,20 @@ def get_expert_rl(model, training=False, keep_training=False, max_concurrent_bat
     return ExpertRLAgent(training=training, battle_format=sys.argv[2],
                          server_configuration=LocalhostServerConfiguration, model=model_copy,
                          keep_training=keep_training, max_concurrent_battles=max_concurrent_battles)
+
+
+def get_sarsa_stark(model, training=False, keep_training=False, max_concurrent_battles=1):
+    model_copy = copy.deepcopy(model)
+    return SarsaStark(training=training, battle_format=sys.argv[2],
+                      server_configuration=LocalhostServerConfiguration, model=model_copy,
+                      keep_training=keep_training, max_concurrent_battles=max_concurrent_battles)
+
+
+def get_expert_sarsa_stark(model, training=False, keep_training=False, max_concurrent_battles=1):
+    model_copy = copy.deepcopy(model)
+    return ExpertSarsaStark(training=training, battle_format=sys.argv[2],
+                            server_configuration=LocalhostServerConfiguration, model=model_copy,
+                            keep_training=keep_training, max_concurrent_battles=max_concurrent_battles)
 
 
 def evaluate(update_agent_func, model, challenges, placement, counter):

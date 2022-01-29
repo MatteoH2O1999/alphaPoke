@@ -10,6 +10,7 @@ from agents.eight_year_old_me import EightYearOldMe
 from agents.twenty_year_old_me import TwentyYearOldMe
 from agents.basic_rl import SimpleRLAgent
 from agents.expert_rl import ExpertRLAgent
+from agents.sarsa_stark import SarsaStark, ExpertSarsaStark
 
 
 def create_agent(cli_name, player_configuration, battle_format, start_timer, server_configuration,
@@ -69,6 +70,44 @@ def create_agent(cli_name, player_configuration, battle_format, start_timer, ser
             keep_training = True
         for model in models:
             agent.append(ExpertRLAgent(**kwargs, keep_training=keep_training, model=model))
+    elif 'simpleSarsaStark-best' in agent_name:
+        with open(f'./models/SarsaStark/{battle_format}/best.pokeai', 'b') as model_file:
+            model = pickle.load(model_file)
+        keep_training = False
+        if 'train' in agent_name:
+            keep_training = True
+        agent = [SarsaStark(**kwargs, keep_training=keep_training, model=model)]
+    elif 'simpleSarsaStark-all' in agent_name:
+        models = []
+        files = os.listdir(f'./models/SarsaStark/{battle_format}')
+        for file in files:
+            with open(f'./models/SarsaStark/{battle_format}/' + file, 'b') as model_file:
+                models.append(pickle.load(model_file))
+        agent = []
+        keep_training = False
+        if 'train' in agent_name:
+            keep_training = True
+        for model in models:
+            agent.append(SarsaStark(**kwargs, keep_training=keep_training, model=model))
+    elif 'expertSarsaStark-best' in agent_name:
+        with open(f'./models/expertSarsaStark/{battle_format}/best.pokeai', 'b') as model_file:
+            model = pickle.load(model_file)
+        keep_training = False
+        if 'train' in agent_name:
+            keep_training = True
+        agent = [ExpertSarsaStark(**kwargs, keep_training=keep_training, model=model)]
+    elif 'expertSarsaStark-all' in agent_name:
+        models = []
+        files = os.listdir(f'./models/expertSarsaStark/{battle_format}')
+        for file in files:
+            with open(f'./models/expertSarsaStark/{battle_format}/' + file, 'b') as model_file:
+                models.append(pickle.load(model_file))
+        agent = []
+        keep_training = False
+        if 'train' in agent_name:
+            keep_training = True
+        for model in models:
+            agent.append(ExpertSarsaStark(**kwargs, keep_training=keep_training, model=model))
     else:
         raise UnsupportedAgentType(f'{cli_name} is not a valid agent type')
     return agent
