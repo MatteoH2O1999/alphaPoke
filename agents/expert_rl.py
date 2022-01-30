@@ -49,9 +49,9 @@ class ExpertRLAgent(SimpleRLAgent):
 
     def _action_space_headers(self) -> List[str]:
         if self.b_format == 'gen8randombattle':
-            return ['Fight to kill', 'Fight with a weak move', 'Fight with a move to apply a status effect', 'Power up',
-                    'Use a move that applies a status effect', 'Sacrifice a weak Pokémon', 'Perform a defensive switch',
-                    'Perform an offensive switch', 'Use a move predicting a switch', 'Heal']
+            return ['Fight to kill', 'Fight with a weak move', 'Power up', 'Use a move that applies a status effect',
+                    'Sacrifice a weak Pokémon', 'Perform a defensive switch', 'Perform an offensive switch',
+                    'Use a move predicting a switch', 'Heal']
         else:
             raise InvalidArgument(f'{self.b_format} is not a valid battle format for this RL agent')
 
