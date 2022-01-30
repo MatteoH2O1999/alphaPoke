@@ -1,6 +1,5 @@
 import asyncio
 import matplotlib.pyplot as plt
-import math
 import sys
 
 from poke_env.player.utils import evaluate_player
@@ -24,17 +23,16 @@ async def main():
         agent_name = sys.argv[i]
         if agent_name not in used_players:
             used_players.append(agent_name)
-            to_append = create_agent(agent_name, None, battle_format, False, LocalhostServerConfiguration,
-                                     False, 50)
+            to_append = create_agent(agent_name, None, battle_format, False, LocalhostServerConfiguration, False, 10)
             for p in to_append:
                 players.append(p)
     results = [['Player', 'Evaluation']]
     for player in players:
-        evaluation = await evaluate_player(player, challenges, math.ceil(math.log2(challenges) * 2))
+        evaluation = await evaluate_player(player, challenges, 40)
         results.append([__cut_player_number(player.username), evaluation])
     print(tabulate(results))
     plt.figure(dpi=600)
-    plot_eval(results, False, './evaluation plots')
+    plot_eval(results, True, './logs')
 
 
 if __name__ == '__main__':
