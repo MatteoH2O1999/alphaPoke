@@ -107,24 +107,28 @@ async def main():
     color2 = sns.color_palette()[2]
     color3 = sns.color_palette()[3]
     to_plot = []
+    errors = [[], []]
     for evaluation in evaluations:
-        to_plot.append(evaluation)
-    plt.plot(cycles, to_plot, color=main_color)
-    plt.title('Evaluation over training')
+        to_plot.append(evaluation[0])
+        errors[0].append(evaluation[1][0])
+        errors[1].append(evaluation[1][1])
+    plt.plot(cycles, to_plot, color=main_color, zorder=3)
+    plt.fill_between(cycles, errors[0], errors[1], facecolor=main_color, alpha=0.25, zorder=2)
+    plt.title('Evaluation over training with 95% confidence interval')
     plt.ylabel('Agent evaluation')
     plt.xlabel('Training matches')
     plt.axhline(_EVALUATION_RATINGS[RandomPlayer], label='Random player', linestyle='dashed',
-                linewidth=0.9, color=color1)
-    plt.axhline(_EVALUATION_RATINGS[MaxBasePowerPlayer], label='Max bas power player', linestyle='dashed',
-                linewidth=0.9, color=color2)
+                linewidth=0.9, color=color1, zorder=1)
+    plt.axhline(_EVALUATION_RATINGS[MaxBasePowerPlayer], label='Max base power player', linestyle='dashed',
+                linewidth=0.9, color=color2, zorder=1)
     plt.axhline(_EVALUATION_RATINGS[SimpleHeuristicsPlayer], label='Simple heuristics player', linestyle='dashed',
-                linewidth=0.9, color=color3)
-    if _EVALUATION_RATINGS[SimpleHeuristicsPlayer] / max(to_plot) < 2:
-        plt.ylim(0, max(max(to_plot), _EVALUATION_RATINGS[SimpleHeuristicsPlayer]) * 1.025)
-    else:
-        plt.ylim(0, max(to_plot) * 1.025)
+                linewidth=0.9, color=color3, zorder=1)
+    plt.ylim(0, max(max(errors[1]), _EVALUATION_RATINGS[SimpleHeuristicsPlayer]) * 1.025)
     plt.legend()
     plt.savefig(f'./logs/training {current_time_string}.png', backend='agg', dpi=300)
+    if not _EVALUATION_RATINGS[SimpleHeuristicsPlayer] / max(errors[1]) < 2:
+        plt.ylim(0, max(errors[1]) * 1.025)
+        plt.savefig(f'./logs/scaled training {current_time_string}.png', backend='agg', dpi=300)
     plt.clf()
     plt.plot(cycles, states)
     plt.title('Number of explored states over training')
@@ -170,7 +174,7 @@ def evaluate(update_agent_func, model, challenges, placement, counter):
     _CONFIGURATION_FROM_PLAYER_COUNTER.update(counter)
     agent = update_agent_func(model, False, False, 10)
     evaluation = asyncio.get_event_loop().run_until_complete(evaluate_player(agent, challenges, placement))
-    return evaluation[0]
+    return evaluation
 
 
 class ProgressBar(IncrementalBar):
