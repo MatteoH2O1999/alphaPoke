@@ -16,6 +16,7 @@ from poke_env.player.baselines import SimpleHeuristicsPlayer, MaxBasePowerPlayer
 from poke_env.player_configuration import _CONFIGURATION_FROM_PLAYER_COUNTER # noqa used for parallelism
 from poke_env.server_configuration import LocalhostServerConfiguration
 from poke_env.player.utils import evaluate_player
+from poke_env.player.utils import _EVALUATION_RATINGS # noqa used for axhlines in plot
 from progress.bar import IncrementalBar
 
 from agents.basic_rl import SimpleRLAgent
@@ -101,13 +102,35 @@ async def main():
     bar.finish()
     sns.set_theme()
     sns.set_palette('colorblind')
+    main_color = sns.color_palette()[0]
+    color1 = sns.color_palette()[1]
+    color2 = sns.color_palette()[2]
+    color3 = sns.color_palette()[3]
     to_plot = []
     for evaluation in evaluations:
         to_plot.append(evaluation)
-    plt.plot(cycles, to_plot)
+    plt.plot(cycles, to_plot, color=main_color)
+    plt.title('Evaluation over training')
+    plt.ylabel('Agent evaluation')
+    plt.xlabel('Training matches')
+    plt.axhline(_EVALUATION_RATINGS[RandomPlayer], label='Random player', linestyle='dashed',
+                linewidth=0.9, color=color1)
+    plt.axhline(_EVALUATION_RATINGS[MaxBasePowerPlayer], label='Max bas power player', linestyle='dashed',
+                linewidth=0.9, color=color2)
+    plt.axhline(_EVALUATION_RATINGS[SimpleHeuristicsPlayer], label='Simple heuristics player', linestyle='dashed',
+                linewidth=0.9, color=color3)
+    if _EVALUATION_RATINGS[SimpleHeuristicsPlayer] / max(to_plot) < 2:
+        plt.ylim(0, max(max(to_plot), _EVALUATION_RATINGS[SimpleHeuristicsPlayer]) * 1.025)
+    else:
+        plt.ylim(0, max(to_plot) * 1.025)
+    plt.legend()
     plt.savefig(f'./logs/training {current_time_string}.png', backend='agg', dpi=300)
     plt.clf()
     plt.plot(cycles, states)
+    plt.title('Number of explored states over training')
+    plt.xlabel('Training matches')
+    plt.ylabel('Number of explored states')
+    plt.ylim(bottom=0)
     plt.savefig(f'./logs/state number {current_time_string}.png', backend='agg', dpi=300)
     with open(path + '/best.pokeai', 'wb') as file:
         pickle.dump(agent.get_model(), file)
