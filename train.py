@@ -10,6 +10,8 @@ import os
 import seaborn as sns
 import sys
 
+
+from collections import Counter
 from concurrent.futures import ProcessPoolExecutor
 from multiprocessing import set_start_method
 from poke_env.player.baselines import SimpleHeuristicsPlayer, MaxBasePowerPlayer, RandomPlayer
@@ -24,14 +26,16 @@ from agents.expert_rl import ExpertRLAgent
 from agents.sarsa_stark import SarsaStark, ExpertSarsaStark
 from utils import InvalidArgument
 
+AGENT_NAME_COUNTER = Counter()
 
-async def main():
+
+async def main(index):
     current_time = datetime.datetime.now()
     current_time_string = current_time.strftime('%d-%m-%Y %H-%M-%S')
     os.makedirs('./logs', exist_ok=True)
     eval_challenges = 2000
     placement = 40
-    agent_type = sys.argv[3].strip()
+    agent_type = sys.argv[3 + index].strip()
     if not sys.argv[1].isnumeric():
         raise InvalidArgument(f'{sys.argv[1]} should be an integer containing the number of battles for the training')
     challenges = int(sys.argv[1])
@@ -59,13 +63,16 @@ async def main():
         raise InvalidArgument(f'{agent_type} is not a valid RL agent')
     if path:
         os.makedirs(path, exist_ok=True)
+    agent_name = agent.__class__.__name__
+    AGENT_NAME_COUNTER.update([agent_name])
+    agent_name += f' {AGENT_NAME_COUNTER[agent_name]}'
     opponent1 = SimpleHeuristicsPlayer(server_configuration=LocalhostServerConfiguration)
     opponent2 = MaxBasePowerPlayer(server_configuration=LocalhostServerConfiguration)
     opponent3 = RandomPlayer(server_configuration=LocalhostServerConfiguration)
     evaluations = []
     cycles = []
     states = []
-    bar = ProgressBar('Training', max=challenges * 3)
+    bar = ProgressBar(f'Training {agent_name}', max=challenges * 3)
     max_group = challenges**(3 / 4)
     group = 1
     for j in range(math.ceil(max_group), 1, -1):
@@ -125,18 +132,21 @@ async def main():
                 linewidth=0.9, color=color3, zorder=1)
     plt.ylim(0, max(max(errors[1]), _EVALUATION_RATINGS[SimpleHeuristicsPlayer]) * 1.025)
     plt.legend()
-    plt.savefig(f'./logs/training {current_time_string}.png', backend='agg', dpi=300)
+    plt.savefig(f'./logs/{agent_name} training {current_time_string}.png', backend='agg', dpi=300)
     if not _EVALUATION_RATINGS[SimpleHeuristicsPlayer] / max(errors[1]) < 2:
         plt.ylim(0, max(errors[1]) * 1.025)
-        plt.savefig(f'./logs/scaled training {current_time_string}.png', backend='agg', dpi=300)
+        plt.savefig(f'./logs/{agent_name} scaled training {current_time_string}.png', backend='agg', dpi=300)
     plt.clf()
     plt.plot(cycles, states)
     plt.title('Number of explored states over training')
     plt.xlabel('Training matches')
     plt.ylabel('Number of explored states')
     plt.ylim(bottom=0)
-    plt.savefig(f'./logs/state number {current_time_string}.png', backend='agg', dpi=300)
-    with open(path + '/best.pokeai', 'wb') as file:
+    plt.savefig(f'./logs/{agent_name} state number {current_time_string}.png', backend='agg', dpi=300)
+    optional_number = ''
+    if AGENT_NAME_COUNTER[agent.__class__.__name__] > 1:
+        optional_number = str(AGENT_NAME_COUNTER[agent.__class__.__name__])
+    with open(path + f'/best{optional_number}.pokeai', 'wb') as file:
         pickle.dump(agent.get_model(), file)
 
 
@@ -217,4 +227,5 @@ class ProgressBar(IncrementalBar):
 
 if __name__ == '__main__':
     set_start_method('spawn')
-    asyncio.get_event_loop().run_until_complete(main())
+    for i in range(len(sys.argv) - 3):
+        asyncio.get_event_loop().run_until_complete(main(i))
