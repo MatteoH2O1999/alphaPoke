@@ -223,6 +223,8 @@ def _fight_to_kill(agent: Player, battle: Battle):
     if best_move:
         return agent.create_order(best_move, dynamax=dyna, mega=mega, z_move=z_move)
     else:
+        if len(battle.available_moves) == 0:
+            return agent.choose_random_move(battle)
         random_move = random.randint(0, len(battle.available_moves) - 1)
         return agent.create_order(battle.available_moves[random_move], dynamax=dyna, mega=mega, z_move=z_move)
 
@@ -243,6 +245,8 @@ def _fight_weak_move(agent: Player, battle: Battle):
     if best_move:
         return agent.create_order(best_move)
     else:
+        if len(battle.available_moves) == 0:
+            return agent.choose_random_move(battle)
         random_move = random.randint(0, len(battle.available_moves) - 1)
         return agent.create_order(battle.available_moves[random_move])
 
@@ -267,6 +271,8 @@ def _power_up(agent: Player, battle: Battle):
     if best_move:
         return agent.create_order(best_move)
     else:
+        if len(battle.available_moves) == 0:
+            return agent.choose_random_move(battle)
         random_move = random.randint(0, len(battle.available_moves) - 1)
         return agent.create_order(battle.available_moves[random_move])
 
@@ -282,6 +288,8 @@ def _status_effect(agent: Player, battle: Battle):
     if len(status_moves) > 0:
         return agent.create_order(random.choice(status_moves))
     else:
+        if len(battle.available_moves) == 0:
+            return agent.choose_random_move(battle)
         random_move = random.randint(0, len(battle.available_moves) - 1)
         return agent.create_order(battle.available_moves[random_move])
 
@@ -325,6 +333,8 @@ def _sac(agent: Player, battle: Battle):
         if best_move:
             return agent.create_order(best_move)
         else:
+            if len(battle.available_moves) == 0:
+                return agent.choose_random_move(battle)
             random_move = random.randint(0, len(battle.available_moves) - 1)
             return agent.create_order(battle.available_moves[random_move])
 
@@ -379,6 +389,8 @@ def _defensive_switch(agent: Player, battle: Battle):
         if best_move:
             return agent.create_order(best_move)
         else:
+            if len(battle.available_moves) == 0:
+                return agent.choose_random_move(battle)
             random_move = random.randint(0, len(battle.available_moves) - 1)
             return agent.create_order(battle.available_moves[random_move])
 
@@ -435,6 +447,8 @@ def _offensive_switch(agent: Player, battle: Battle):
         if best_move:
             return agent.create_order(best_move)
         else:
+            if len(battle.available_moves) == 0:
+                return agent.choose_random_move(battle)
             random_move = random.randint(0, len(battle.available_moves) - 1)
             return agent.create_order(battle.available_moves[random_move])
 
@@ -459,6 +473,8 @@ def _fight_predict(agent: Player, battle: Battle):
     if best_move:
         return agent.create_order(best_move)
     else:
+        if len(battle.available_moves) == 0:
+            return agent.choose_random_move(battle)
         random_move = random.randint(0, len(battle.available_moves) - 1)
         return agent.create_order(battle.available_moves[random_move])
 
@@ -476,6 +492,8 @@ def _heal(agent: Player, battle: Battle):
     if best_move:
         return agent.create_order(best_move)
     else:
+        if len(battle.available_moves) == 0:
+            return agent.choose_random_move(battle)
         random_move = random.randint(0, len(battle.available_moves) - 1)
         return agent.create_order(battle.available_moves[random_move])
 
