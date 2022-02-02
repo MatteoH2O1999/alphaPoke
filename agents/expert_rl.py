@@ -99,14 +99,14 @@ def _battle_to_state_gen8random(battle: AbstractBattle):
         opponent_hp -= 1
     to_embed.append(opponent_hp)
 
-    #Fainted pokémons
+    # Fainted pokémons
     fainted_mons = 0
     for mon in battle.team.values():
         if mon.fainted:
             fainted_mons += 1
     to_embed.append(fainted_mons)
 
-    #Opponent fainted pokémons
+    # Opponent fainted pokémons
     opponent_fainted_mons = 0
     for mon in battle.opponent_team.values():
         if mon.fainted:
