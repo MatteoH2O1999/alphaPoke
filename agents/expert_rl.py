@@ -42,8 +42,9 @@ class ExpertRLAgent(SimpleRLAgent):
 
     def _state_headers(self) -> List[str]:
         if self.b_format == 'gen8randombattle':
-            return ['Player HP', 'Opponent HP', 'Stat balance', 'Type balance', 'Boosts balance',
-                    'Is dynamaxed', 'Forced switch', 'Can apply status', 'Can power up', 'Can heal']
+            return ['Player HP', 'Opponent HP', 'Fainted Pokémons', 'Opponent fainted Pokémons', 'Stat balance',
+                    'Type balance', 'Boosts balance', 'Is dynamaxed', 'Forced switch', 'Can apply status',
+                    'Can power up', 'Can heal']
         else:
             raise InvalidArgument(f'{self.b_format} is not a valid battle format for this RL agent')
 
@@ -98,6 +99,20 @@ def _battle_to_state_gen8random(battle: AbstractBattle):
         opponent_hp -= 1
     to_embed.append(opponent_hp)
 
+    #Fainted pokémons
+    fainted_mons = 0
+    for mon in battle.team.values():
+        if mon.fainted:
+            fainted_mons += 1
+    to_embed.append(fainted_mons)
+
+    #Opponent fainted pokémons
+    opponent_fainted_mons = 0
+    for mon in battle.opponent_team.values():
+        if mon.fainted:
+            opponent_fainted_mons += 1
+    to_embed.append(opponent_fainted_mons)
+
     # Battle balance stats
     player_mon_stats = sum(battle.active_pokemon.base_stats.values())
     opponent_mon_stats = sum(battle.opponent_active_pokemon.base_stats.values())
@@ -131,13 +146,9 @@ def _battle_to_state_gen8random(battle: AbstractBattle):
     boost_balance = 0
     boost_balance += sum(battle.active_pokemon.boosts.values())
     boost_balance -= sum(battle.opponent_active_pokemon.boosts.values())
-    if boost_balance < 4:
-        boost_balance = -2
-    elif boost_balance > 4:
-        boost_balance = 2
-    elif boost_balance < 0:
+    if boost_balance < 1:
         boost_balance = -1
-    elif boost_balance > 0:
+    elif boost_balance > 1:
         boost_balance = 1
     else:
         boost_balance = 0
@@ -204,6 +215,8 @@ def _fight_to_kill(agent: Player, battle: Battle):
     for move in battle.available_moves:
         if move.current_pp > 0 and move.base_power > 0:
             move_value = move.base_power * opponent_mon.damage_multiplier(move) * move.accuracy
+            if move.type in battle.active_pokemon.types:
+                move_value *= 1.5
             if move_value > best_value:
                 best_move = move
                 best_value = move_value
