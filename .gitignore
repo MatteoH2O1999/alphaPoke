@@ -4,3 +4,5 @@ venv/
 pokemon-showdown/
 models/
 logs/
+replays/
+poke_env/
