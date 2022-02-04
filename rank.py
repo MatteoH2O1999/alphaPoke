@@ -89,6 +89,9 @@ class PlayerProcess(multiprocessing.Process):
             self.count += 1
         if isinstance(self.agent, TrainablePlayer) and (self.agent.training or self.agent.train_while_playing):
             update_model(self.agent, './models')
+        if len(elo_stats[1]) > 1:
+            elo_stats[0] = elo_stats[0][1:]
+            elo_stats[1] = elo_stats[1][1:]
         os.makedirs(os.path.dirname(self.plot_path), exist_ok=True)
         sns.set_theme()
         plt.figure(dpi=300)
