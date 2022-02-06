@@ -2,37 +2,53 @@
 import asyncio
 import datetime
 import getpass
+import math
 import matplotlib.pyplot as plt
 import multiprocessing
 import os
 import seaborn as sns
 import sys
 
+from numpy import mean
 from poke_env.server_configuration import ShowdownServerConfiguration
 from poke_env.player_configuration import PlayerConfiguration
 
 from agents.trainable_player import TrainablePlayer
 from utils.create_agent import create_agent
 from utils.save_updated_model import update_model
+from utils.invalid_argument import InvalidArgumentNumber
 
 
 def main():
+    if len(sys.argv) < 4:
+        raise InvalidArgumentNumber()
     current_time = datetime.datetime.now()
     current_time_string = current_time.strftime('%d-%m-%Y %H-%M-%S')
     battle_format = sys.argv[1]
     save_replays = sys.argv[2].lower() == 'true' or sys.argv[2].lower() == 't' or sys.argv[2].lower() == 'y'
     save_path = sys.argv[3]
+    number_of_challenges = None
+    start_agent = 4
+    if sys.argv[4].isdigit() and float(sys.argv[4]).is_integer():
+        number_of_challenges = int(sys.argv[4])
+        start_agent = 5
     processes = []
     max_completed_battles = multiprocessing.Value('i', 0)
     cont = multiprocessing.Value('i', 1)
-    for i in range(4, len(sys.argv)):
+    for i in range(start_agent, len(sys.argv)):
         processes.append(PlayerProcess(sys.argv[i], battle_format, save_replays, save_path, current_time_string,
                                        max_completed_battles, cont))
     for p in processes:
         p.start()
-    input('Press any key to stop...')
-    with cont.get_lock():
-        cont.value = 0
+    if number_of_challenges:
+        with max_completed_battles.get_lock():
+            with cont.get_lock():
+                max_completed_battles.value = number_of_challenges
+                cont.value = 0
+    else:
+        input('Press any key to stop...')
+        with cont.get_lock():
+            cont.value = 0
     for p in processes:
         p.join()
 
@@ -93,15 +109,25 @@ class PlayerProcess(multiprocessing.Process):
             elo_stats[0] = elo_stats[0][1:]
             elo_stats[1] = elo_stats[1][1:]
         os.makedirs(os.path.dirname(self.plot_path), exist_ok=True)
+        means = []
+        window = []
+        window_size = max(math.floor(math.log2(len(elo_stats[0]))), 1)
+        for stat in elo_stats[1]:
+            if len(window) >= window_size:
+                window = window[1:]
+            window.append(stat)
+            means.append(mean(window))
         sns.set_theme()
         plt.figure(dpi=300)
-        plt.plot(elo_stats[0], elo_stats[1], color=sns.color_palette('colorblind')[0])
-        plt.suptitle(f'Rank of agent {self.agent.__class__.__name__} during {self.count - 1} battles')
+        plt.bar(elo_stats[0], elo_stats[1], alpha=0.4, color=sns.color_palette('colorblind')[0], zorder=1)
+        plt.plot(elo_stats[0], means, color=sns.color_palette('colorblind')[0], zorder=2)
+        plt.suptitle(f'Elo of agent {self.agent.__class__.__name__} during {self.count - 1} battles')
         plt.title('from a new account')
         plt.xlabel('Battles')
         plt.ylabel('Elo')
         plt.ylim(0, max(elo_stats[1]) * 1.1)
-        plt.gca().tick_params(axis='x', label1On=False)
+        if len(elo_stats[0]) < 10:
+            plt.gca().tick_params(axis='x', label1On=False)
         plt.savefig(self.plot_path, backend='agg')
 
 
