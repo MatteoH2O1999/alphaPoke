@@ -6,3 +6,5 @@ models/
 logs/
 replays/
 poke_env/
+.ipynb_checkpoints/
+notebooks/
