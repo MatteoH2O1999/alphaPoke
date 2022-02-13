@@ -110,16 +110,18 @@ class PlayerProcess(multiprocessing.Process):
             elo_stats[1] = elo_stats[1][1:]
         os.makedirs(os.path.dirname(self.plot_path), exist_ok=True)
         means = []
-        window = []
         window_size = max(math.floor(math.log2(len(elo_stats[0]))), 1)
-        for stat in elo_stats[1]:
-            if len(window) >= window_size:
-                window = window[1:]
-            window.append(stat)
+        if window_size % 2 == 0:
+            window_size += 1
+        window_half_size = (window_size - 1) // 2
+        extended_stats = [[elo_stats[1][0] for _ in range(window_half_size)], [elo_stats[1]],
+                          [elo_stats[1][-1] for _ in range(window_half_size)]]
+        for i in range(len(elo_stats[0])):
+            window = extended_stats[i:i + window_size]
             means.append(mean(window))
         sns.set_theme()
         plt.figure(dpi=300)
-        plt.bar(elo_stats[0], elo_stats[1], alpha=0.4, color=sns.color_palette('colorblind')[0], zorder=1)
+        plt.bar(elo_stats[0], elo_stats[1], alpha=0.6, color=sns.color_palette('colorblind')[0], zorder=1)
         plt.plot(elo_stats[0], means, color=sns.color_palette('colorblind')[0], zorder=2)
         plt.suptitle(f'Elo of agent {self.agent.__class__.__name__} during {self.count - 1} battles')
         plt.title('from a new account')
@@ -128,7 +130,7 @@ class PlayerProcess(multiprocessing.Process):
         plt.ylim(0, max(elo_stats[1]) * 1.1)
         if len(elo_stats[0]) < 10:
             plt.gca().tick_params(axis='x', label1On=False)
-        plt.savefig(self.plot_path, backend='agg')
+        plt.savefig(self.plot_path, backend='agg', bbox_inches='tight')
 
 
 if __name__ == '__main__':
