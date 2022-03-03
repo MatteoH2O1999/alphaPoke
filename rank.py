@@ -98,10 +98,10 @@ class PlayerProcess(multiprocessing.Process):
         plt.switch_backend("agg")
         self.agent = create_agent(
             self.agent_type,
-            PlayerConfiguration(self.username, self.password),
             self.battle_format,
-            True,
+            PlayerConfiguration(self.username, self.password),
             ShowdownServerConfiguration,
+            True,
             self.save_replays,
         )[0]
         file_name = f"rank {self.agent.__class__.__name__} {self.plot_time}.png"

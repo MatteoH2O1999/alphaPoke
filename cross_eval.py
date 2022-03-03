@@ -41,10 +41,10 @@ async def main():
             for _ in range(agent_quantity):
                 to_append = create_agent(
                     agent_name,
-                    None,
                     battle_format,
-                    False,
+                    None,
                     LocalhostServerConfiguration,
+                    False,
                     False,
                     30,
                 )

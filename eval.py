@@ -27,10 +27,10 @@ async def main():
             used_players.append(agent_name)
             to_append = create_agent(
                 agent_name,
-                None,
                 battle_format,
-                False,
+                None,
                 LocalhostServerConfiguration,
+                False,
                 False,
                 10,
             )
