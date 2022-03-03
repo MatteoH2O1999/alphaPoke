@@ -3,6 +3,7 @@ import os
 import pickle
 
 from poke_env.player.player import Player
+from poke_env.server_configuration import LocalhostServerConfiguration
 from typing import List
 
 from agents.dad import Dad
@@ -15,10 +16,10 @@ from agents.sarsa_stark import SarsaStark, ExpertSarsaStark
 
 def create_agent(
     cli_name,
-    player_configuration,
     battle_format,
-    start_timer,
-    server_configuration,
+    player_configuration=None,
+    server_configuration=LocalhostServerConfiguration,
+    start_timer=False,
     save_replay=False,
     concurrent=1,
     **others,
