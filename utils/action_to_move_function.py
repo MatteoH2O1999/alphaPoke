@@ -3,7 +3,7 @@ from poke_env.environment.battle import Battle
 from poke_env.player.battle_order import BattleOrder, ForfeitBattleOrder
 
 
-def action_to_move_gen8random(agent, action: int, battle: Battle) -> BattleOrder:
+def action_to_move_gen8single(agent, action: int, battle: Battle) -> BattleOrder:
     if action == -1:
         return ForfeitBattleOrder()
     elif (

@@ -5,7 +5,7 @@ from poke_env.environment.abstract_battle import AbstractBattle
 from . import VICTORY_REWARD, MON_HP_REWARD, MON_FAINTED_REWARD
 from .trainable_player import TrainablePlayer
 from utils import InvalidArgument
-from utils.action_to_move_function import action_to_move_gen8random
+from utils.action_to_move_function import action_to_move_gen8single
 
 
 class SimpleRLAgent(TrainablePlayer):
@@ -19,7 +19,7 @@ class SimpleRLAgent(TrainablePlayer):
 
     def _get_action_to_move_func(self):
         if self.b_format == "gen8randombattle":
-            return action_to_move_gen8random
+            return action_to_move_gen8single
         else:
             raise InvalidArgument(
                 f"{self.b_format} is not a valid battle format for this RL agent"
