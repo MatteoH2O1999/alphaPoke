@@ -9,30 +9,36 @@ from utils.action_to_move_function import action_to_move_gen8random
 
 
 class SimpleRLAgent(TrainablePlayer):
-
     def _get_battle_to_state_func(self):
-        if self.b_format == 'gen8randombattle':
+        if self.b_format == "gen8randombattle":
             return _battle_to_state_gen8random
         else:
-            raise InvalidArgument(f'{self.b_format} is not a valid battle format for this RL agent')
+            raise InvalidArgument(
+                f"{self.b_format} is not a valid battle format for this RL agent"
+            )
 
     def _get_action_to_move_func(self):
-        if self.b_format == 'gen8randombattle':
+        if self.b_format == "gen8randombattle":
             return action_to_move_gen8random
         else:
-            raise InvalidArgument(f'{self.b_format} is not a valid battle format for this RL agent')
+            raise InvalidArgument(
+                f"{self.b_format} is not a valid battle format for this RL agent"
+            )
 
     def _get_action_space_size(self):
-        if self.b_format == 'gen8randombattle':
+        if self.b_format == "gen8randombattle":
             return 22
         else:
-            raise InvalidArgument(f'{self.b_format} is not a valid battle format for this RL agent')
+            raise InvalidArgument(
+                f"{self.b_format} is not a valid battle format for this RL agent"
+            )
 
     def _train(self, last_state, last_action, reward):
         model_to_edit = self.model[last_state]
         learning_rate = self._get_learning_rate(model_to_edit[2][last_action])
-        model_to_edit[0][last_action] = (model_to_edit[0][last_action] + learning_rate
-                                         * (reward - model_to_edit[0][last_action]))
+        model_to_edit[0][last_action] = model_to_edit[0][
+            last_action
+        ] + learning_rate * (reward - model_to_edit[0][last_action])
         model_to_edit[1] += 1
         model_to_edit[2][last_action] += 1
 
@@ -46,45 +52,100 @@ class SimpleRLAgent(TrainablePlayer):
         player_mons_ids = list(current_battle.team.keys())
         opponent_mons_ids = list(current_battle.opponent_team.keys())
         for mon_id in player_mons_ids:
-            if not last_battle.team[mon_id].fainted and current_battle.team[mon_id].fainted:
+            if (
+                not last_battle.team[mon_id].fainted
+                and current_battle.team[mon_id].fainted
+            ):
                 reward -= MON_FAINTED_REWARD
-                reward -= (MON_HP_REWARD * last_battle.team[mon_id].current_hp_fraction * 100)
-            elif not last_battle.team[mon_id].fainted and not current_battle.team[mon_id].fainted:
-                diff = (last_battle.team[mon_id].current_hp_fraction - current_battle.team[mon_id].current_hp_fraction)
-                reward -= (MON_HP_REWARD * diff * 100)
+                reward -= (
+                    MON_HP_REWARD * last_battle.team[mon_id].current_hp_fraction * 100
+                )
+            elif (
+                not last_battle.team[mon_id].fainted
+                and not current_battle.team[mon_id].fainted
+            ):
+                diff = (
+                    last_battle.team[mon_id].current_hp_fraction
+                    - current_battle.team[mon_id].current_hp_fraction
+                )
+                reward -= MON_HP_REWARD * diff * 100
         for mon_id in opponent_mons_ids:
             if mon_id not in last_battle.opponent_team.keys():
                 if current_battle.opponent_team[mon_id].fainted:
-                    reward += (MON_HP_REWARD * 100 + MON_FAINTED_REWARD)
+                    reward += MON_HP_REWARD * 100 + MON_FAINTED_REWARD
                 else:
-                    reward += (MON_HP_REWARD * (100 - current_battle.opponent_team[mon_id].current_hp_fraction))
+                    reward += MON_HP_REWARD * (
+                        100 - current_battle.opponent_team[mon_id].current_hp_fraction
+                    )
             else:
-                if current_battle.opponent_team[mon_id].fainted and not last_battle.opponent_team[mon_id].fainted:
-                    reward += (MON_FAINTED_REWARD + (100 * MON_HP_REWARD
-                                                     * last_battle.opponent_team[mon_id].current_hp_fraction))
-                elif not current_battle.opponent_team[mon_id].fainted and not last_battle.opponent_team[mon_id].fainted:
-                    diff = (last_battle.opponent_team[mon_id].current_hp_fraction
-                            - current_battle.opponent_team[mon_id].current_hp_fraction)
-                    reward += (MON_HP_REWARD * 100 * diff)
+                if (
+                    current_battle.opponent_team[mon_id].fainted
+                    and not last_battle.opponent_team[mon_id].fainted
+                ):
+                    reward += MON_FAINTED_REWARD + (
+                        100
+                        * MON_HP_REWARD
+                        * last_battle.opponent_team[mon_id].current_hp_fraction
+                    )
+                elif (
+                    not current_battle.opponent_team[mon_id].fainted
+                    and not last_battle.opponent_team[mon_id].fainted
+                ):
+                    diff = (
+                        last_battle.opponent_team[mon_id].current_hp_fraction
+                        - current_battle.opponent_team[mon_id].current_hp_fraction
+                    )
+                    reward += MON_HP_REWARD * 100 * diff
         return reward
 
     def _state_headers(self) -> List[str]:
-        if self.b_format == 'gen8randombattle':
-            return ['Stat balance', 'Type balance', 'Boosts balance', 'Is dynamaxed', 'Forced switch',
-                    'Can apply status', 'Can power up'
-                    'Move 1 value', 'Move 2 value', 'Move 3 value', 'Move 4 value']
+        if self.b_format == "gen8randombattle":
+            return [
+                "Stat balance",
+                "Type balance",
+                "Boosts balance",
+                "Is dynamaxed",
+                "Forced switch",
+                "Can apply status",
+                "Can power up" "Move 1 value",
+                "Move 2 value",
+                "Move 3 value",
+                "Move 4 value",
+            ]
         else:
-            raise InvalidArgument(f'{self.b_format} is not a valid battle format for this RL agent')
+            raise InvalidArgument(
+                f"{self.b_format} is not a valid battle format for this RL agent"
+            )
 
     def _action_space_headers(self) -> List[str]:
-        if self.b_format == 'gen8randombattle':
-            return ['Use move 1', 'Use move 2', 'Use move 3', 'Use move 4',
-                    'Use move 1 and mega evolve', 'Use move 2 and mega evolve', 'Use move 3 and mega evolve', 'Use move 4 and mega evolve',
-                    'Use move 1 as Z move', 'Use move 2 as Z move', 'Use move 3 as Z move', 'Use move 4 as Z move',
-                    'Use move 1 and Dynamax', 'Use move 2 and Dynamax', 'Use move 3 and Dynamax', 'Use move 4 and Dynamax',
-                    'Switch 1', 'Switch 2', 'Switch 3', 'Switch 4', 'Switch 5']
+        if self.b_format == "gen8randombattle":
+            return [
+                "Use move 1",
+                "Use move 2",
+                "Use move 3",
+                "Use move 4",
+                "Use move 1 and mega evolve",
+                "Use move 2 and mega evolve",
+                "Use move 3 and mega evolve",
+                "Use move 4 and mega evolve",
+                "Use move 1 as Z move",
+                "Use move 2 as Z move",
+                "Use move 3 as Z move",
+                "Use move 4 as Z move",
+                "Use move 1 and Dynamax",
+                "Use move 2 and Dynamax",
+                "Use move 3 and Dynamax",
+                "Use move 4 and Dynamax",
+                "Switch 1",
+                "Switch 2",
+                "Switch 3",
+                "Switch 4",
+                "Switch 5",
+            ]
         else:
-            raise InvalidArgument(f'{self.b_format} is not a valid battle format for this RL agent')
+            raise InvalidArgument(
+                f"{self.b_format} is not a valid battle format for this RL agent"
+            )
 
 
 def _battle_to_state_gen8random(battle: AbstractBattle):

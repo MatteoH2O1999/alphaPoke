@@ -18,7 +18,7 @@ def prettify_evaluation(evaluation_dict: dict):
             else:
                 tmp[p_1] = tmp_result
         evaluation_dict = tmp
-    table = [['-'] + [p for p in evaluation_dict]]
+    table = [["-"] + [p for p in evaluation_dict]]
     for p_1, results in evaluation_dict.items():
         to_append = [p_1]
         for p_2, win_rate in results.items():
@@ -52,7 +52,7 @@ def __check_useful_number(player, players) -> bool:
 
 
 def __cut_player_number(player):
-    player_split = player.split(' ')
+    player_split = player.split(" ")
     if player_split[-1].isnumeric():
         player_split = player_split[:-1]
-    return ' '.join(player_split)
+    return " ".join(player_split)

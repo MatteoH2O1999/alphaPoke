@@ -21,43 +21,73 @@ from .basic_rl import SimpleRLAgent
 
 
 class ExpertRLAgent(SimpleRLAgent):
-
     def _get_battle_to_state_func(self):
-        if self.b_format == 'gen8randombattle':
+        if self.b_format == "gen8randombattle":
             return _battle_to_state_gen8random
         else:
-            raise InvalidArgument(f'{self.b_format} is not a valid battle format for this RL agent')
+            raise InvalidArgument(
+                f"{self.b_format} is not a valid battle format for this RL agent"
+            )
 
     def _get_action_to_move_func(self):
-        if self.b_format == 'gen8randombattle':
+        if self.b_format == "gen8randombattle":
             return _action_to_move_gen8random
         else:
-            raise InvalidArgument(f'{self.b_format} is not a valid battle format for this RL agent')
+            raise InvalidArgument(
+                f"{self.b_format} is not a valid battle format for this RL agent"
+            )
 
     def _get_action_space_size(self):
-        if self.b_format == 'gen8randombattle':
+        if self.b_format == "gen8randombattle":
             return 9
         else:
-            raise InvalidArgument(f'{self.b_format} is not a valid battle format for this RL agent')
+            raise InvalidArgument(
+                f"{self.b_format} is not a valid battle format for this RL agent"
+            )
 
     def _state_headers(self) -> List[str]:
-        if self.b_format == 'gen8randombattle':
-            return ['Player HP', 'Opponent HP', 'Fainted Pokémons', 'Opponent fainted Pokémons', 'Stat balance',
-                    'Type balance', 'Boosts balance', 'Is dynamaxed', 'Forced switch', 'Can apply status',
-                    'Can power up', 'Can heal']
+        if self.b_format == "gen8randombattle":
+            return [
+                "Player HP",
+                "Opponent HP",
+                "Fainted Pokémons",
+                "Opponent fainted Pokémons",
+                "Stat balance",
+                "Type balance",
+                "Boosts balance",
+                "Is dynamaxed",
+                "Forced switch",
+                "Can apply status",
+                "Can power up",
+                "Can heal",
+            ]
         else:
-            raise InvalidArgument(f'{self.b_format} is not a valid battle format for this RL agent')
+            raise InvalidArgument(
+                f"{self.b_format} is not a valid battle format for this RL agent"
+            )
 
     def _action_space_headers(self) -> List[str]:
-        if self.b_format == 'gen8randombattle':
-            return ['Fight to kill', 'Fight with a weak move', 'Power up', 'Use a move that applies a status effect',
-                    'Sacrifice a weak Pokémon', 'Perform a defensive switch', 'Perform an offensive switch',
-                    'Use a move predicting a switch', 'Heal']
+        if self.b_format == "gen8randombattle":
+            return [
+                "Fight to kill",
+                "Fight with a weak move",
+                "Power up",
+                "Use a move that applies a status effect",
+                "Sacrifice a weak Pokémon",
+                "Perform a defensive switch",
+                "Perform an offensive switch",
+                "Use a move predicting a switch",
+                "Heal",
+            ]
         else:
-            raise InvalidArgument(f'{self.b_format} is not a valid battle format for this RL agent')
+            raise InvalidArgument(
+                f"{self.b_format} is not a valid battle format for this RL agent"
+            )
 
 
-def _action_to_move_gen8random(agent: Player, action: int, battle: Battle) -> BattleOrder:
+def _action_to_move_gen8random(
+    agent: Player, action: int, battle: Battle
+) -> BattleOrder:
     if action == 0:
         return _fight_to_kill(agent, battle)
     elif action == 1:
@@ -77,7 +107,7 @@ def _action_to_move_gen8random(agent: Player, action: int, battle: Battle) -> Ba
     elif action == 8:
         return _heal(agent, battle)
     else:
-        raise RuntimeError('???')
+        raise RuntimeError("???")
 
 
 def _battle_to_state_gen8random(battle: AbstractBattle):
@@ -211,10 +241,12 @@ def _fight_to_kill(agent: Player, battle: Battle):
     if mon_stats >= max_stats and battle.can_dynamax and not mega and not z_move:
         dyna = True
     best_move = None
-    best_value = float('-inf')
+    best_value = float("-inf")
     for move in battle.available_moves:
         if move.current_pp > 0 and move.base_power > 0:
-            move_value = move.base_power * opponent_mon.damage_multiplier(move) * move.accuracy
+            move_value = (
+                move.base_power * opponent_mon.damage_multiplier(move) * move.accuracy
+            )
             if move.type in battle.active_pokemon.types:
                 move_value *= 1.5
             if move_value > best_value:
@@ -226,7 +258,9 @@ def _fight_to_kill(agent: Player, battle: Battle):
         if len(battle.available_moves) == 0:
             return agent.choose_random_move(battle)
         random_move = random.randint(0, len(battle.available_moves) - 1)
-        return agent.create_order(battle.available_moves[random_move], dynamax=dyna, mega=mega, z_move=z_move)
+        return agent.create_order(
+            battle.available_moves[random_move], dynamax=dyna, mega=mega, z_move=z_move
+        )
 
 
 # 2: fight with weak move
@@ -235,10 +269,14 @@ def _fight_weak_move(agent: Player, battle: Battle):
         return agent.choose_random_move(battle)
     opponent_mon = battle.opponent_active_pokemon
     best_move = None
-    best_value = float('inf')
+    best_value = float("inf")
     for move in battle.available_moves:
         if move.current_pp > 0 and move.base_power > 0:
-            move_value = (1 / move.base_power) * opponent_mon.damage_multiplier(move) * move.accuracy
+            move_value = (
+                (1 / move.base_power)
+                * opponent_mon.damage_multiplier(move)
+                * move.accuracy
+            )
             if move_value > best_value:
                 best_move = move
                 best_value = move_value
@@ -260,7 +298,7 @@ def _power_up(agent: Player, battle: Battle):
         if move.self_boost:
             if sum(move.self_boost.values()) > 0:
                 boosting_moves.append(move)
-    best_value = float('-inf')
+    best_value = float("-inf")
     best_move = None
     if len(boosting_moves) > 0:
         for move in boosting_moves:
@@ -298,10 +336,13 @@ def _status_effect(agent: Player, battle: Battle):
 def _sac(agent: Player, battle: Battle):
     should_switch = True
     best_mon = None
-    best_value = float('inf')
+    best_value = float("inf")
     if not battle.force_switch:
         best_mon = battle.active_pokemon
-        best_value = sum(battle.active_pokemon.stats.values()) * battle.active_pokemon.current_hp_fraction
+        best_value = (
+            sum(battle.active_pokemon.stats.values())
+            * battle.active_pokemon.current_hp_fraction
+        )
         should_switch = False
     for mon in battle.available_switches:
         mon_value = sum(mon.stats.values()) * mon.current_hp_fraction
@@ -323,10 +364,14 @@ def _sac(agent: Player, battle: Battle):
     else:
         opponent_mon = battle.opponent_active_pokemon
         best_move = None
-        best_value = float('-inf')
+        best_value = float("-inf")
         for move in battle.available_moves:
             if move.current_pp > 0 and move.base_power > 0:
-                move_value = move.base_power * opponent_mon.damage_multiplier(move) * move.accuracy
+                move_value = (
+                    move.base_power
+                    * opponent_mon.damage_multiplier(move)
+                    * move.accuracy
+                )
                 if move_value > best_value:
                     best_move = move
                     best_value = move_value
@@ -344,7 +389,7 @@ def _defensive_switch(agent: Player, battle: Battle):
     known_enemy_moves = list(battle.opponent_active_pokemon.moves.values())
     should_switch = True
     best_mon = None
-    best_value = float('inf')
+    best_value = float("inf")
     if not battle.force_switch:
         best_mon = battle.active_pokemon
         multipliers = []
@@ -379,10 +424,14 @@ def _defensive_switch(agent: Player, battle: Battle):
     else:
         opponent_mon = battle.opponent_active_pokemon
         best_move = None
-        best_value = float('-inf')
+        best_value = float("-inf")
         for move in battle.available_moves:
             if move.current_pp > 0 and move.base_power > 0:
-                move_value = move.base_power * opponent_mon.damage_multiplier(move) * move.accuracy
+                move_value = (
+                    move.base_power
+                    * opponent_mon.damage_multiplier(move)
+                    * move.accuracy
+                )
                 if move_value > best_value:
                     best_move = move
                     best_value = move_value
@@ -400,7 +449,7 @@ def _offensive_switch(agent: Player, battle: Battle):
     opponent_mon = battle.opponent_active_pokemon
     should_switch = True
     best_mon = None
-    best_value = float('-inf')
+    best_value = float("-inf")
     if not battle.force_switch:
         best_mon = battle.active_pokemon
         stats = sum(best_mon.stats.values())
@@ -437,10 +486,14 @@ def _offensive_switch(agent: Player, battle: Battle):
     else:
         opponent_mon = battle.opponent_active_pokemon
         best_move = None
-        best_value = float('-inf')
+        best_value = float("-inf")
         for move in battle.available_moves:
             if move.current_pp > 0 and move.base_power > 0:
-                move_value = move.base_power * opponent_mon.damage_multiplier(move) * move.accuracy
+                move_value = (
+                    move.base_power
+                    * opponent_mon.damage_multiplier(move)
+                    * move.accuracy
+                )
                 if move_value > best_value:
                     best_move = move
                     best_value = move_value
@@ -458,7 +511,7 @@ def _fight_predict(agent: Player, battle: Battle):
     if battle.force_switch:
         return agent.choose_random_move(battle)
     best_move = None
-    best_value = float('-inf')
+    best_value = float("-inf")
     strong_against_types = []
     for t in PokemonType:
         if round(battle.active_pokemon.damage_multiplier(t)) >= 2:
@@ -484,7 +537,7 @@ def _heal(agent: Player, battle: Battle):
     if battle.force_switch:
         return agent.choose_random_move(battle)
     best_move = None
-    best_value = float('-inf')
+    best_value = float("-inf")
     for move in battle.available_moves:
         if move.heal > best_value:
             best_value = move.heal
@@ -499,7 +552,7 @@ def _heal(agent: Player, battle: Battle):
 
 
 def _switch_aux(mon, t):
-    return mon.damage_multiplier(t)**3
+    return mon.damage_multiplier(t) ** 3
 
 
 def _boosts_aux(battle, boost):
@@ -513,4 +566,3 @@ def _boosts_aux(battle, boost):
     else:
         boost_balance = 0
     return boost_balance
-    
