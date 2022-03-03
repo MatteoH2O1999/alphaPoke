@@ -1,11 +1,12 @@
-name: Platform independent tests
+name: Platform dependent tests
 on:
   workflow_call:
 jobs:
-  code-style:
-    runs-on: ubuntu-latest
+  pytest:
+    runs-on: ${{ matrix.os }}
     strategy:
       matrix:
+        os: [windows-latest, ubuntu-latest, macos-latest]
         python-version: ['3.6', '3.7', '3.8', '3.9', '3.10']
     steps:
       - name: Checkout code
@@ -21,5 +22,5 @@ jobs:
         run: pip install -r ./requirements.txt
       - name: Install development requirements
         run: pip install -r ./requirements-dev.txt
-      - name: Check black code style
-        run: black --check ./*.py ./tests ./agents ./utils
+      - name: Run tests
+        run: pytest ./tests

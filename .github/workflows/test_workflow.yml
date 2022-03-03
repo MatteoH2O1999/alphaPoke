@@ -5,3 +5,6 @@ on:
 jobs:
   platform_independent_tests:
     uses: './.github/workflows/platform_independent_tests.yml'
+  platform_dependent_tests:
+    needs: platform_independent_tests
+    uses: './.github/workflows/platform_dependent_tests.yml'
