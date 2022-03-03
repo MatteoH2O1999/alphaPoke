@@ -21,14 +21,14 @@ def create_agent(
     server_configuration=LocalhostServerConfiguration,
     start_timer=False,
     save_replay=False,
-    concurrent=1,
+    max_concurrent_battles=1,
     **others,
 ) -> List[Player]:
     agent_name = cli_name.strip()
     kwargs = dict(
         player_configuration=player_configuration,
         battle_format=battle_format,
-        max_concurrent_battles=concurrent,
+        max_concurrent_battles=max_concurrent_battles,
         save_replays=save_replay,
         start_timer_on_battle_start=start_timer,
         server_configuration=server_configuration,
