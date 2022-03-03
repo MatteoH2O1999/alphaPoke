@@ -53,6 +53,6 @@ def __check_useful_number(player, players) -> bool:
 
 def __cut_player_number(player):
     player_split = player.split(" ")
-    if player_split[-1].isnumeric():
+    if player_split[-1].isnumeric() and len(player_split) > 1:
         player_split = player_split[:-1]
     return " ".join(player_split)
