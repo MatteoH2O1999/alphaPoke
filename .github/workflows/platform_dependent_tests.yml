@@ -19,8 +19,8 @@ jobs:
       - name: Update pip
         run: pip install --upgrade pip
       - name: Install requirements
-        run: pip install -r ./requirements.txt
+        run: pip install -r ./requirements.txt --upgrade
       - name: Install development requirements
-        run: pip install -r ./requirements-dev.txt
+        run: pip install -r ./requirements-dev.txt --upgrade
       - name: Run tests
-        run: pytest ./tests
+        run: coverage run -m pytest ./tests
