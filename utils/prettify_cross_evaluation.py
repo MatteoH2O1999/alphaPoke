@@ -18,11 +18,17 @@ def prettify_evaluation(evaluation_dict: dict):
             else:
                 tmp[p_1] = tmp_result
         evaluation_dict = tmp
+    players = []
+    player_dict = {}
+    for i, p in enumerate(evaluation_dict):
+        players.append(p)
+        player_dict[p] = i
     table = [["-"] + [p for p in evaluation_dict]]
     for p_1, results in evaluation_dict.items():
         to_append = [p_1]
+        to_append.extend([None for _ in evaluation_dict])
         for p_2, win_rate in results.items():
-            to_append.append(evaluation_dict[p_1][p_2])
+            to_append[1 + player_dict[p_2]] = win_rate
         table.append(to_append)
     return tabulate(table)
 
