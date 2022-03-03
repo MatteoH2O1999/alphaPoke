@@ -1,0 +1,7 @@
+name: Test
+on:
+  push:
+  pull_request:
+jobs:
+  platform_independent_tests:
+    uses: './.github/workflows/platform_independent_tests.yml'
