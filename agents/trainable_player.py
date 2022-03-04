@@ -18,6 +18,8 @@ from utils import init_action_space
 class TrainablePlayer(Player, ABC):
     def __init__(self, **kwargs):
         self.model = kwargs.get("model", {})
+        if self.model is None:
+            self.model = {}
         self.training = kwargs.get("training", False)
         self.train_while_playing = kwargs.get("keep_training", False)
         self.b_format = kwargs.get("battle_format")
@@ -85,26 +87,30 @@ class TrainablePlayer(Player, ABC):
         return self.battle_to_state_func(battle)
 
     @abstractmethod
-    def _get_battle_to_state_func(self) -> Callable[[AbstractBattle], Tuple[float]]:
+    def _get_battle_to_state_func(
+        self,
+    ) -> Callable[[AbstractBattle], Tuple[float]]:  # pragma: no cover
         pass
 
     @abstractmethod
-    def _get_action_to_move_func(self) -> Callable[[Player, int, Battle], BattleOrder]:
+    def _get_action_to_move_func(
+        self,
+    ) -> Callable[[Player, int, Battle], BattleOrder]:  # pragma: no cover
         pass
 
     @abstractmethod
-    def _get_action_space_size(self) -> int:
+    def _get_action_space_size(self) -> int:  # pragma: no cover
         pass
 
     @abstractmethod
-    def _train(self, last_state, last_action, reward) -> None:
+    def _train(self, last_state, last_action, reward) -> None:  # pragma: no cover
         pass
 
     @staticmethod
     @abstractmethod
     def _calc_reward(
         last_battle: AbstractBattle, current_battle: AbstractBattle
-    ) -> float:
+    ) -> float:  # pragma: no cover
         pass
 
     def _get_epsilon(self, samples):
@@ -153,7 +159,7 @@ class TrainablePlayer(Player, ABC):
         for values in self.model.values():
             values[1] = 0
 
-    def _model_to_table(self, model):
+    def _model_to_table(self, model):  # pragma: no cover
         headers = []
         for h in self._state_headers():
             headers.append(h)
@@ -170,9 +176,9 @@ class TrainablePlayer(Player, ABC):
         return table
 
     @abstractmethod
-    def _state_headers(self) -> List[str]:
+    def _state_headers(self) -> List[str]:  # pragma: no cover
         pass
 
     @abstractmethod
-    def _action_space_headers(self) -> List[str]:
+    def _action_space_headers(self) -> List[str]:  # pragma: no cover
         pass
