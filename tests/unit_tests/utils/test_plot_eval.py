@@ -55,7 +55,9 @@ def test_plot_eval_no_save():
 def test_plot_eval_save():
     with patch("matplotlib.pyplot.errorbar") as mock_errorbar, patch(
         "matplotlib.pyplot.scatter"
-    ) as mock_scatter, patch("matplotlib.pyplot.savefig") as mock_savefig:
+    ) as mock_scatter, patch("matplotlib.pyplot.savefig") as mock_savefig, patch(
+        "os.makedirs"
+    ) as mock_makedirs:
         evaluations = [
             ("players", "evaluations"),
             ("p1", (1.0, (0.5, 1.5))),
@@ -82,6 +84,7 @@ def test_plot_eval_save():
             color=sns.color_palette("colorblind")[0],
         )
         mock_savefig.assert_called_once()
+        mock_makedirs.assert_called_once_with("./plots", exist_ok=True)
         args, kwargs = mock_savefig.call_args
         assert (
             "./plots/evaluation" in args[0] or "./plots\\evaluation" in args[0]
