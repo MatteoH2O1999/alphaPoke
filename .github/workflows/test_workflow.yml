@@ -8,3 +8,6 @@ jobs:
   platform_dependent_tests:
     needs: platform_independent_tests
     uses: './.github/workflows/platform_dependent_tests.yml'
+  code_ql_scan:
+    needs: platform_dependent_tests
+    uses: './.github/workflows/codeql-scan.yml'
