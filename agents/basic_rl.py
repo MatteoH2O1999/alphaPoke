@@ -150,7 +150,7 @@ class SimpleRLAgent(TrainablePlayer):
             )
 
 
-def _battle_to_state_gen8random(battle: AbstractBattle):
+def _battle_to_state_gen8random(battle: AbstractBattle):  # pragma: no cover
     to_embed = []
 
     # Battle balance stats
