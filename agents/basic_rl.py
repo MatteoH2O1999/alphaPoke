@@ -74,8 +74,8 @@ class SimpleRLAgent(TrainablePlayer):
                 if current_battle.opponent_team[mon_id].fainted:
                     reward += MON_HP_REWARD * 100 + MON_FAINTED_REWARD
                 else:
-                    reward += MON_HP_REWARD * (
-                        100 - current_battle.opponent_team[mon_id].current_hp_fraction
+                    reward += MON_HP_REWARD * 100 * (
+                        1 - current_battle.opponent_team[mon_id].current_hp_fraction
                     )
             else:
                 if (
