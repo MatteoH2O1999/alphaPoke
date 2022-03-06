@@ -13,7 +13,8 @@ class SarsaStark(SimpleRLAgent):
         super().__init__(**kwargs)
 
     def choose_move(self, battle: AbstractBattle) -> BattleOrder:
-        self.current_state = self._copy_battle(battle)
+        if self.training or self.train_while_playing:
+            self.current_state = self._copy_battle(battle)
         return super().choose_move(battle)
 
     def _train(self, last_state, last_action, reward):
@@ -44,7 +45,8 @@ class ExpertSarsaStark(ExpertRLAgent):
         super().__init__(**kwargs)
 
     def choose_move(self, battle: AbstractBattle) -> BattleOrder:
-        self.current_state = self._copy_battle(battle)
+        if self.training or self.train_while_playing:
+            self.current_state = self._copy_battle(battle)
         return super().choose_move(battle)
 
     def _train(self, last_state, last_action, reward):
