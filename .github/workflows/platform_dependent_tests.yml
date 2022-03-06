@@ -8,6 +8,9 @@ jobs:
       matrix:
         os: [windows-latest, ubuntu-latest, macos-latest]
         python-version: ['3.6', '3.7', '3.8', '3.9', '3.10']
+    defaults:
+      run:
+        shell: bash
     steps:
       - name: Checkout code
         uses: actions/checkout@v2
@@ -24,6 +27,31 @@ jobs:
         run: pip install -r ./requirements.txt --upgrade
       - name: Install development requirements
         run: pip install -r ./requirements-dev.txt --upgrade
+      - name: Restore showdown
+        id: server-cache
+        uses: actions/cache@v2
+        with:
+          path: ./pokemon-showdown
+          key: server-${{ matrix.os }}-${{ matrix.python-version }}
+      - name: Clone showdown
+        if: steps.server-cache.outputs.cache-hit != 'true'
+        run: git clone https://github.com/smogon/pokemon-showdown.git
+      - name: Update showdown
+        run: |
+          cd pokemon-showdown
+          git pull
+      - name: Install showdown dependencies
+        run: |
+          cd pokemon-showdown
+          npm install
+          cp config/config-example.js config/config.js
+      - name: Run server in the background
+        run: |
+          cd pokemon-showdown
+          node pokemon-showdown start 8000 --no-security &
+      - name: Wait for server
+        run: |
+          until $(curl --output /dev/null --silent --head --fail http://localhost:8000); do sleep .01; done
       - name: Run tests
         run: coverage run --source=./ --omit=./tests/* -m pytest -x ./tests
       - name: Generate report
