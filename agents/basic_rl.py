@@ -74,8 +74,10 @@ class SimpleRLAgent(TrainablePlayer):
                 if current_battle.opponent_team[mon_id].fainted:
                     reward += MON_HP_REWARD * 100 + MON_FAINTED_REWARD
                 else:
-                    reward += MON_HP_REWARD * 100 * (
-                        1 - current_battle.opponent_team[mon_id].current_hp_fraction
+                    reward += (
+                        MON_HP_REWARD
+                        * 100
+                        * (1 - current_battle.opponent_team[mon_id].current_hp_fraction)
                     )
             else:
                 if (
@@ -209,16 +211,17 @@ def _battle_to_state_gen8random(battle: AbstractBattle):
     to_embed.append(forced_switch)
 
     # Move value
-    for move in battle.active_pokemon.moves.values():
-        move_value = 0
+    move_values = [0, 0, 0, 0]
+    for i, move in enumerate(battle.active_pokemon.moves.values()):
         if battle.opponent_active_pokemon.damage_multiplier(move.type) > 1.0:
-            move_value += 1
+            move_values[i] += 1
         else:
-            move_value -= 1
+            move_values[i] -= 1
         if move.base_power > 80:
-            move_value += 1
+            move_values[i] += 1
         if move.base_power == 0:
-            move_value = 0
+            move_values[i] = 0
+    for move_value in move_values:
         to_embed.append(move_value)
 
     return tuple(to_embed)
