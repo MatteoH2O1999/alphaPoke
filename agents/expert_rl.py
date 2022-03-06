@@ -87,7 +87,7 @@ class ExpertRLAgent(SimpleRLAgent):
 
 def _action_to_move_gen8random(
     agent: Player, action: int, battle: Battle
-) -> BattleOrder:
+) -> BattleOrder:  # pragma: no cover
     if action == 0:
         return _fight_to_kill(agent, battle)
     elif action == 1:
@@ -110,7 +110,7 @@ def _action_to_move_gen8random(
         raise RuntimeError("???")
 
 
-def _battle_to_state_gen8random(battle: AbstractBattle):
+def _battle_to_state_gen8random(battle: AbstractBattle):  # pragma: no cover
     to_embed = []
 
     # Player pokémon hp
@@ -222,7 +222,7 @@ def _battle_to_state_gen8random(battle: AbstractBattle):
 
 
 # 1: fight to kill
-def _fight_to_kill(agent: Player, battle: Battle):
+def _fight_to_kill(agent: Player, battle: Battle):  # pragma: no cover
     if battle.force_switch:
         return agent.choose_random_move(battle)
     opponent_mon = battle.opponent_active_pokemon
@@ -264,7 +264,7 @@ def _fight_to_kill(agent: Player, battle: Battle):
 
 
 # 2: fight with weak move
-def _fight_weak_move(agent: Player, battle: Battle):
+def _fight_weak_move(agent: Player, battle: Battle):  # pragma: no cover
     if battle.force_switch:
         return agent.choose_random_move(battle)
     opponent_mon = battle.opponent_active_pokemon
@@ -290,7 +290,7 @@ def _fight_weak_move(agent: Player, battle: Battle):
 
 
 # 3: power up
-def _power_up(agent: Player, battle: Battle):
+def _power_up(agent: Player, battle: Battle):  # pragma: no cover
     if battle.force_switch:
         return agent.choose_random_move(battle)
     boosting_moves = []
@@ -316,7 +316,7 @@ def _power_up(agent: Player, battle: Battle):
 
 
 # 4: apply status effect
-def _status_effect(agent: Player, battle: Battle):
+def _status_effect(agent: Player, battle: Battle):  # pragma: no cover
     if battle.force_switch:
         return agent.choose_random_move(battle)
     status_moves = []
@@ -333,7 +333,7 @@ def _status_effect(agent: Player, battle: Battle):
 
 
 # 5: sacrifice (switch to a pokémon with low health or really weak)
-def _sac(agent: Player, battle: Battle):
+def _sac(agent: Player, battle: Battle):  # pragma: no cover
     should_switch = True
     best_mon = None
     best_value = float("inf")
@@ -385,7 +385,7 @@ def _sac(agent: Player, battle: Battle):
 
 
 # 6: defensive switch (switch to a pokémon resistant to the enemy's active pokémon)
-def _defensive_switch(agent: Player, battle: Battle):
+def _defensive_switch(agent: Player, battle: Battle):  # pragma: no cover
     known_enemy_moves = list(battle.opponent_active_pokemon.moves.values())
     should_switch = True
     best_mon = None
@@ -445,7 +445,7 @@ def _defensive_switch(agent: Player, battle: Battle):
 
 
 # 7: offensive switch (switch to a pokémon supereffective against the enemy's active pokémon or really strong)
-def _offensive_switch(agent: Player, battle: Battle):
+def _offensive_switch(agent: Player, battle: Battle):  # pragma: no cover
     opponent_mon = battle.opponent_active_pokemon
     should_switch = True
     best_mon = None
@@ -507,7 +507,7 @@ def _offensive_switch(agent: Player, battle: Battle):
 
 
 # 8: fight predict (use a move predicting a switch)
-def _fight_predict(agent: Player, battle: Battle):
+def _fight_predict(agent: Player, battle: Battle):  # pragma: no cover
     if battle.force_switch:
         return agent.choose_random_move(battle)
     best_move = None
@@ -533,7 +533,7 @@ def _fight_predict(agent: Player, battle: Battle):
 
 
 # 9: heal
-def _heal(agent: Player, battle: Battle):
+def _heal(agent: Player, battle: Battle):  # pragma: no cover
     if battle.force_switch:
         return agent.choose_random_move(battle)
     best_move = None
@@ -551,11 +551,11 @@ def _heal(agent: Player, battle: Battle):
         return agent.create_order(battle.available_moves[random_move])
 
 
-def _switch_aux(mon, t):
+def _switch_aux(mon, t):  # pragma: no cover
     return mon.damage_multiplier(t) ** 3
 
 
-def _boosts_aux(battle, boost):
+def _boosts_aux(battle, boost):  # pragma: no cover
     boost_balance = 0
     boost_balance += battle.active_pokemon.boosts[boost]
     boost_balance -= battle.opponent_active_pokemon.boosts[boost]
