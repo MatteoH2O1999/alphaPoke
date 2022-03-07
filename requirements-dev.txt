@@ -1,5 +1,6 @@
 black
 pytest
 pytest-asyncio
+pytest-timeout
 flaky
 coverage
