@@ -6,7 +6,7 @@ from cross_eval import main
 
 
 @pytest.mark.asyncio
-@pytest.mark.timeout(180)
+@pytest.mark.timeout(360)
 @pytest.mark.flaky
 async def test_cross_evaluate_integration():
     with patch(

@@ -9,7 +9,7 @@ from play import main
 
 
 @pytest.mark.asyncio
-@pytest.mark.timeout(180)
+@pytest.mark.timeout(360)
 @pytest.mark.flaky
 async def test_play_integration():
     opponent = RandomPlayer(battle_format="gen8randombattle")
