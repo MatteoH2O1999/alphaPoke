@@ -1,4 +1,5 @@
 black
 pytest
 pytest-asyncio
+flaky
 coverage
