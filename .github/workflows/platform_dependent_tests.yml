@@ -48,7 +48,7 @@ jobs:
       - name: Run server in the background
         run: |
           cd pokemon-showdown
-          node pokemon-showdown start 8000 --no-security &
+          node pokemon-showdown start --no-security &
       - name: Wait for server
         run: |
           until $(curl --output /dev/null --silent --head --fail http://localhost:8000); do sleep .01; done
