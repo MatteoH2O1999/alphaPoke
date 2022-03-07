@@ -45,7 +45,8 @@ jobs:
           cd pokemon-showdown
           npm install
           cp config/config-example.js config/config.js
-          printf "\nexports.repl = false" >> config/config.js
+          printf "\nexports.repl = false;" >> config/config.js
+          printf "0" > logs/lastbattle.txt
       - name: Run server in the background
         run: |
           cd pokemon-showdown
