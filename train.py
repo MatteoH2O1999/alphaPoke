@@ -19,8 +19,8 @@ from poke_env.player.baselines import (
     RandomPlayer,
 )
 from poke_env.player_configuration import (
-    _CONFIGURATION_FROM_PLAYER_COUNTER,
-)  # noqa used for parallelism
+    _CONFIGURATION_FROM_PLAYER_COUNTER,  # noqa used for parallelism
+)
 from poke_env.server_configuration import LocalhostServerConfiguration
 from poke_env.player.utils import evaluate_player
 from poke_env.player.utils import _EVALUATION_RATINGS  # noqa used for axhlines in plot
