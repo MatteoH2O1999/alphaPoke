@@ -21,5 +21,5 @@ async def main():
     await agent.send_challenges(player_username, 1)
 
 
-if __name__ == "__main__":
+if __name__ == "__main__":  # pragma: no cover
     asyncio.get_event_loop().run_until_complete(main())

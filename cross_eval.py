@@ -54,5 +54,5 @@ async def main():
     print(prettify_evaluation(evaluation))
 
 
-if __name__ == "__main__":
+if __name__ == "__main__":  # pragma: no cover
     asyncio.get_event_loop().run_until_complete(main())

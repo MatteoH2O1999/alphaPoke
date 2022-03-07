@@ -178,5 +178,5 @@ class PlayerProcess(multiprocessing.Process):
         plt.savefig(self.plot_path, backend="agg", bbox_inches="tight")
 
 
-if __name__ == "__main__":
+if __name__ == "__main__":  # pragma: no cover
     main()

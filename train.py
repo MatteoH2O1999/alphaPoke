@@ -326,7 +326,7 @@ class ProgressBar(IncrementalBar):
         return return_string
 
 
-if __name__ == "__main__":
+if __name__ == "__main__":  # pragma: no cover
     set_start_method("spawn")
     for i in range(len(sys.argv) - 3):
         asyncio.get_event_loop().run_until_complete(main(i))

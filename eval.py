@@ -45,5 +45,5 @@ async def main():
     plot_eval(results, True, "./logs")
 
 
-if __name__ == "__main__":
+if __name__ == "__main__":  # pragma: no cover
     asyncio.get_event_loop().run_until_complete(main())
