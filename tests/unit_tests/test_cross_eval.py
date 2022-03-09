@@ -10,7 +10,7 @@ from utils.invalid_argument import InvalidArgumentNumber, InvalidArgument
 
 
 @pytest.mark.asyncio
-async def test_cross_evaluate_wrong_args():
+async def test_cross_eval_wrong_args():
     with patch("sys.argv", ["test", "test"]):
         with pytest.raises(InvalidArgumentNumber):
             await main()
@@ -28,7 +28,7 @@ class AsyncMock(MagicMock):
 
 
 @pytest.mark.asyncio
-async def test_cross_evaluate_argparse():
+async def test_cross_eval_argparse():
     with patch(
         "sys.argv",
         [
