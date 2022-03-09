@@ -10,8 +10,8 @@ from poke_env.player.battle_order import BattleOrder
 from poke_env.player.player import Player
 from typing import Tuple, Callable, List
 
-from . import LEARNING_RATE_WHILE_PLAYING, MIN_LEARNING_RATE_WHILE_TRAINING
-from . import EPSILON_WHILE_TRAINING_AND_PLAYING, MIN_EPSILON_WHILE_TRAINING
+from agents import LEARNING_RATE_WHILE_PLAYING, MIN_LEARNING_RATE_WHILE_TRAINING
+from agents import EPSILON_WHILE_TRAINING_AND_PLAYING, MIN_EPSILON_WHILE_TRAINING
 from utils import init_action_space
 
 

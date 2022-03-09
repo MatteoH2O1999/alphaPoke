@@ -78,7 +78,7 @@ def test_train_expert_sarsa_stark():
 
 def test_battle_finished_callback():
     with patch(
-        "agents.trainable_player.TrainablePlayer._battle_finished_callback"
+        "agents.base_classes.trainable_player.TrainablePlayer._battle_finished_callback"
     ) as mock_battle_finished:
         agent1 = SarsaStark(start_listening=False, battle_format="gen8randombattle")
         agent2 = ExpertSarsaStark(

@@ -3,7 +3,7 @@ import datetime
 import os
 import pickle
 
-from agents.trainable_player import TrainablePlayer
+from agents.base_classes.trainable_player import TrainablePlayer
 
 
 def update_model(agent: TrainablePlayer, model_path):

@@ -13,7 +13,7 @@ from numpy import mean
 from poke_env.server_configuration import ShowdownServerConfiguration
 from poke_env.player_configuration import PlayerConfiguration
 
-from agents.trainable_player import TrainablePlayer
+from agents.base_classes.trainable_player import TrainablePlayer
 from utils.create_agent import create_agent
 from utils.save_updated_model import update_model
 from utils.invalid_argument import InvalidArgumentNumber

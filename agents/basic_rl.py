@@ -3,7 +3,7 @@ from typing import List
 from poke_env.environment.abstract_battle import AbstractBattle
 
 from . import VICTORY_REWARD, MON_HP_REWARD, MON_FAINTED_REWARD
-from .trainable_player import TrainablePlayer
+from agents.base_classes.trainable_player import TrainablePlayer
 from utils import InvalidArgument
 from utils.action_to_move_function import action_to_move_gen8single
 

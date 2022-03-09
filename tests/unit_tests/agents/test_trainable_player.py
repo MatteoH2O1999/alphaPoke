@@ -15,7 +15,7 @@ from agents import (
     LEARNING_RATE_WHILE_PLAYING,
     MIN_LEARNING_RATE_WHILE_TRAINING,
 )
-from agents.trainable_player import TrainablePlayer
+from agents.base_classes.trainable_player import TrainablePlayer
 
 
 class DummyTrainablePlayer(TrainablePlayer):
