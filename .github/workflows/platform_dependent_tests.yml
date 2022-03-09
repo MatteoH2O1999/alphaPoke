@@ -27,6 +27,8 @@ jobs:
         run: pip install -r ./requirements.txt --upgrade
       - name: Install development requirements
         run: pip install -r ./requirements-dev.txt --upgrade
+      - name: Ignore modelling code in Codecov
+        run: for file in ./agents/*.py ; do printf '\n\t%s' "$file" >> .coveragerc ; done
       - name: Restore showdown
         id: server-cache
         uses: actions/cache@v2
@@ -54,7 +56,7 @@ jobs:
       - name: Wait for server
         run: until $(curl --output /dev/null --silent --head --fail http://localhost:8000); do sleep .01; done
       - name: Run tests
-        run: coverage run --source=./ --omit=./tests/* -m pytest -x ./tests
+        run: coverage run -m pytest -x ./tests
       - name: Generate report
         run: |
           coverage xml
