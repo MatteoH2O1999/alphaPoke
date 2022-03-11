@@ -179,4 +179,5 @@ class PlayerProcess(multiprocessing.Process):
 
 
 if __name__ == "__main__":  # pragma: no cover
+    multiprocessing.set_start_method("spawn")
     main()
