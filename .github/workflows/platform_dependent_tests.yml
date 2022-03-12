@@ -29,15 +29,21 @@ jobs:
         run: pip install -r ./requirements-dev.txt --upgrade
       - name: Ignore modelling code in Codecov
         run: for file in ./agents/*.py ; do printf '\n\t%s' "$file" >> .coveragerc ; done
+      - name: Get last showdown commit hash
+        id: showdown_hash
+        run: |
+          output=$(git ls-remote https://github.com/smogon/pokemon-showdown.git HEAD | sed 2p | cut -f1)
+          echo "::set-output name=commit_hash::$output"
       - name: Restore showdown
         id: server-cache
         uses: actions/cache@v2
         with:
           path: ./pokemon-showdown
-          key: server-${{ matrix.os }}-${{ matrix.python-version }}
+          key: server-${{ matrix.os }}-${{ matrix.python-version }}-${{ steps.showdown_hash.outputs.commit_hash }}
+          restore-keys: server-${{ matrix.os }}-${{ matrix.python-version }}
       - name: Clone showdown
         if: steps.server-cache.outputs.cache-hit != 'true'
-        run: git clone https://github.com/smogon/pokemon-showdown.git
+        run: cd pokemon-showdown; if (( "$?" != 0 )); then git clone https://github.com/smogon/pokemon-showdown.git; fi
       - name: Update showdown
         run: |
           cd pokemon-showdown
