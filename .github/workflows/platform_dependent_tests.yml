@@ -1,6 +1,10 @@
 name: Platform dependent tests
 on:
   workflow_call:
+    inputs:
+      testing:
+        required: true
+        type: boolean
 jobs:
   pytest:
     runs-on: ${{ matrix.os }}
@@ -64,10 +68,12 @@ jobs:
       - name: Run tests
         run: coverage run -m pytest -x ./tests
       - name: Generate report
+        if: inputs.testing
         run: |
           coverage xml
           coverage report
       - name: Upload coverage to Codecov
         uses: codecov/codecov-action@v2
+        if: inputs.testing
         with:
           env_vars: ${{ matrix.os }},${{ matrix.python-version }}

@@ -1,13 +1,21 @@
 name: Tests
 on:
   push:
+    tags-ignore:
+      - v[0-9]+.[0-9]+.[0-9]+
+    branches:
+      - '**'
   pull_request:
+    branches:
+      - '**'
 jobs:
   platform_independent_tests:
     uses: './.github/workflows/platform_independent_tests.yml'
   platform_dependent_tests:
     needs: platform_independent_tests
     uses: './.github/workflows/platform_dependent_tests.yml'
+    with:
+      testing: true
   code_ql_scan:
     needs: platform_dependent_tests
     uses: './.github/workflows/codeql-scan.yml'

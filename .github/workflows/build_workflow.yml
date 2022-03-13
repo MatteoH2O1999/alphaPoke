@@ -1,0 +1,97 @@
+name: Build
+on:
+  push:
+    tags:
+      - v[0-9]+.[0-9]+.[0-9]+
+jobs:
+  platform_independent_tests:
+    uses: './.github/workflows/platform_independent_tests.yml'
+  platform_dependent_tests:
+    needs: platform_independent_tests
+    uses: './.github/workflows/platform_dependent_tests.yml'
+    with:
+      testing: false
+  cross_platform_build:
+    needs: platform_dependent_tests
+    runs-on: ${{ matrix.os }}
+    strategy:
+      matrix:
+        os: [windows-latest, ubuntu-latest, macos-latest]
+        include:
+          - os: windows-latest
+            activate_venv: './venv/Scripts/activate'
+            dist_file: 'alphaPoke_win.exe'
+            release_file: 'alphaPoke_win.exe'
+            data_folder: './venv/Lib/site-packages/poke_env/data;./poke_env/data'
+            icon: './resources/icon.ico;./resources'
+          - os: ubuntu-latest
+            activate_venv: 'source venv/bin/activate'
+            dist_file: 'alphaPoke_linux'
+            release_file: 'alphaPoke_linux'
+            data_folder: './venv/lib/python3.9/site-packages/poke_env/data:./poke_env/data'
+            icon: './resources/icon.ico:./resources'
+          - os: macos-latest
+            activate_venv: 'source venv/bin/activate'
+            dist_file: 'alphaPoke_macOS.zip'
+            release_file: 'alphaPoke_macOS'
+            data_folder: './venv/lib/python3.9/site-packages/poke_env/data:./poke_env/data'
+            icon: './resources/icon.ico:./resources'
+      max-parallel: 1
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v2
+      - name: Setup python 3.9
+        uses: actions/setup-python@v2
+        with:
+            python-version: '3.9'
+            cache: 'pip'
+      - name: Create virtual environment
+        run: python -m venv venv
+      - name: Update pip and install wheel
+        run: |
+          ${{ matrix.activate_venv }}
+          python -m pip install --upgrade pip
+          pip install --upgrade wheel
+      - name: Install requirements
+        run: |
+          ${{ matrix.activate_venv }}
+          pip install -r ./requirements.txt --upgrade
+      - name: Install Pyinstaller
+        run: |
+          ${{ matrix.activate_venv }}
+          pip install --upgrade pyinstaller
+      - name: Create executable
+        run: |
+          ${{ matrix.activate_venv }}
+          pyinstaller ./play_gui.py --onefile --noconsole --icon=./resources/icon.ico --add-data "${{ matrix.data_folder }}" --add-data "${{ matrix.icon }}" --name ${{ matrix.release_file }}
+      - name: Zip app folder for macOS
+        if: runner.os == 'macOS'
+        run: |
+          cd dist
+          zip -r "${{ matrix.dist_file }}" "${{ matrix.release_file }}.app"
+      - name: Upload executable
+        uses: actions/upload-artifact@v3
+        with:
+          path: dist/${{ matrix.dist_file }}
+          name: temp_upload
+  create_release:
+    runs-on: ubuntu-latest
+    needs: cross_platform_build
+    outputs:
+      upload_url: ${{ steps.release_id.outputs.upload_url }}
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v2
+      - name: Download artifacts
+        uses: actions/download-artifact@v3
+        with:
+          name: temp_upload
+          path: to_upload
+      - name: Create release
+        uses: softprops/action-gh-release@v1
+        with:
+          files: to_upload/*
+          body_path: RELEASE.md
+          draft: false
+          prerelease: false
+          name: Release ${{ github.ref_name }}
