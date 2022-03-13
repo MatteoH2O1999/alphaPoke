@@ -1,15 +1,20 @@
 import asyncio
+import os
 import tkinter as tk
 import tkinter.ttk as ttk
+import sys
 
 from functools import lru_cache
 from poke_env.player_configuration import PlayerConfiguration
 from poke_env.server_configuration import ShowdownServerConfiguration
-from poke_env.utils import to_id_str
 from threading import Thread
 from tkinter import messagebox
 
 from utils.create_agent import create_agent
+
+ICON_PATH = "./resources/icon.ico"
+if getattr(sys, "frozen", False) and hasattr(sys, "_MEIPASS"):
+    ICON_PATH = os.path.join(sys._MEIPASS, "resources", "icon.ico")
 
 DAD_DESCRIPTION = "dad description"
 EIGHT_YEAR_OLD_ME_DESCRIPTION = "8 year old me description"
@@ -310,15 +315,6 @@ def setup_buttons_frame(frame: ttk.LabelFrame):
         restore_everything()
 
     def accept_challenge_click():
-        if len(FORM_DATA.user_to_challenge) != len(
-            to_id_str(FORM_DATA.user_to_challenge)
-        ):
-            if not messagebox.askokcancel(
-                "NameID Warning",
-                "This name contains spaces and could cause problems in receiving challenges. "
-                "Please consider using a spaceless account. Would you like to continue?",
-            ):
-                return
         t = Thread(target=accept_challenge_thread, daemon=True)
         t.start()
         THREADS.append(t)
@@ -395,7 +391,7 @@ def setup_buttons_frame(frame: ttk.LabelFrame):
 
 
 def setup_main_app(root):
-    root.iconbitmap("./resources/icon.ico")
+    root.iconbitmap(ICON_PATH)
     root.title("alphaPoke AI")
     root.resizable(False, False)
     player_frame = ttk.LabelFrame(root, text="Bot account info")
