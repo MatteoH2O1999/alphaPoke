@@ -13,9 +13,9 @@ from tkinter import messagebox
 from gui_data import PLAYER_TYPE_DICT
 from utils.create_agent import create_agent
 
-ICON_PATH = "./resources/icon.ico"
+ICON_PATH = "./resources/icon.gif"
 if getattr(sys, "frozen", False) and hasattr(sys, "_MEIPASS"):
-    ICON_PATH = os.path.join(sys._MEIPASS, "resources", "icon.ico")
+    ICON_PATH = os.path.join(sys._MEIPASS, "resources", "icon.gif")
 
 LABELS = {
     "username": "Username:",
@@ -88,7 +88,7 @@ def update_timer(*args):
 
 def update_username_to_challenge(*args):
     if len(username_to_challenge.get()) >= 20:
-        username.set(username_to_challenge.get()[:20])
+        username_to_challenge.set(username_to_challenge.get()[:20])
     if len(username_to_challenge.get()) > 0:
         send_challenges_text.set(f"Send challenge to {username_to_challenge.get()}")
         accept_challenges_text.set(
@@ -337,7 +337,8 @@ def setup_buttons_frame(frame: ttk.LabelFrame):
 
 
 def setup_main_app(root):
-    root.iconbitmap(ICON_PATH)
+    icon = tk.PhotoImage(file=ICON_PATH)
+    root.tk.call("wm", "iconphoto", root._w, icon)
     root.title("alphaPoke AI")
     root.resizable(False, False)
     player_frame = ttk.LabelFrame(root, text="Bot account info")
@@ -373,6 +374,6 @@ def on_closing():
 
 
 if __name__ == "__main__":  # pragma: no cover
-    setup_main_app(app)
+    setup_main_app(app)  # noqa
     app.protocol("WM_DELETE_WINDOW", on_closing)
     app.mainloop()

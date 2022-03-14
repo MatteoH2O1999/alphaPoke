@@ -23,19 +23,19 @@ jobs:
             dist_file: 'alphaPoke_win.exe'
             release_file: 'alphaPoke_win.exe'
             data_folder: './venv/Lib/site-packages/poke_env/data;./poke_env/data'
-            icon: './resources/icon.ico;./resources'
+            icon: './resources/icon.gif;./resources'
           - os: ubuntu-latest
             activate_venv: 'source venv/bin/activate'
             dist_file: 'alphaPoke_linux'
             release_file: 'alphaPoke_linux'
             data_folder: './venv/lib/python3.9/site-packages/poke_env/data:./poke_env/data'
-            icon: './resources/icon.ico:./resources'
+            icon: './resources/icon.gif:./resources'
           - os: macos-latest
             activate_venv: 'source venv/bin/activate'
             dist_file: 'alphaPoke_macOS.zip'
             release_file: 'alphaPoke_macOS'
             data_folder: './venv/lib/python3.9/site-packages/poke_env/data:./poke_env/data'
-            icon: './resources/icon.ico:./resources'
+            icon: './resources/icon.gif:./resources'
       max-parallel: 1
     steps:
       - name: Checkout code
