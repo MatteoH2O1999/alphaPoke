@@ -28,22 +28,22 @@ jobs:
             activate_venv: 'source venv/bin/activate'
             dist_file: 'alphaPoke_linux'
             release_file: 'alphaPoke_linux'
-            data_folder: './venv/lib/python3.9/site-packages/poke_env/data:./poke_env/data'
+            data_folder: './venv/lib/python3.10/site-packages/poke_env/data:./poke_env/data'
             icon: './resources/icon.gif:./resources'
           - os: macos-latest
             activate_venv: 'source venv/bin/activate'
             dist_file: 'alphaPoke_macOS.zip'
             release_file: 'alphaPoke_macOS'
-            data_folder: './venv/lib/python3.9/site-packages/poke_env/data:./poke_env/data'
+            data_folder: './venv/lib/python3.10/site-packages/poke_env/data:./poke_env/data'
             icon: './resources/icon.gif:./resources'
       max-parallel: 1
     steps:
       - name: Checkout code
         uses: actions/checkout@v2
-      - name: Setup python 3.9
+      - name: Setup python 3.10
         uses: actions/setup-python@v2
         with:
-            python-version: '3.9'
+            python-version: '3.10'
             cache: 'pip'
       - name: Create virtual environment
         run: python -m venv venv
