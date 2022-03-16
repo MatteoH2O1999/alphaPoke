@@ -79,7 +79,7 @@ In our case if we click the button `Send challenge to account1` we will receive 
 
 #### Option 2: Accept challenge
 If the account the bot is using is not capable of sending challenges, or for whatever reason you prefer being the one challenging,
-you can certainly do this with the `Send challenge` button.
+you can certainly do this with the `Accept challenge` button.
 
 In our case , clicking the `Accept challenge from account1` the bot will wait for a challenge from `account1` and you just have to send it from the browser.
 

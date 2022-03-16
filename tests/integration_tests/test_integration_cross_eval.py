@@ -6,8 +6,8 @@ from cross_eval import main
 
 
 @pytest.mark.asyncio
-@pytest.mark.timeout(360)
-@pytest.mark.flaky
+@pytest.mark.timeout(90)
+@pytest.mark.flaky(max_runs=10, min_passes=1)
 async def test_cross_eval_integration():
     with patch(
         "sys.argv",

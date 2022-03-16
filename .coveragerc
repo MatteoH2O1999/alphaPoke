@@ -5,3 +5,5 @@ omit =
     ./tests/*
     train.py
     rank.py
+    play_gui.py
+    gui_data.py
