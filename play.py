@@ -16,7 +16,13 @@ async def main():
     player_username = input("Play against: ")
     player_conf = PlayerConfiguration(ai_username, ai_password)
     agent = create_agent(
-        ai_type, battle_format, player_conf, ShowdownServerConfiguration, False, True, 1
+        ai_type,
+        battle_format,
+        player_conf,
+        ShowdownServerConfiguration,
+        False,
+        False,
+        1,
     )[0]
     await agent.send_challenges(player_username, 1)
 
