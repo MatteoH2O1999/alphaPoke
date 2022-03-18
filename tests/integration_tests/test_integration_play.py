@@ -13,6 +13,7 @@ from play import main
 @pytest.mark.flaky(max_runs=10, min_passes=1)
 async def test_play_integration():
     opponent = RandomPlayer(battle_format="gen8randombattle")
+    opponent_task = asyncio.ensure_future(opponent.accept_challenges(None, 10))
     for _ in range(10):
         with patch("builtins.input") as mock_input, patch(
             "play.ShowdownServerConfiguration", LocalhostServerConfiguration
@@ -22,5 +23,6 @@ async def test_play_integration():
             mock_input.side_effect = ["dad", "gen8randombattle", "", opponent.username]
             mock_player.return_value = None
             mock_password.return_value = ""
-            await asyncio.gather(main(), opponent.accept_challenges(None, 1))
+            await main()
+    await opponent_task
     assert opponent.n_finished_battles == 10
