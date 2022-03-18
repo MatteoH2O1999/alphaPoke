@@ -1,9 +1,4 @@
 [run]
 source =
-    ./
-omit =
-    ./tests/*
-    train.py
-    rank.py
-    play_gui.py
-    gui_data.py
+    ./agents/base_classes
+    ./utils
