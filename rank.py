@@ -198,7 +198,8 @@ class PlayerProcess(multiprocessing.Process):
         plt.ylim(0, max(elo_stats[1]) * 1.1)
         if len(elo_stats[0]) < 10:
             plt.gca().tick_params(axis="x", label1On=False)
-        plt.savefig(self.plot_path, backend="agg", bbox_inches="tight")
+        plt.tight_layout()
+        plt.savefig(self.plot_path, backend="agg")
 
     def reset_elo(self):
         p = ResetProcess(self.username, self.password, self.battle_format)

@@ -187,6 +187,7 @@ async def main(index):
         0, max(max(errors[1]), _EVALUATION_RATINGS[SimpleHeuristicsPlayer]) * 1.025
     )
     plt.legend()
+    plt.tight_layout()
     plt.savefig(
         f"./logs/{agent_name} training {current_time_string}.png",
         backend="agg",
@@ -194,6 +195,7 @@ async def main(index):
     )
     if not _EVALUATION_RATINGS[SimpleHeuristicsPlayer] / max(errors[1]) < 2:
         plt.ylim(0, max(errors[1]) * 1.025)
+        plt.tight_layout()
         plt.savefig(
             f"./logs/{agent_name} scaled training {current_time_string}.png",
             backend="agg",
@@ -205,6 +207,7 @@ async def main(index):
     plt.xlabel("Training matches")
     plt.ylabel("Number of explored states")
     plt.ylim(bottom=0)
+    plt.tight_layout()
     plt.savefig(
         f"./logs/{agent_name} state number {current_time_string}.png",
         backend="agg",
