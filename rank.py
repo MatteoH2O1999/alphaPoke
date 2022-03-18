@@ -2,12 +2,10 @@
 import asyncio
 import datetime
 import getpass
-import json
 import math
 import matplotlib.pyplot as plt
 import multiprocessing
 import os
-import requests
 import seaborn as sns
 import sys
 import time
@@ -19,13 +17,16 @@ from poke_env.player.battle_order import ForfeitBattleOrder, BattleOrder
 from poke_env.server_configuration import ShowdownServerConfiguration
 from poke_env.player.player import Player
 from poke_env.player_configuration import PlayerConfiguration
-from poke_env.utils import to_id_str
 from typing import Awaitable, Union
 
 from agents.base_classes.trainable_player import TrainablePlayer
 from utils.create_agent import create_agent
-from utils.save_updated_model import update_model
 from utils.invalid_argument import InvalidArgumentNumber
+from utils.get_player_info import get_ratings
+from utils.save_updated_model import update_model
+
+
+MAX_WAIT_TIME_FOR_ELO_UPDATE = 120
 
 
 def main():
@@ -84,9 +85,9 @@ def main():
                     )
             os.remove(os.path.join(save_path, file))
     with open(os.path.join(save_path, "data.csv"), "w") as data_file:
-        data_file.write("agent;index_of_battle;elo")
+        data_file.write("agent;index_of_battle;elo\n")
         for data in complete_data:
-            data_file.write(f"{data[0]};{data[1]};{data[2]}")
+            data_file.write(f"{data[0]};{data[1]};{data[2]}\n")
 
 
 class PlayerProcess(multiprocessing.Process):
@@ -130,12 +131,19 @@ class PlayerProcess(multiprocessing.Process):
         )[0]
         file_name = f"rank {self.agent.__class__.__name__} {self.plot_time}.png"
         self.plot_path = os.path.join(self.save_path, file_name)
-        elo_stats = [[0], [0]]
+        elo_stats = [[0], [1000]]
         while self.cont or self.stop_on >= self.count:
             asyncio.get_event_loop().run_until_complete(self.agent.ladder(1))
-            time.sleep(10)
             elo_stats[0].append(self.count)
-            elo_stats[1].append(get_ratings(self.username, self.battle_format)['elo'])
+            last_elo = elo_stats[1][-1]
+            new_elo = get_ratings(self.username, self.battle_format)["elo"]
+            counter = MAX_WAIT_TIME_FOR_ELO_UPDATE
+            while new_elo == last_elo and counter > 0:
+                time.sleep(1)
+                new_elo = get_ratings(self.username, self.battle_format)["elo"]
+                if last_elo == 1000:
+                    counter -= 1
+            elo_stats[1].append(new_elo)
             with self.stop_on_shared.get_lock():
                 if self.stop_on_shared.value < self.count:
                     self.stop_on_shared.value = self.count
@@ -157,12 +165,9 @@ class PlayerProcess(multiprocessing.Process):
         with open(
             os.path.join(self.save_path, f"{self.agent.__class__.__name__}.csv"), "w"
         ) as data_file:
-            data_file.write("index_of_battle;elo")
+            data_file.write("index_of_battle;elo\n")
             for index_of_battle, elo in zip(elo_stats[0], elo_stats[1]):
-                data_file.write(f"{index_of_battle};{elo}")
-        if len(elo_stats[1]) > 1:
-            elo_stats[0] = elo_stats[0][1:]
-            elo_stats[1] = elo_stats[1][1:]
+                data_file.write(f"{index_of_battle};{elo}\n")
         os.makedirs(os.path.dirname(self.plot_path), exist_ok=True)
         means = []
         window_size = max(math.floor(math.log2(len(elo_stats[0]))), 1)
@@ -170,13 +175,14 @@ class PlayerProcess(multiprocessing.Process):
             window_size += 1
         window_half_size = (window_size - 1) // 2
         extended_stats = [
-            [elo_stats[1][0] for _ in range(window_half_size)],
-            [elo_stats[1]],
-            [elo_stats[1][-1] for _ in range(window_half_size)],
+            *[elo_stats[1][0] for _ in range(window_half_size)],
+            *elo_stats[1],
+            *[elo_stats[1][-1] for _ in range(window_half_size)],
         ]
         for i in range(len(elo_stats[0])):
             window = extended_stats[i : i + window_size]
             means.append(mean(window))
+        means[0] = 1000
         sns.set_theme()
         plt.figure(dpi=300)
         plt.bar(
@@ -208,7 +214,6 @@ class PlayerProcess(multiprocessing.Process):
 
 
 class ResetPlayer(Player):
-
     def choose_move(
         self, battle: AbstractBattle
     ) -> Union[BattleOrder, Awaitable[BattleOrder]]:
@@ -229,23 +234,14 @@ class ResetProcess(multiprocessing.Process):
             battle_format=self.battle_format,
             server_configuration=ShowdownServerConfiguration,
         )
-        current_elo = get_ratings(self.username, self.battle_format)['elo']
+        current_elo = get_ratings(self.username, self.battle_format)["elo"]
         while current_elo != 1000:
             asyncio.get_event_loop().run_until_complete(agent.ladder(1))
-            time.sleep(10)
-            current_elo = get_ratings(self.username, self.battle_format)['elo']
-
-
-def get_ratings(username, battle_format):
-    json_data = requests.get(f'https://pokemonshowdown.com/users/{to_id_str(username)}.json')
-    data = json.loads(json_data.content)
-    rating_data = data['ratings'][battle_format]
-    for key, value in rating_data.items():
-        if key == 'elo':
-            rating_data[key] = int(value)
-        else:
-            rating_data[key] = float(value)
-    return rating_data
+            new_elo = get_ratings(self.username, self.battle_format)["elo"]
+            while new_elo == current_elo:
+                time.sleep(1)
+                new_elo = get_ratings(self.username, self.battle_format)["elo"]
+            current_elo = new_elo
 
 
 if __name__ == "__main__":  # pragma: no cover
