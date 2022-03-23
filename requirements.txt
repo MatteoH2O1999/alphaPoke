@@ -6,4 +6,4 @@ progress
 numpy
 tf-agents
 tensorflow
-git+https://github.com/MatteoH2O1999/poke-env.git@openai-thread
+git+https://github.com/hsahovic/poke-env.git
