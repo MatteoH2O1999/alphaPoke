@@ -87,6 +87,11 @@ jobs:
         with:
           name: temp_upload
           path: to_upload
+      - name: Delete artifacts
+        uses: geekyeggo/delete-artifact@v1
+        with:
+          name: temp_upload
+          failOnError: true
       - name: Create release
         uses: softprops/action-gh-release@v1
         with:
