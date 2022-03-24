@@ -280,8 +280,8 @@ def get_expert_sarsa_stark(
 
 def evaluate(update_agent_func, model, challenges, placement, counter):
     from poke_env.player_configuration import (
-        _CONFIGURATION_FROM_PLAYER_COUNTER,
-    )  # noqa used for parallelism
+        _CONFIGURATION_FROM_PLAYER_COUNTER,  # noqa used for parallelism
+    )
 
     _CONFIGURATION_FROM_PLAYER_COUNTER.clear()
     _CONFIGURATION_FROM_PLAYER_COUNTER.update(counter)
