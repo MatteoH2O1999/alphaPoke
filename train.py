@@ -123,7 +123,10 @@ async def main(index):
         opponent2.reset_battles()
         opponent3.reset_battles()
         agent.reset_battles()
-        evaluations.append(res.result())
+        evaluation, counter = res.result()
+        _CONFIGURATION_FROM_PLAYER_COUNTER.clear()
+        _CONFIGURATION_FROM_PLAYER_COUNTER.update(counter)
+        evaluations.append(evaluation)
         pool.shutdown(wait=True, cancel_futures=True)
         gc.collect()
     pool = ProcessPoolExecutor()
@@ -137,7 +140,10 @@ async def main(index):
     )
     cycles.append(bar.index)
     states.append(len(agent.get_model()))
-    evaluations.append(res.result())
+    evaluation, counter = res.result()
+    _CONFIGURATION_FROM_PLAYER_COUNTER.clear()
+    _CONFIGURATION_FROM_PLAYER_COUNTER.update(counter)
+    evaluations.append(evaluation)
     pool.shutdown(wait=True, cancel_futures=True)
     bar.finish()
     sns.set_theme()
@@ -283,7 +289,7 @@ def evaluate(update_agent_func, model, challenges, placement, counter):
     evaluation = asyncio.get_event_loop().run_until_complete(
         evaluate_player(agent, challenges, placement)
     )
-    return evaluation
+    return evaluation, _CONFIGURATION_FROM_PLAYER_COUNTER
 
 
 class ProgressBar(IncrementalBar):
