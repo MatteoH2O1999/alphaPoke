@@ -1,6 +1,7 @@
 # AI trained with a simple RL algorithm
 from typing import List
 from poke_env.environment.abstract_battle import AbstractBattle
+from poke_env.environment.battle import Gen8Battle
 
 from . import VICTORY_REWARD, MON_HP_REWARD, MON_FAINTED_REWARD
 from agents.base_classes.trainable_player import TrainablePlayer
@@ -151,6 +152,8 @@ class SimpleRLAgent(TrainablePlayer):
 
 
 def _battle_to_state_gen8random(battle: AbstractBattle):  # pragma: no cover
+    if not isinstance(battle, Gen8Battle):
+        raise RuntimeError(f"Expected Gen8Battle, got {type(battle)}.")
     to_embed = []
 
     # Battle balance stats
