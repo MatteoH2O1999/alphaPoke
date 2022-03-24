@@ -110,7 +110,8 @@ class SimpleRLAgent(TrainablePlayer):
                 "Is dynamaxed",
                 "Forced switch",
                 "Can apply status",
-                "Can power up" "Move 1 value",
+                "Can power up",
+                "Move 1 value",
                 "Move 2 value",
                 "Move 3 value",
                 "Move 4 value",
@@ -218,13 +219,23 @@ def _battle_to_state_gen8random(battle: AbstractBattle):  # pragma: no cover
     for i, move in enumerate(battle.active_pokemon.moves.values()):
         if battle.opponent_active_pokemon.damage_multiplier(move.type) > 1.0:
             move_values[i] += 1
+            if battle.opponent_active_pokemon.damage_multiplier(move.type) > 2.0:
+                move_values[i] += 1
         else:
-            move_values[i] -= 1
+            if battle.opponent_active_pokemon.damage_multiplier(move.type) < 1.0:
+                move_values[i] -= 1
+                if battle.opponent_active_pokemon.damage_multiplier(move.type) < 0.5:
+                    move_values[i] -= 1
         if move.base_power > 80:
             move_values[i] += 1
         if move.base_power == 0:
-            move_values[i] = 0
-    for move_value in move_values:
-        to_embed.append(move_value)
+            move_values[i] = -3
+            if move.self_boost is not None:
+                advantage_boosts = sum(move.self_boost.values()) >= 0
+                if advantage_boosts:
+                    move_values[i] -= 1
+                else:
+                    move_values[i] -= 2
+    to_embed.extend(move_values)
 
     return tuple(to_embed)
