@@ -2,7 +2,6 @@
 venv/
 .idea/
 pokemon-showdown/
-models/
 logs/
 replays/
 poke_env/
