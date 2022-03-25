@@ -1,3 +1,5 @@
+import pytest
+
 import unittest.mock
 
 from poke_env.environment.battle import Battle
@@ -6,7 +8,11 @@ from poke_env.environment.pokemon import Pokemon
 from poke_env.player.battle_order import ForfeitBattleOrder
 from poke_env.player.random_player import RandomPlayer
 
-from utils.action_to_move_function import action_to_move_gen8single
+from utils.action_to_move_function import (
+    action_to_move_gen8single,
+    get_int_action_to_move,
+    get_int_action_space_size,
+)
 
 
 def get_mocks():
@@ -15,6 +21,42 @@ def get_mocks():
     )
     battle = Battle("battle_tag", "username", None)  # noqa
     return mock_agent, battle
+
+
+# Test get int action to move
+
+
+def test_get_int_action_to_move_gen8randombattle_success():
+    assert (
+        get_int_action_to_move("gen8randombattle", False) is action_to_move_gen8single
+    )
+
+
+def test_get_int_action_to_move_single_failure():
+    with pytest.raises(NotImplementedError):
+        get_int_action_to_move("noformat", False)
+
+
+def test_get_int_action_to_move_double_failure():
+    with pytest.raises(NotImplementedError):
+        get_int_action_to_move("noformat", True)
+
+
+# Test get int action space size
+
+
+def test_get_int_action_space_size_gen8randombattle_success():
+    assert get_int_action_space_size("gen8randombattle", False) == 22
+
+
+def test_get_int_action_space_size_single_failure():
+    with pytest.raises(NotImplementedError):
+        get_int_action_space_size("noformat", False)
+
+
+def test_get_int_action_space_size_double_failure():
+    with pytest.raises(NotImplementedError):
+        get_int_action_space_size("noformat", True)
 
 
 # Generation 8 single battle tests
