@@ -32,6 +32,7 @@ from agents.sarsa_stark import SarsaStark, ExpertSarsaStark
 from utils import InvalidArgument
 
 AGENT_NAME_COUNTER = Counter()
+TRAINING_DATA = []
 
 
 async def main(index):
@@ -224,6 +225,13 @@ async def main(index):
         optional_number = str(AGENT_NAME_COUNTER[agent.__class__.__name__])
     with open(path + f"/best{optional_number}.pokeai", "wb") as file:
         pickle.dump(agent.get_model(), file)
+    for steps, value, lower_bound, upper_bound in zip(
+        cycles, to_plot, errors[0], errors[1]
+    ):
+        name = agent.__class__.__name__
+        if len(optional_number) > 0:
+            name = f"name {optional_number}"
+        TRAINING_DATA.append((name, steps, value, lower_bound, upper_bound))
 
 
 def get_simple_rl(model, training=False, keep_training=False, max_concurrent_battles=1):
@@ -339,3 +347,15 @@ if __name__ == "__main__":  # pragma: no cover
     set_start_method("spawn")
     for i in range(len(sys.argv) - 3):
         asyncio.get_event_loop().run_until_complete(main(i))
+    with open("./logs/training_data.csv", "w") as file:
+        file.write("Agent type;Training steps;Value;Lower bound;Upper bound\n")
+        for (
+            agent_class,
+            step,
+            eval_value,
+            lower_bound_value,
+            upper_bound_value,
+        ) in TRAINING_DATA:
+            file.write(
+                f"{agent_class};{step};{eval_value};{lower_bound_value};{upper_bound_value}\n"
+            )
