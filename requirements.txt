@@ -4,6 +4,7 @@ seaborn
 tabulate
 progress
 numpy
+gym
 tf-agents
 tensorflow
 git+https://github.com/hsahovic/poke-env.git
