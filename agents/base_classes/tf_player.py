@@ -2,14 +2,12 @@
 import asyncio
 import os
 import tensorflow as tf
-import time
 
 from abc import ABC, abstractmethod
 from asyncio import Event
 from gym import Space
 from poke_env.environment.abstract_battle import AbstractBattle
 from poke_env.player.battle_order import BattleOrder
-from poke_env.player.internals import POKE_LOOP
 from poke_env.player.openai_api import OpenAIGymEnv, ObservationType
 from poke_env.player.player import Player
 from tf_agents.agents import TFAgent
@@ -210,71 +208,68 @@ class TFPlayer(Player, ABC):
     async def accept_challenges(
         self, opponent: Optional[Union[str, List[str]]], n_challenges: int
     ) -> None:
-        challenge_task = asyncio.run_coroutine_threadsafe(
-            self.internal_agent.accept_challenges(opponent, n_challenges), POKE_LOOP
+        challenge_task = asyncio.ensure_future(
+            self.internal_agent.accept_challenges(opponent, n_challenges)
         )
         for _ in range(n_challenges):
             while (
                 self.internal_agent.current_battle is None
                 or self.internal_agent.current_battle.finished
             ):
-                time.sleep(0.1)
+                await asyncio.sleep(0.1)
             time_step = self.environment.reset()
             while not time_step.is_last():
                 action_step = self.policy.action(time_step)
                 time_step = self.environment.step(action_step.action)
-        challenge_task.result()
+        await challenge_task
 
     async def send_challenges(
         self, opponent: str, n_challenges: int, to_wait: Optional[Event] = None
     ) -> None:
-        challenge_task = asyncio.run_coroutine_threadsafe(
-            self.internal_agent.send_challenges(opponent, n_challenges, to_wait),
-            POKE_LOOP,
+        challenge_task = asyncio.ensure_future(
+            self.internal_agent.send_challenges(opponent, n_challenges, to_wait)
         )
         for _ in range(n_challenges):
             while (
                 self.internal_agent.current_battle is None
                 or self.internal_agent.current_battle.finished
             ):
-                time.sleep(0.1)
+                await asyncio.sleep(0.1)
             time_step = self.environment.reset()
             while not time_step.is_last():
                 action_step = self.policy.action(time_step)
                 time_step = self.environment.step(action_step.action)
-        challenge_task.result()
+        await challenge_task
 
     async def battle_against(self, opponent: Player, n_battles: int) -> None:
-        challenge_task = asyncio.run_coroutine_threadsafe(
-            self.internal_agent.battle_against(opponent, n_battles), POKE_LOOP
+        challenge_task = asyncio.ensure_future(
+            self.internal_agent.battle_against(opponent, n_battles)
         )
         for _ in range(n_battles):
             while (
                 self.internal_agent.current_battle is None
                 or self.internal_agent.current_battle.finished
             ):
-                time.sleep(0.1)
+                await asyncio.sleep(0.1)
             time_step = self.environment.reset()
             while not time_step.is_last():
                 action_step = self.policy.action(time_step)
                 time_step = self.environment.step(action_step.action)
-        challenge_task.result()
+        await challenge_task
 
     async def ladder(self, n_games):
-        challenge_task = asyncio.run_coroutine_threadsafe(
-            self.internal_agent.ladder(n_games), POKE_LOOP
-        )
+        challenge_task = asyncio.ensure_future(self.internal_agent.ladder(n_games))
         for _ in range(n_games):
             while (
                 self.internal_agent.current_battle is None
                 or self.internal_agent.current_battle.finished
             ):
-                time.sleep(0.1)
+                await asyncio.sleep(0.1)
             time_step = self.environment.reset()
             while not time_step.is_last():
                 action_step = self.policy.action(time_step)
                 time_step = self.environment.step(action_step.action)
-        challenge_task.result()
+        await challenge_task
 
     def __getattr__(self, item):
         return self.internal_agent.__getattribute__(item)
