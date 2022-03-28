@@ -70,7 +70,7 @@ class _Env(OpenAIGymEnv):
 
 class TFPlayer(Player, ABC):
     def __init__(  # noqa: super().__init__ won't get called as this is a "fake" Player class
-        self, model: str = None, checkpoint: str = None, *args, **kwargs
+        self, model: str = None, *args, **kwargs
     ):
         self.battle_format = kwargs.get("battle_format", "gen8randombattle")
         kwargs["start_challenging"] = False
@@ -102,10 +102,6 @@ class TFPlayer(Player, ABC):
             self.collect_driver = self.get_collect_driver()
             self.saver = policy_saver.PolicySaver(self.agent.policy)
         else:
-            if checkpoint is not None:
-                raise TypeError(
-                    f"Expected NoneType object for checkpoint parameter, got {type(checkpoint)}."
-                )
             if not os.path.isdir(model):
                 raise ValueError("Expected directory as model parameter.")
             if not tf.saved_model.contains_saved_model(model):
@@ -203,7 +199,9 @@ class TFPlayer(Player, ABC):
     def choose_move(
         self, battle: AbstractBattle
     ) -> Union[BattleOrder, Awaitable[BattleOrder]]:
-        """choose_move won't get implemented as this is a 'fake' Player class"""
+        raise NotImplementedError(
+            "choose_move won't get implemented as this is a 'fake' Player class."
+        )
 
     async def accept_challenges(
         self, opponent: Optional[Union[str, List[str]]], n_challenges: int
