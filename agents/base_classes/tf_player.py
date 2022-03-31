@@ -86,19 +86,21 @@ class TFPlayer(Player, ABC):
             **kwargs,
         )
         self.internal_agent = temp_env.agent
+        self.wrapped_env = temp_env
         temp_env = suite_gym.wrap_env(temp_env)
         self.environment = tf_py_environment.TFPyEnvironment(temp_env)
         self.agent: TFAgent
         self.policy: TFPolicy
-        self.buffer: ReplayBuffer
-        self.buffer_iterator: Iterator
+        self.replay_buffer: ReplayBuffer
+        self.replay_buffer_iterator: Iterator
         self.collect_driver: PyDriver
         if model is None:
             self.can_train = True
+            self.evaluations = {}
             self.agent = self.get_agent()
             self.policy = self.agent.policy
-            self.buffer = self.get_replay_buffer()
-            self.buffer_iterator = self.get_replay_buffer_iterator()
+            self.replay_buffer = self.get_replay_buffer()
+            self.replay_buffer_iterator = self.get_replay_buffer_iterator()
             self.collect_driver = self.get_collect_driver()
             self.saver = policy_saver.PolicySaver(self.agent.policy)
         else:
@@ -113,23 +115,29 @@ class TFPlayer(Player, ABC):
                 f"Expected subclass of TFPolicy, got {type(self.policy)}"
             )
 
-    @abstractmethod
     @property
     def calc_reward_func(self) -> Callable[[AbstractBattle, AbstractBattle], float]:
-        pass
+        return self.calc_reward
 
     @abstractmethod
+    def calc_reward(self, last_battle: AbstractBattle, current_battle: AbstractBattle) -> float:
+        pass
+
     @property
     def embed_battle_func(self) -> Callable[[AbstractBattle], ObservationType]:
-        pass
+        return self.embed_battle
 
     @abstractmethod
+    def embed_battle(self, battle: AbstractBattle) -> ObservationType:
+        pass
+
     @property
+    @abstractmethod
     def embedding(self) -> Space:
         pass
 
-    @abstractmethod
     @property
+    @abstractmethod
     def opponents(self) -> Union[Player, str, List[Player], List[str]]:
         pass
 
@@ -157,13 +165,13 @@ class TFPlayer(Player, ABC):
     def eval_function(self, *args, **kwargs):
         pass
 
-    @abstractmethod
     @property
+    @abstractmethod
     def log_interval(self) -> int:
         pass
 
-    @abstractmethod
     @property
+    @abstractmethod
     def eval_interval(self) -> int:
         pass
 
@@ -196,12 +204,26 @@ class TFPlayer(Player, ABC):
         )
         return get_int_action_space_size(self.battle_format, double)
 
+    def create_evaluation_env(self):
+        env = _Env(
+            self.__class__.__name__,
+            self.calc_reward_func,
+            self.action_to_move_func,
+            self.embed_battle_func,
+            self.embedding,
+            self.space_size,
+            self.opponents,
+            battle_format=self.battle_format,
+            start_challenging=True,
+        )
+        env = suite_gym.wrap_env(env)
+        env = tf_py_environment.TFPyEnvironment(env)
+        return env
+
     def choose_move(
         self, battle: AbstractBattle
     ) -> Union[BattleOrder, Awaitable[BattleOrder]]:
-        raise NotImplementedError(
-            "choose_move won't get implemented as this is a 'fake' Player class."
-        )
+        """choose_move won't get implemented as this is a 'fake' Player class."""
 
     async def accept_challenges(
         self, opponent: Optional[Union[str, List[str]]], n_challenges: int
