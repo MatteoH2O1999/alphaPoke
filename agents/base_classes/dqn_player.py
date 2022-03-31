@@ -22,7 +22,9 @@ class DQNPlayer(TFPlayer, ABC):
         )
         py_driver.PyDriver(
             self.environment,
-            py_tf_eager_policy.PyTFEagerPolicy(random_policy, use_tf_function=True, batch_time_steps=False),
+            py_tf_eager_policy.PyTFEagerPolicy(
+                random_policy, use_tf_function=True, batch_time_steps=False
+            ),
             [self.replay_buffer.add_batch],
             max_steps=100,
         ).run(self.environment.reset())

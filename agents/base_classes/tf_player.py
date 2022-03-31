@@ -120,7 +120,9 @@ class TFPlayer(Player, ABC):
         return self.calc_reward
 
     @abstractmethod
-    def calc_reward(self, last_battle: AbstractBattle, current_battle: AbstractBattle) -> float:
+    def calc_reward(
+        self, last_battle: AbstractBattle, current_battle: AbstractBattle
+    ) -> float:
         pass
 
     @property

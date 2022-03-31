@@ -24,7 +24,9 @@ from agents.base_classes.dqn_player import DQNPlayer
 
 
 class FirstNNPlayer(DQNPlayer):
-    def calc_reward(self, last_battle: AbstractBattle, current_battle: AbstractBattle) -> float:
+    def calc_reward(
+        self, last_battle: AbstractBattle, current_battle: AbstractBattle
+    ) -> float:
         victory_reward = 30.0
         mon_fainted_reward = 2.0
         mon_hp_reward = 0.1
@@ -37,9 +39,14 @@ class FirstNNPlayer(DQNPlayer):
         player_mons_ids = list(current_battle.team.keys())
         opponent_mons_ids = list(current_battle.opponent_team.keys())
         for mon_id in player_mons_ids:
-            if not last_battle.team[mon_id].fainted and current_battle.team[mon_id].fainted:
+            if (
+                not last_battle.team[mon_id].fainted
+                and current_battle.team[mon_id].fainted
+            ):
                 reward -= mon_fainted_reward
-                reward -= mon_hp_reward * last_battle.team[mon_id].current_hp_fraction * 100
+                reward -= (
+                    mon_hp_reward * last_battle.team[mon_id].current_hp_fraction * 100
+                )
             elif (
                 not last_battle.team[mon_id].fainted
                 and not current_battle.team[mon_id].fainted
@@ -204,7 +211,9 @@ class FirstNNPlayer(DQNPlayer):
 
         return PyDriver(
             self.environment,
-            PyTFEagerPolicy(self.agent.collect_policy, use_tf_function=True, batch_time_steps=False),
+            PyTFEagerPolicy(
+                self.agent.collect_policy, use_tf_function=True, batch_time_steps=False
+            ),
             [self.replay_buffer.add_batch],
             max_steps=collect_steps_per_iteration,
         )
