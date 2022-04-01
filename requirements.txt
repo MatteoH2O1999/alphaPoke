@@ -1,3 +1,5 @@
+-c ./constraints.txt
+
 requests
 matplotlib
 seaborn
@@ -5,6 +7,6 @@ tabulate
 progress
 numpy
 gym
+tensorflow-cpu
 tf-agents
-tensorflow
 git+https://github.com/hsahovic/poke-env.git
