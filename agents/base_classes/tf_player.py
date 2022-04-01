@@ -123,7 +123,7 @@ class TFPlayer(Player, ABC):
     @abstractmethod
     def calc_reward(
         self, last_battle: AbstractBattle, current_battle: AbstractBattle
-    ) -> float:
+    ) -> float:  # pragma: no cover
         pass
 
     @property
@@ -131,55 +131,59 @@ class TFPlayer(Player, ABC):
         return self.embed_battle
 
     @abstractmethod
-    def embed_battle(self, battle: AbstractBattle) -> ObservationType:
+    def embed_battle(
+        self, battle: AbstractBattle
+    ) -> ObservationType:  # pragma: no cover
         pass
 
     @property
     @abstractmethod
-    def embedding(self) -> Space:
+    def embedding(self) -> Space:  # pragma: no cover
         pass
 
     @property
     @abstractmethod
-    def opponents(self) -> Union[Player, str, List[Player], List[str]]:
+    def opponents(
+        self,
+    ) -> Union[Player, str, List[Player], List[str]]:  # pragma: no cover
         pass
 
     @abstractmethod
-    def get_agent(self) -> TFAgent:
+    def get_agent(self) -> TFAgent:  # pragma: no cover
         pass
 
     @abstractmethod
-    def get_replay_buffer(self) -> ReplayBuffer:
+    def get_replay_buffer(self) -> ReplayBuffer:  # pragma: no cover
         pass
 
     @abstractmethod
-    def get_replay_buffer_iterator(self) -> Iterator:
+    def get_replay_buffer_iterator(self) -> Iterator:  # pragma: no cover
         pass
 
     @abstractmethod
-    def get_collect_driver(self) -> PyDriver:
+    def get_collect_driver(self) -> PyDriver:  # pragma: no cover
         pass
 
     @abstractmethod
-    def log_function(self, *args, **kwargs):
+    def log_function(self, *args, **kwargs):  # pragma: no cover
         pass
 
     @abstractmethod
-    def eval_function(self, *args, **kwargs):
-        pass
-
-    @property
-    @abstractmethod
-    def log_interval(self) -> int:
+    def eval_function(self, *args, **kwargs):  # pragma: no cover
         pass
 
     @property
     @abstractmethod
-    def eval_interval(self) -> int:
+    def log_interval(self) -> int:  # pragma: no cover
+        pass
+
+    @property
+    @abstractmethod
+    def eval_interval(self) -> int:  # pragma: no cover
         pass
 
     @abstractmethod
-    def train(self, num_iterations: int):
+    def train(self, num_iterations: int):  # pragma: no cover
         pass
 
     def save_policy(self, save_dir):
