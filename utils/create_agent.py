@@ -10,6 +10,7 @@ from typing import List
 from agents.dad import Dad
 from agents.eight_year_old_me import EightYearOldMe
 from agents.twenty_year_old_me import TwentyYearOldMe
+from agents.seba import Seba
 from agents.basic_rl import SimpleRLAgent
 from agents.expert_rl import ExpertRLAgent
 from agents.sarsa_stark import SarsaStark, ExpertSarsaStark
@@ -47,6 +48,8 @@ def create_agent(
         agent = [EightYearOldMe(**kwargs)]
     elif agent_name == "20-year-old-me":
         agent = [TwentyYearOldMe(**kwargs)]
+    elif agent_name == "seba":
+        agent = [Seba(**kwargs)]
     elif "simpleRL-best" in agent_name:
         with open(
             f"{MODELS_PATH}/simpleRL/{battle_format}/best.pokeai", "rb"
