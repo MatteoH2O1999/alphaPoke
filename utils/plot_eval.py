@@ -6,7 +6,10 @@ import time
 
 
 def plot_eval(evaluations, save=False, path="./logs"):
-    sns.set_theme()
+    if save:
+        sns.set_theme()
+    else:
+        sns.set_theme("talk")
     sns.set_palette("colorblind")
     main_color = sns.color_palette()[0]
     colors = sns.color_palette()[1:4]
@@ -68,8 +71,11 @@ def plot_eval(evaluations, save=False, path="./logs"):
             f" {current_time[3]:02}-{current_time[4]:02}-{current_time[5]:02}.png"
         )
         file_path = os.path.join(path, filename)
-        plt.savefig(file_path, backend="agg", bbox_inches="tight")
+        plt.tight_layout()
+        plt.savefig(file_path, backend="agg")
     else:
+        if max_value < baseline_values[2]:
+            plt.ylim(0, baseline_values[2] * 1.025)
         plt.show()
 
 

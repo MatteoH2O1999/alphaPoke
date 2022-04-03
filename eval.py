@@ -18,7 +18,13 @@ async def main():
             f"{sys.argv[1]} is not the correct format for the number of challenges to evaluate."
         )
     challenges = int(sys.argv[1])
-    battle_format = sys.argv[2]
+    battle_format = "gen8randombattle"
+    if sys.argv[2].lower() in ["true", "t", "y", "yes"]:
+        save = True
+    elif sys.argv[2].lower() in ["false", "f", "n", "no"]:
+        save = False
+    else:
+        raise InvalidArgument(f"{sys.argv[2]} is not a valid boolean argument.")
     players = []
     used_players = []
     for i in range(3, len(sys.argv)):
@@ -41,8 +47,11 @@ async def main():
         evaluation = await evaluate_player(player, challenges, 40)
         results.append([__cut_player_number(player.username), evaluation])
     print(tabulate(results))
-    plt.figure(dpi=600)
-    plot_eval(results, True, "./logs")
+    if save:
+        plt.figure(dpi=600)
+    else:
+        plt.figure()
+    plot_eval(results, save, "./logs")
 
 
 if __name__ == "__main__":  # pragma: no cover

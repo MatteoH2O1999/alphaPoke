@@ -57,7 +57,9 @@ def test_plot_eval_save():
         "matplotlib.pyplot.scatter"
     ) as mock_scatter, patch("matplotlib.pyplot.savefig") as mock_savefig, patch(
         "os.makedirs"
-    ) as mock_makedirs:
+    ) as mock_makedirs, patch(
+        "matplotlib.pyplot.tight_layout"
+    ) as mock_tight:
         evaluations = [
             ("players", "evaluations"),
             ("p1", (1.0, (0.5, 1.5))),
@@ -85,9 +87,9 @@ def test_plot_eval_save():
         )
         mock_savefig.assert_called_once()
         mock_makedirs.assert_called_once_with("./plots", exist_ok=True)
+        mock_tight.assert_called_once()
         args, kwargs = mock_savefig.call_args
         assert (
             "./plots/evaluation" in args[0] or "./plots\\evaluation" in args[0]
         ) and ".png" in args[0]
         assert kwargs["backend"] == "agg"
-        assert kwargs["bbox_inches"] == "tight"
