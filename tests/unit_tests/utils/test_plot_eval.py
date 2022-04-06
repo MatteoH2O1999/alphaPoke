@@ -1,6 +1,6 @@
 import seaborn as sns
 import pytest
-from unittest.mock import patch
+from unittest.mock import call, patch
 
 from utils.plot_eval import plot_eval, __error_shape
 
@@ -23,7 +23,9 @@ def test_error_shape():
 def test_plot_eval_no_save():
     with patch("matplotlib.pyplot.errorbar") as mock_errorbar, patch(
         "matplotlib.pyplot.scatter"
-    ) as mock_scatter, patch("matplotlib.pyplot.show") as mock_show:
+    ) as mock_scatter, patch("matplotlib.pyplot.show") as mock_show, patch(
+        "matplotlib.pyplot.ylim"
+    ) as mock_ylim:
         evaluations = [
             ("players", "evaluations"),
             ("p1", (1.0, (0.5, 1.5))),
@@ -50,6 +52,43 @@ def test_plot_eval_no_save():
             color=sns.color_palette("colorblind")[0],
         )
         mock_show.assert_called_once()
+        mock_ylim.assert_called_once_with(0, 150 * 1.025)
+
+
+def test_plot_eval_no_save_rescale():
+    with patch("matplotlib.pyplot.errorbar") as mock_errorbar, patch(
+        "matplotlib.pyplot.scatter"
+    ) as mock_scatter, patch("matplotlib.pyplot.show") as mock_show, patch(
+        "matplotlib.pyplot.ylim"
+    ) as mock_ylim:
+        evaluations = [
+            ("players", "evaluations"),
+            ("p1", (1.0, (0.5, 1.5))),
+            ("p2", (10.0, (5.0, 15.0))),
+            ("p3", (2.0, (0.0, 4.0))),
+        ]
+        plot_eval(evaluations, save=False, path="./plots")
+        mock_errorbar.assert_called_with(
+            ["p1", "p2", "p3"],
+            [1.0, 10.0, 2.0],
+            [[0.5, 5.0, 2.0], [0.5, 5.0, 2.0]],
+            fmt="none",
+            ecolor="black",
+            capsize=3,
+            elinewidth=1,
+            zorder=2,
+        )
+        mock_scatter.assert_called_with(
+            ["p1", "p2", "p3"],
+            [1.0, 10.0, 2.0],
+            zorder=3,
+            edgecolors="black",
+            linewidths=0.5,
+            color=sns.color_palette("colorblind")[0],
+        )
+        mock_show.assert_called_once()
+        assert mock_ylim.call_count == 2
+        mock_ylim.assert_has_calls([call(0, 15.0 * 1.025), call(0, 128.757145 * 1.025)])
 
 
 def test_plot_eval_save():
