@@ -406,3 +406,35 @@ def test_reward_computing_helper():
             )
             == -2.25
         )
+
+
+def test_play_episode():
+    with patch("tf_agents.environments.suite_gym.wrap_env"), patch(
+        "tf_agents.environments.tf_py_environment.TFPyEnvironment"
+    ), patch("tf_agents.policies.policy_saver.PolicySaver"):
+        player = DummyTFPlayer(start_listening=False, start_challenging=False)
+        mock_reset = MagicMock()
+        player.environment.reset = mock_reset
+        time_step = MagicMock()
+        time_step.is_last.return_value = False
+        mock_reset.return_value = time_step
+
+        policy = MagicMock()
+        player.policy = policy
+        action = MagicMock()
+        policy.action = action
+        action_step = MagicMock()
+        action.return_value = action_step
+        action_step.action = 42
+
+        mock_step = MagicMock()
+        player.environment.step = mock_step
+        end_time_step = MagicMock()
+        mock_step.return_value = end_time_step
+        end_time_step.is_last.return_value = True
+
+        player.play_episode()
+
+        mock_reset.assert_called_once()
+        action.assert_called_once_with(time_step)
+        mock_step.assert_called_once_with(42)
