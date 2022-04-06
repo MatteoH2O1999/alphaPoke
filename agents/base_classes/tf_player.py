@@ -316,9 +316,15 @@ class TFPlayer(Player, ABC):
     ) -> Union[BattleOrder, Awaitable[BattleOrder]]:
         """choose_move won't get implemented as this is a 'fake' Player class."""
 
+    def play_episode(self):
+        time_step = self.environment.reset()
+        while not time_step.is_last():
+            action_step = self.policy.action(time_step)
+            time_step = self.environment.step(action_step.action)
+
     async def accept_challenges(
         self, opponent: Optional[Union[str, List[str]]], n_challenges: int
-    ) -> None:
+    ) -> None:  # pragma: no cover
         challenge_task = asyncio.ensure_future(
             self.internal_agent.accept_challenges(opponent, n_challenges)
         )
@@ -328,15 +334,12 @@ class TFPlayer(Player, ABC):
                 or self.internal_agent.current_battle.finished
             ):
                 await asyncio.sleep(0.1)
-            time_step = self.environment.reset()
-            while not time_step.is_last():
-                action_step = self.policy.action(time_step)
-                time_step = self.environment.step(action_step.action)
+            self.play_episode()
         await challenge_task
 
     async def send_challenges(
         self, opponent: str, n_challenges: int, to_wait: Optional[Event] = None
-    ) -> None:
+    ) -> None:  # pragma: no cover
         challenge_task = asyncio.ensure_future(
             self.internal_agent.send_challenges(opponent, n_challenges, to_wait)
         )
@@ -346,13 +349,12 @@ class TFPlayer(Player, ABC):
                 or self.internal_agent.current_battle.finished
             ):
                 await asyncio.sleep(0.1)
-            time_step = self.environment.reset()
-            while not time_step.is_last():
-                action_step = self.policy.action(time_step)
-                time_step = self.environment.step(action_step.action)
+            self.play_episode()
         await challenge_task
 
-    async def battle_against(self, opponent: Player, n_battles: int) -> None:
+    async def battle_against(
+        self, opponent: Player, n_battles: int
+    ) -> None:  # pragma: no cover
         challenge_task = asyncio.ensure_future(
             self.internal_agent.battle_against(opponent, n_battles)
         )
@@ -362,13 +364,10 @@ class TFPlayer(Player, ABC):
                 or self.internal_agent.current_battle.finished
             ):
                 await asyncio.sleep(0.1)
-            time_step = self.environment.reset()
-            while not time_step.is_last():
-                action_step = self.policy.action(time_step)
-                time_step = self.environment.step(action_step.action)
+            self.play_episode()
         await challenge_task
 
-    async def ladder(self, n_games):
+    async def ladder(self, n_games):  # pragma: no cover
         challenge_task = asyncio.ensure_future(self.internal_agent.ladder(n_games))
         for _ in range(n_games):
             while (
@@ -376,10 +375,7 @@ class TFPlayer(Player, ABC):
                 or self.internal_agent.current_battle.finished
             ):
                 await asyncio.sleep(0.1)
-            time_step = self.environment.reset()
-            while not time_step.is_last():
-                action_step = self.policy.action(time_step)
-                time_step = self.environment.step(action_step.action)
+            self.play_episode()
         await challenge_task
 
     def __getattr__(self, item):
