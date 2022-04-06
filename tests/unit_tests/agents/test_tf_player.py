@@ -151,3 +151,128 @@ def test_init_player_model_success():
         mock_wrap.assert_called_once()
         mock_tf_wrap.assert_called_once()
         assert not player.can_train
+
+
+def test_init_player_not_a_dir():
+    with patch(
+        "tensorflow.saved_model.contains_saved_model"
+    ) as mock_saved_model, patch("tensorflow.saved_model.load") as mock_load, patch(
+        "os.path.isdir"
+    ) as mock_isdir, patch(
+        "tf_agents.environments.suite_gym.wrap_env"
+    ) as mock_wrap, patch(
+        "tf_agents.environments.tf_py_environment.TFPyEnvironment"
+    ) as mock_tf_wrap:
+        mock_saved_model.return_value = True
+        mock_load.return_value = AgentMock.policy
+        mock_isdir.return_value = False
+        player = None
+        with pytest.raises(ValueError):
+            player = DummyTFPlayer(
+                "test path", start_listening=False, start_challenging=False
+            )
+        assert player is None
+        mock_wrap.assert_called_once()
+        mock_tf_wrap.assert_called_once()
+        mock_isdir.assert_called_once_with("test path")
+        mock_saved_model.assert_not_called()
+        mock_load.assert_not_called()
+
+
+def test_init_player_not_a_model():
+    with patch(
+        "tensorflow.saved_model.contains_saved_model"
+    ) as mock_saved_model, patch("tensorflow.saved_model.load") as mock_load, patch(
+        "os.path.isdir"
+    ) as mock_isdir, patch(
+        "tf_agents.environments.suite_gym.wrap_env"
+    ) as mock_wrap, patch(
+        "tf_agents.environments.tf_py_environment.TFPyEnvironment"
+    ) as mock_tf_wrap:
+        mock_saved_model.return_value = False
+        mock_load.return_value = AgentMock.policy
+        mock_isdir.return_value = True
+        player = None
+        with pytest.raises(ValueError):
+            player = DummyTFPlayer(
+                "test path", start_listening=False, start_challenging=False
+            )
+        assert player is None
+        mock_wrap.assert_called_once()
+        mock_tf_wrap.assert_called_once()
+        mock_isdir.assert_called_once_with("test path")
+        mock_saved_model.assert_called_once_with("test path")
+        mock_load.assert_not_called()
+
+
+def test_init_player_not_a_policy():
+    with patch(
+        "tensorflow.saved_model.contains_saved_model"
+    ) as mock_saved_model, patch("tensorflow.saved_model.load") as mock_load, patch(
+        "os.path.isdir"
+    ) as mock_isdir, patch(
+        "tf_agents.environments.suite_gym.wrap_env"
+    ) as mock_wrap, patch(
+        "tf_agents.environments.tf_py_environment.TFPyEnvironment"
+    ) as mock_tf_wrap:
+        mock_saved_model.return_value = True
+        mock_load.return_value = "Not a policy"
+        mock_isdir.return_value = True
+        player = None
+        with pytest.raises(RuntimeError):
+            player = DummyTFPlayer(
+                "test path", start_listening=False, start_challenging=False
+            )
+        assert player is None
+        mock_wrap.assert_called_once()
+        mock_tf_wrap.assert_called_once()
+        mock_isdir.assert_called_once_with("test path")
+        mock_saved_model.assert_called_once_with("test path")
+        mock_load.assert_called_once_with("test path")
+
+
+def test_save_policy():
+    with patch("tf_agents.environments.suite_gym.wrap_env") as mock_wrap, patch(
+        "tf_agents.environments.tf_py_environment.TFPyEnvironment"
+    ) as mock_tf_wrap, patch(
+        "tf_agents.policies.policy_saver.PolicySaver"
+    ) as mock_saver:
+        mock_saver_object = MagicMock()
+        mock_saver.return_value = mock_saver_object
+        player = DummyTFPlayer(start_listening=False, start_challenging=False)
+        player.save_policy("save path")
+        mock_saver_object.save.assert_called_once_with("save path")
+
+
+def test_battle_format_properties_gen8_random_battle():
+    with patch("tf_agents.environments.suite_gym.wrap_env") as mock_wrap, patch(
+        "tf_agents.environments.tf_py_environment.TFPyEnvironment"
+    ) as mock_tf_wrap, patch(
+        "tf_agents.policies.policy_saver.PolicySaver"
+    ) as mock_saver, patch(
+        "agents.base_classes.tf_player.get_int_action_to_move"
+    ) as mock_a2m, patch(
+        "agents.base_classes.tf_player.get_int_action_space_size"
+    ) as mock_space_size:
+        mock_space_size.return_value = 42
+        player = DummyTFPlayer(start_listening=False, start_challenging=False)
+        mock_a2m.assert_called_once_with("gen8randombattle", False)
+        mock_space_size.assert_called_once_with("gen8randombattle", False)
+
+
+def test_action_to_move_function_gen8_vgc_2022():
+    with patch("tf_agents.environments.suite_gym.wrap_env") as mock_wrap, patch(
+        "tf_agents.environments.tf_py_environment.TFPyEnvironment"
+    ) as mock_tf_wrap, patch(
+        "tf_agents.policies.policy_saver.PolicySaver"
+    ) as mock_saver, patch(
+        "agents.base_classes.tf_player.get_int_action_to_move"
+    ) as mock_a2m, patch(
+        "agents.base_classes.tf_player.get_int_action_space_size"
+    ) as mock_space_size:
+        mock_space_size.return_value = 42
+        player = DummyTFPlayer(
+            start_listening=False, start_challenging=False, battle_format="gen8vgc2022"
+        )
+        mock_a2m.assert_called_once_with("gen8vgc2022", True)
+        mock_space_size.assert_called_once_with("gen8vgc2022", True)
