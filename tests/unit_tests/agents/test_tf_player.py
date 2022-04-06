@@ -3,6 +3,8 @@ import pytest
 from gym import Space
 from poke_env.environment.abstract_battle import AbstractBattle
 from poke_env.environment.battle import Battle
+from poke_env.environment.pokemon import Pokemon
+from poke_env.environment.status import Status
 from poke_env.player.battle_order import ForfeitBattleOrder
 from poke_env.player.openai_api import ObservationType
 from poke_env.player.player import Player
@@ -232,11 +234,9 @@ def test_init_player_not_a_policy():
 
 
 def test_save_policy():
-    with patch("tf_agents.environments.suite_gym.wrap_env") as mock_wrap, patch(
+    with patch("tf_agents.environments.suite_gym.wrap_env"), patch(
         "tf_agents.environments.tf_py_environment.TFPyEnvironment"
-    ) as mock_tf_wrap, patch(
-        "tf_agents.policies.policy_saver.PolicySaver"
-    ) as mock_saver:
+    ), patch("tf_agents.policies.policy_saver.PolicySaver") as mock_saver:
         mock_saver_object = MagicMock()
         mock_saver.return_value = mock_saver_object
         player = DummyTFPlayer(start_listening=False, start_challenging=False)
@@ -245,11 +245,9 @@ def test_save_policy():
 
 
 def test_battle_format_properties_gen8_random_battle():
-    with patch("tf_agents.environments.suite_gym.wrap_env") as mock_wrap, patch(
+    with patch("tf_agents.environments.suite_gym.wrap_env"), patch(
         "tf_agents.environments.tf_py_environment.TFPyEnvironment"
-    ) as mock_tf_wrap, patch(
-        "tf_agents.policies.policy_saver.PolicySaver"
-    ) as mock_saver, patch(
+    ), patch("tf_agents.policies.policy_saver.PolicySaver"), patch(
         "agents.base_classes.tf_player.get_int_action_to_move"
     ) as mock_a2m, patch(
         "agents.base_classes.tf_player.get_int_action_space_size"
@@ -261,11 +259,9 @@ def test_battle_format_properties_gen8_random_battle():
 
 
 def test_action_to_move_function_gen8_vgc_2022():
-    with patch("tf_agents.environments.suite_gym.wrap_env") as mock_wrap, patch(
+    with patch("tf_agents.environments.suite_gym.wrap_env"), patch(
         "tf_agents.environments.tf_py_environment.TFPyEnvironment"
-    ) as mock_tf_wrap, patch(
-        "tf_agents.policies.policy_saver.PolicySaver"
-    ) as mock_saver, patch(
+    ), patch("tf_agents.policies.policy_saver.PolicySaver"), patch(
         "agents.base_classes.tf_player.get_int_action_to_move"
     ) as mock_a2m, patch(
         "agents.base_classes.tf_player.get_int_action_space_size"
@@ -276,3 +272,137 @@ def test_action_to_move_function_gen8_vgc_2022():
         )
         mock_a2m.assert_called_once_with("gen8vgc2022", True)
         mock_space_size.assert_called_once_with("gen8vgc2022", True)
+
+
+def test_create_evaluation_env():
+    with patch("tf_agents.environments.suite_gym.wrap_env"), patch(
+        "tf_agents.environments.tf_py_environment.TFPyEnvironment"
+    ) as mock_tf_wrap, patch("tf_agents.policies.policy_saver.PolicySaver"), patch(
+        "agents.base_classes.tf_player._Env"
+    ) as mock_env:
+        mock_tf_wrap.side_effect = ["base env", "created env"]
+        player = DummyTFPlayer(start_listening=False, start_challenging=False)
+        env = player.create_evaluation_env()
+        assert player.environment == "base env"
+        assert env == "created env"
+        assert mock_env.call_count == 2
+
+
+def test_reward_computing_helper():
+    with patch("tf_agents.environments.suite_gym.wrap_env"), patch(
+        "tf_agents.environments.tf_py_environment.TFPyEnvironment"
+    ), patch("tf_agents.policies.policy_saver.PolicySaver"):
+        player = DummyTFPlayer(start_listening=False, battle_format="gen8randombattle")
+        battle_1 = Battle("bat1", player.username, player.logger)
+        battle_2 = Battle("bat2", player.username, player.logger)
+        battle_3 = Battle("bat3", player.username, player.logger)
+        battle_4 = Battle("bat4", player.username, player.logger)
+
+        assert (
+            player.reward_computing_helper(
+                battle_1,
+                fainted_value=0,
+                hp_value=0,
+                number_of_pokemons=4,
+                starting_value=0,
+                status_value=0,
+                victory_value=1,
+            )
+            == 0
+        )
+
+        battle_1._won = True
+        assert (
+            player.reward_computing_helper(
+                battle_1,
+                fainted_value=0,
+                hp_value=0,
+                number_of_pokemons=4,
+                starting_value=0,
+                status_value=0,
+                victory_value=1,
+            )
+            == 1
+        )
+
+        assert (
+            player.reward_computing_helper(
+                battle_2,
+                fainted_value=0,
+                hp_value=0,
+                number_of_pokemons=4,
+                starting_value=0.5,
+                status_value=0,
+                victory_value=5,
+            )
+            == -0.5
+        )
+
+        battle_2._won = False
+        assert (
+            player.reward_computing_helper(
+                battle_2,
+                fainted_value=0,
+                hp_value=0,
+                number_of_pokemons=4,
+                starting_value=0,
+                status_value=0,
+                victory_value=5,
+            )
+            == -5
+        )
+
+        battle_3._team = {i: Pokemon(species="slaking") for i in range(4)}
+        battle_3._opponent_team = {i: Pokemon(species="slowbro") for i in range(3)}
+
+        battle_3._team[0].status = Status["FRZ"]
+        battle_3._team[1]._current_hp = 100
+        battle_3._team[1]._max_hp = 200
+        battle_3._opponent_team[0].status = Status["FNT"]
+        battle_3._opponent_team[1].status = Status["FNT"]
+
+        # Opponent: two fainted, one full hp opponent
+        # You: one half hp mon, one frozen mon
+        assert (
+            player.reward_computing_helper(
+                battle_3,
+                fainted_value=2,
+                hp_value=3,
+                number_of_pokemons=4,
+                starting_value=0,
+                status_value=0.25,
+                victory_value=100,
+            )
+            == 2.25
+        )
+
+        battle_3._won = True
+        assert (
+            player.reward_computing_helper(
+                battle_3,
+                fainted_value=2,
+                hp_value=3,
+                number_of_pokemons=4,
+                starting_value=0,
+                status_value=0.25,
+                victory_value=100,
+            )
+            == 100
+        )
+
+        battle_4._team, battle_4._opponent_team = (
+            battle_3._opponent_team,
+            battle_3._team,
+        )
+        assert (
+            player.reward_computing_helper(
+                battle_4,
+                fainted_value=2,
+                hp_value=3,
+                number_of_pokemons=4,
+                starting_value=0,
+                status_value=0.25,
+                victory_value=100,
+            )
+            == -2.25
+        )
