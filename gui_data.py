@@ -12,8 +12,15 @@ TWENTY_YEAR_OLD_ME_DESCRIPTION = (
 )
 SIMPLE_RL_DESCRIPTION = "simple rl description"
 EXPERT_RL_DESCRIPTION = "expert rl description"
-SIMPLE_SARSA_DESCRIPTION = "simple sarsa description"
-EXPERT_SARSA_DESCRIPTION = "expert sarsa description"
+SIMPLE_SARSA_DESCRIPTION = (
+    "A reinforcement learning player trained with SARSA algorithm. "
+    "Its performance is similar to a Random Player."
+)
+EXPERT_SARSA_DESCRIPTION = (
+    "A reinforcement learning player trained with SARSA algorithm "
+    "and using a higher level action space ('Use supereffective move' "
+    "instead of 'Use move 4'). Its performance is similar to a Max Base Power Player."
+)
 
 DAD_SUPPORTED_BATTLES = {"[Gen 8] Random Battle": "gen8randombattle"}
 EIGHT_YEAR_OLD_ME_SUPPORTED_BATTLES = {"[Gen 8] Random Battle": "gen8randombattle"}
@@ -38,5 +45,15 @@ PLAYER_TYPE_DICT = {
         "20-year-old-me",
         TWENTY_YEAR_OLD_ME_DESCRIPTION,
         TWENTY_YEAR_OLD_ME_SUPPORTED_BATTLES,
+    ),
+    "SARSA Trained Player": (
+        "simpleSarsaStark-best",
+        SIMPLE_SARSA_DESCRIPTION,
+        SIMPLE_SARSA_SUPPORTED_BATTLES,
+    ),
+    "SARSA Trained Expert Player": (
+        "expertSarsaStark-best",
+        EXPERT_SARSA_DESCRIPTION,
+        EXPERT_SARSA_SUPPORTED_BATTLES,
     ),
 }
