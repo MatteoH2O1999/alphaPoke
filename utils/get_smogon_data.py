@@ -19,11 +19,12 @@ def get_random_battle_learnset(gen: int):
             .replace(":", "")
             .replace("'", "")
             .replace("’", "")
-            .replace("unova", "")
-            .replace("pikachualola", "pikachu")
-            .replace("partner", "")
             .replace("%", "")
         )
+        try:
+            value["items"]
+        except KeyError:
+            value["items"] = []
         if new_key == "mimikyu":
             to_return["mimikyubusted"] = value
         if new_key == "eiscue":
@@ -46,8 +47,4 @@ def get_random_battle_learnset(gen: int):
             to_return["gastrodonwest"] = value
             to_return["gastrodoneast"] = value
         to_return[new_key] = value
-        try:
-            value["items"]
-        except KeyError:
-            value["items"] = []
     return to_return
