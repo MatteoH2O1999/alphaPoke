@@ -10,6 +10,7 @@ on:
       - '**'
 jobs:
   wait_for_previous_workflows_to_finish:
+    name: Wait for previous workflows to finish
     runs-on: ubuntu-latest
     steps:
       - name: Wait for other workflows to finish
@@ -17,13 +18,16 @@ jobs:
         with:
           timeout: 2400000
   platform_independent_tests:
+    name: Platform independent tests
     needs: wait_for_previous_workflows_to_finish
     uses: './.github/workflows/platform_independent_tests.yml'
   platform_dependent_tests:
+    name: Platform dependent tests
     needs: platform_independent_tests
     uses: './.github/workflows/platform_dependent_tests.yml'
     with:
       testing: true
   code_ql_scan:
+    name: CodeQL scan
     needs: platform_dependent_tests
     uses: './.github/workflows/codeql-scan.yml'
