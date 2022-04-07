@@ -41,9 +41,9 @@ class DQNPlayer(TFPlayer, ABC):
                 self.eval_function(step)
 
     @abstractmethod
-    def eval_function(self, step):
+    def eval_function(self, step):  # pragma: no cover
         pass
 
     @abstractmethod
-    def log_function(self, step, loss_info: LossInfo):
+    def log_function(self, step, loss_info: LossInfo):  # pragma: no cover
         pass
