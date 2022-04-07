@@ -1,4 +1,7 @@
+## What's new
+
+It is now possible to play against agents trained with SARSA algorithm without using neural networks. Results are not great as this is just a first trial for the framework.
+
 ## What is included
 
-Executable for all the major OS.
-At the moment only the baselines (Random Player, Max base power player, Simple heuristics player) are playable.
+Executables for all the major OS. Just download the correct one and open it.
