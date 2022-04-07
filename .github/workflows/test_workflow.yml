@@ -17,9 +17,28 @@ jobs:
         uses: ahmadnassri/action-workflow-queue@v1
         with:
           timeout: 2400000
+  check_if_code_changed:
+    name: Check if the codebase has changed
+    needs: wait_for_previous_workflows_to_finish
+    runs-on: ubuntu-latest
+    outputs:
+      python: ${{ steps.filters.outputs.python }}
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v2
+      - name: Check diff filters
+        id: filters
+        uses: dorny/paths-filter@v2
+        with:
+          filters: |
+            python:
+              - '**.py'
+              - '**/requirements*.txt'
+              - '**/constraints.txt'
   platform_independent_tests:
     name: Platform independent tests
-    needs: wait_for_previous_workflows_to_finish
+    needs: check_if_code_changed
+    if: ${{ needs.check_if_code_changed.outputs.python == 'true' }}
     uses: './.github/workflows/platform_independent_tests.yml'
   platform_dependent_tests:
     name: Platform dependent tests
