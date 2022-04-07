@@ -10,7 +10,6 @@ from agents.base_classes.tf_player import TFPlayer
 class DQNPlayer(TFPlayer, ABC):
     def train(self, num_iterations: int):
         self.agent.train_step_counter.assign(0)
-        self.evaluations["returns"] = []
         self.eval_function(self.agent.train_step_counter.numpy())
         if (
             self.wrapped_env.challenge_task is None

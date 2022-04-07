@@ -242,6 +242,8 @@ class FirstNNPlayer(DQNPlayer):
             total_return += episode_return
 
         avg_return = total_return / num_episodes
+        if "returns" not in self.evaluations.keys():
+            self.evaluations["returns"] = []
         self.evaluations["returns"].append(avg_return.numpy()[0])
         eval_env.close()
         print(f"step = {step}: average return = {avg_return.numpy()[0]}")
