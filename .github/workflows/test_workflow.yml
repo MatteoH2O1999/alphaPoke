@@ -9,17 +9,8 @@ on:
     branches:
       - '**'
 jobs:
-  wait_for_previous_workflows_to_finish:
-    name: Wait for previous workflows to finish
-    runs-on: ubuntu-latest
-    steps:
-      - name: Wait for other workflows to finish
-        uses: ahmadnassri/action-workflow-queue@v1
-        with:
-          timeout: 2400000
   check_if_code_changed:
     name: Check if the codebase has changed
-    needs: wait_for_previous_workflows_to_finish
     runs-on: ubuntu-latest
     outputs:
       python: ${{ steps.filters.outputs.python }}
@@ -35,10 +26,19 @@ jobs:
               - '**.py'
               - '**/requirements*.txt'
               - '**/constraints.txt'
-  platform_independent_tests:
-    name: Platform independent tests
+  wait_for_previous_workflows_to_finish:
+    name: Wait for previous workflows to finish
+    runs-on: ubuntu-latest
     needs: check_if_code_changed
     if: ${{ needs.check_if_code_changed.outputs.python == 'true' }}
+    steps:
+      - name: Wait for other workflows to finish
+        uses: ahmadnassri/action-workflow-queue@v1
+        with:
+          timeout: 2400000
+  platform_independent_tests:
+    name: Platform independent tests
+    needs: wait_for_previous_workflows_to_finish
     uses: './.github/workflows/platform_independent_tests.yml'
   platform_dependent_tests:
     name: Platform dependent tests
