@@ -2,6 +2,11 @@
 from abc import ABC
 from gym import Space
 from poke_env.environment.abstract_battle import AbstractBattle
+from poke_env.player.baselines import (
+    RandomPlayer,
+    MaxBasePowerPlayer,
+    SimpleHeuristicsPlayer,
+)
 from poke_env.player.openai_api import ObservationType
 from poke_env.player.player import Player
 from tf_agents.agents import TFAgent
@@ -11,13 +16,30 @@ from tf_agents.replay_buffers.replay_buffer import ReplayBuffer
 from typing import Iterator, Union, List
 
 from agents.base_classes.dqn_player import DQNPlayer
+from agents.seba import Seba
+
+rewards = {
+    "fainted_value": 0.0,
+    "hp": 0.0,
+    "number_of_pokemons": 6,
+    "starting_value": 0.0,
+    "victory_reward": 1.0,
+}
 
 
 class AlphaPokeEmbedded(DQNPlayer, ABC):
     def calc_reward(
         self, last_battle: AbstractBattle, current_battle: AbstractBattle
     ) -> float:
-        pass
+        return self.reward_computing_helper(
+            current_battle,
+            fainted_value=rewards["fainted"],
+            hp_value=rewards["hp"],
+            number_of_pokemons=rewards["number_of_pokemons"],
+            starting_value=rewards["starting_value"],
+            status_value=rewards["status_value"],
+            victory_value=rewards["victory_reward"],
+        )
 
     def embed_battle(self, battle: AbstractBattle) -> ObservationType:
         pass
@@ -28,7 +50,13 @@ class AlphaPokeEmbedded(DQNPlayer, ABC):
 
     @property
     def opponents(self) -> Union[Player, str, List[Player], List[str]]:
-        pass
+        opponents_classes = [
+            RandomPlayer,
+            MaxBasePowerPlayer,
+            SimpleHeuristicsPlayer,
+            Seba,
+        ]
+        return [cls(battle_format=self.battle_format) for cls in opponents_classes]
 
 
 class AlphaPokeDQN(AlphaPokeEmbedded):
