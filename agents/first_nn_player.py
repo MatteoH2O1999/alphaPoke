@@ -231,7 +231,7 @@ class FirstNNPlayer(DQNPlayer):
 
         total_return = 0.0
         policy = self.agent.policy
-        eval_env = self.create_evaluation_env()
+        eval_env, _ = self.create_evaluation_env()
         for _ in range(num_episodes):
             time_step = eval_env.reset()
             episode_return = 0.0

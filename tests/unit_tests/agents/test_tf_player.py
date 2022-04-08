@@ -282,10 +282,11 @@ def test_create_evaluation_env():
     ) as mock_env:
         mock_tf_wrap.side_effect = ["base env", "created env"]
         player = DummyTFPlayer(start_listening=False, start_challenging=False)
-        env = player.create_evaluation_env()
+        env, agent = player.create_evaluation_env()
         assert player.environment == "base env"
         assert env == "created env"
         assert mock_env.call_count == 2
+        assert agent is mock_env().agent
 
 
 def test_reward_computing_helper():

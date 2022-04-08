@@ -211,7 +211,7 @@ class TFPlayer(Player, ABC):
         )
         return get_int_action_space_size(self.battle_format, double)
 
-    def create_evaluation_env(self):
+    def create_evaluation_env(self, active=True):
         env = _Env(
             self.__class__.__name__,
             self.calc_reward_func,
@@ -219,13 +219,14 @@ class TFPlayer(Player, ABC):
             self.embed_battle_func,
             self.embedding,
             self.space_size,
-            self.opponents,
+            self.opponents if active else None,
             battle_format=self.battle_format,
-            start_challenging=True,
+            start_challenging=active,
         )
+        agent = env.agent
         env = suite_gym.wrap_env(env)
         env = tf_py_environment.TFPyEnvironment(env)
-        return env
+        return env, agent
 
     def reward_computing_helper(
         self,
