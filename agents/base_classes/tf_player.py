@@ -81,7 +81,7 @@ class TFPlayer(Player, ABC):
             self.embed_battle_func,
             self.embedding,
             self.space_size,
-            self.opponents,
+            self.opponents if model is None else None,
             *args,
             **kwargs,
         )
