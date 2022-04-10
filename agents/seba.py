@@ -71,6 +71,15 @@ class Seba(Player):
                         return self.create_order(self.get_status(battle))
                     else:
                         return self.switch(battle)
+        else:
+            if self.do_i_get_oneshot(battle):
+                return self.switch(battle)
+            else:
+                if self.do_i_one_shot(battle):
+                    return self.create_order(self.get_stab_super_effective(battle))
+                else:
+                    # TODO
+                    pass
         return self.choose_random_move(battle)
 
     def switch(self, battle: Gen8Battle) -> BattleOrder:
@@ -186,8 +195,9 @@ class Seba(Player):
     def can_i_bi_shot(self, battle: Gen8Battle) -> bool:
         return self.get_bi_shot_move(battle) is not None
 
-    @staticmethod
-    def get_bi_shot_move(battle: Gen8Battle) -> Optional[Move]:
+    def get_bi_shot_move(self, battle: Gen8Battle) -> Optional[Move]:
+        if self.do_i_get_oneshot(battle):
+            return None
         mon = battle.active_pokemon
         enemy = battle.opponent_active_pokemon
         count = 4
@@ -222,6 +232,8 @@ class Seba(Player):
     def get_status(battle: Gen8Battle) -> Optional[Move]:
         mon = battle.active_pokemon
         enemy = battle.opponent_active_pokemon
+        if enemy.status is None:
+            return None
         chosen_move = None
         for move in mon.moves.values():
             if move.status is not None:
@@ -259,3 +271,6 @@ class Seba(Player):
                 ) and move in battle.available_moves:
                     chosen_move = move
         return chosen_move
+
+    def do_i_get_oneshot(self, battle: Gen8Battle) -> bool:
+        pass
