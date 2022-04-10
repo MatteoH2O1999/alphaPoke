@@ -127,25 +127,13 @@ class AlphaPokeDQN(AlphaPokeEmbedded):
     def get_network_layers(num_actions):
         layer_list = [
             layers.Dense(
-                1024,
+                256,
             ),
             layers.Dense(
-                1024,
+                512,
             ),
             layers.Dense(
-                2048,
-            ),
-            layers.Dense(
-                4096,
-            ),
-            layers.Dense(
-                2048,
-            ),
-            layers.Dense(
-                1024,
-            ),
-            layers.Dense(
-                1024,
+                256,
             ),
             layers.Dense(
                 num_actions,
