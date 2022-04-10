@@ -199,9 +199,7 @@ class FirstNNPlayer(DQNPlayer):
         batch_size = 64
 
         dataset = self.replay_buffer.as_dataset(
-            num_parallel_calls=3,
-            sample_batch_size=batch_size,
-            num_steps=2,
+            num_parallel_calls=3, sample_batch_size=batch_size, num_steps=2
         ).prefetch(3)
 
         return iter(dataset)
