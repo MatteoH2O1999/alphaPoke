@@ -10,6 +10,7 @@ from poke_env.environment.pokemon_type import PokemonType
 from poke_env.environment.pokemon import Pokemon
 from poke_env.player.battle_order import BattleOrder
 from poke_env.player.player import Player
+from poke_env.utils import compute_raw_stats
 
 from utils.get_smogon_data import get_random_battle_learnset
 
@@ -91,10 +92,22 @@ class Seba(Player):
         speed_boost += mon.boosts["spe"]
         my_speed *= BOOSTS[speed_boost]
         enemy_base_speed = enemy.base_stats["spe"]
-        enemy_speed = 5
-        enemy_speed += ((enemy_base_speed + 31) / 50) * enemy.level
         if enemy_base_speed > THRESHOLDS["spe"]:
-            enemy_speed += ((252 / 4) / 100) * enemy.level
+            enemy_speed = compute_raw_stats(
+                enemy.species,
+                [0, 0, 0, 0, 0, 252],
+                [31, 31, 31, 31, 31, 31],
+                enemy.level,
+                "hardy",
+            )[5]
+        else:
+            enemy_speed = compute_raw_stats(
+                enemy.species,
+                [0, 0, 0, 0, 0, 0],
+                [31, 31, 31, 31, 31, 31],
+                enemy.level,
+                "hardy",
+            )[5]
         if "Choice Scarf" in self.learnset[enemy.species]["items"]:
             enemy_speed *= 1.5
         enemy_boost = 6
