@@ -12,7 +12,7 @@ from poke_env.player.baselines import (
 from poke_env.player.openai_api import ObservationType
 from poke_env.player.player import Player
 from poke_env.player.utils import background_evaluate_player
-from tensorflow.keras import activations, initializers, layers, optimizers
+from tensorflow.keras import activations, initializers, layers, losses, optimizers
 from tf_agents.agents import TFAgent
 from tf_agents.agents.dqn.dqn_agent import DqnAgent
 from tf_agents.agents.tf_agent import LossInfo
@@ -22,7 +22,6 @@ from tf_agents.policies.py_tf_eager_policy import PyTFEagerPolicy
 from tf_agents.replay_buffers.tf_uniform_replay_buffer import TFUniformReplayBuffer
 from tf_agents.replay_buffers.replay_buffer import ReplayBuffer
 from tf_agents.specs import tensor_spec
-from tf_agents.utils import common
 from typing import Iterator, Union, List
 
 from agents.base_classes.dqn_player import DQNPlayer
@@ -152,7 +151,7 @@ class AlphaPokeDQN(AlphaPokeEmbedded):
             q_network=q_net,
             optimizer=optimizer,
             train_step_counter=train_step_counter,
-            td_errors_loss_fn=common.element_wise_squared_loss,
+            td_errors_loss_fn=losses.MeanSquaredError(),
             gamma=0.5,
         )
 
