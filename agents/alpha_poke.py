@@ -126,16 +126,54 @@ class AlphaPokeDQN(AlphaPokeEmbedded):
     def get_network_layers(num_actions):
         layer_list = [
             layers.Dense(
-                256,
+                1024,
+                activation=activations.elu,
+                kernel_initializer=initializers.VarianceScaling(
+                    scale=1.0, mode="fan_in", distribution="truncated_normal"
+                ),
             ),
             layers.Dense(
                 512,
+                activation=activations.elu,
+                kernel_initializer=initializers.VarianceScaling(
+                    scale=1.0, mode="fan_in", distribution="truncated_normal"
+                ),
             ),
             layers.Dense(
                 256,
+                activation=activations.elu,
+                kernel_initializer=initializers.VarianceScaling(
+                    scale=1.0, mode="fan_in", distribution="truncated_normal"
+                ),
+            ),
+            layers.Dense(
+                128,
+                activation=activations.elu,
+                kernel_initializer=initializers.VarianceScaling(
+                    scale=1.0, mode="fan_in", distribution="truncated_normal"
+                ),
+            ),
+            layers.Dense(
+                64,
+                activation=activations.elu,
+                kernel_initializer=initializers.VarianceScaling(
+                    scale=1.0, mode="fan_in", distribution="truncated_normal"
+                ),
+            ),
+            layers.Dense(
+                32,
+                activation=activations.elu,
+                kernel_initializer=initializers.VarianceScaling(
+                    scale=1.0, mode="fan_in", distribution="truncated_normal"
+                ),
             ),
             layers.Dense(
                 num_actions,
+                activation=activations.linear,
+                kernel_initializer=initializers.RandomUniform(
+                    minval=-0.05, maxval=0.05
+                ),
+                bias_initializer=initializers.Constant(-0.2),
             ),
         ]
         return layer_list
