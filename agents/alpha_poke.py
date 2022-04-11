@@ -2,8 +2,10 @@
 import tensorflow as tf
 
 from abc import ABC
-from gym.spaces import Space
+from gym.spaces import Space, Dict
 from poke_env.environment.abstract_battle import AbstractBattle
+from poke_env.environment.move import Move
+from poke_env.environment.pokemon import Pokemon
 from poke_env.player.baselines import (
     RandomPlayer,
     MaxBasePowerPlayer,
@@ -36,6 +38,36 @@ rewards = {
 }
 
 
+class _PokemonEmbedding:
+    @staticmethod
+    def embed_pokemon(mon: Pokemon):
+        pass
+
+    @staticmethod
+    def get_embedding() -> Space:
+        pass
+
+
+class _EnemyPokemonEmbedding:
+    @staticmethod
+    def embed_pokemon(mon: Pokemon):
+        pass
+
+    @staticmethod
+    def get_embedding() -> Space:
+        pass
+
+
+class _MoveEmbedding:
+    @staticmethod
+    def embed_move(move: Move):
+        pass
+
+    @staticmethod
+    def get_embedding() -> Space:
+        pass
+
+
 class AlphaPokeEmbedded(DQNPlayer, ABC):
     def __init__(self, log_interval=1000, eval_interval=10_000, *args, **kwargs):
         super().__init__(*args, **kwargs)
@@ -56,11 +88,59 @@ class AlphaPokeEmbedded(DQNPlayer, ABC):
         )
 
     def embed_battle(self, battle: AbstractBattle) -> ObservationType:
-        pass
+        non_active_player_mons = list(battle.team.values())
+        non_active_opponent_mons = list(battle.opponent_team.values())
+        non_active_player_mons.remove(battle.active_pokemon)
+        non_active_opponent_mons.remove(battle.opponent_active_pokemon)
+        while len(non_active_player_mons) < 5:
+            non_active_player_mons.append(None)
+        while len(non_active_opponent_mons) < 5:
+            non_active_opponent_mons.append(None)
+        return {
+            "active_mon": _PokemonEmbedding.embed_pokemon(battle.active_pokemon),
+            "player_mon_1": _PokemonEmbedding.embed_pokemon(non_active_player_mons[0]),
+            "player_mon_2": _PokemonEmbedding.embed_pokemon(non_active_player_mons[1]),
+            "player_mon_3": _PokemonEmbedding.embed_pokemon(non_active_player_mons[2]),
+            "player_mon_4": _PokemonEmbedding.embed_pokemon(non_active_player_mons[3]),
+            "player_mon_5": _PokemonEmbedding.embed_pokemon(non_active_player_mons[4]),
+            "opponent_active_mon": _PokemonEmbedding.embed_pokemon(
+                battle.opponent_active_pokemon
+            ),
+            "opponent_mon_1": _EnemyPokemonEmbedding.embed_pokemon(
+                non_active_opponent_mons[0]
+            ),
+            "opponent_mon_2": _EnemyPokemonEmbedding.embed_pokemon(
+                non_active_opponent_mons[1]
+            ),
+            "opponent_mon_3": _EnemyPokemonEmbedding.embed_pokemon(
+                non_active_opponent_mons[2]
+            ),
+            "opponent_mon_4": _EnemyPokemonEmbedding.embed_pokemon(
+                non_active_opponent_mons[3]
+            ),
+            "opponent_mon_5": _EnemyPokemonEmbedding.embed_pokemon(
+                non_active_opponent_mons[4]
+            ),
+        }
 
     @property
     def embedding(self) -> Space:
-        pass
+        return Dict(
+            {
+                "active_mon": _PokemonEmbedding.get_embedding(),
+                "player_mon_1": _PokemonEmbedding.get_embedding(),
+                "player_mon_2": _PokemonEmbedding.get_embedding(),
+                "player_mon_3": _PokemonEmbedding.get_embedding(),
+                "player_mon_4": _PokemonEmbedding.get_embedding(),
+                "player_mon_5": _PokemonEmbedding.get_embedding(),
+                "opponent_active_mon": _PokemonEmbedding.get_embedding(),
+                "opponent_mon_1": _EnemyPokemonEmbedding.get_embedding(),
+                "opponent_mon_2": _EnemyPokemonEmbedding.get_embedding(),
+                "opponent_mon_3": _EnemyPokemonEmbedding.get_embedding(),
+                "opponent_mon_4": _EnemyPokemonEmbedding.get_embedding(),
+                "opponent_mon_5": _EnemyPokemonEmbedding.get_embedding(),
+            }
+        )
 
     @property
     def opponents(self) -> Union[Player, str, List[Player], List[str]]:
