@@ -38,6 +38,16 @@ rewards = {
 }
 
 
+class _BattlefieldEmbedding:
+    @staticmethod
+    def embed_battlefield(battle: AbstractBattle):
+        pass
+
+    @staticmethod
+    def get_embedding():
+        pass
+
+
 class _PokemonEmbedding:
     @staticmethod
     def embed_pokemon(mon: Pokemon):
@@ -97,6 +107,7 @@ class AlphaPokeEmbedded(DQNPlayer, ABC):
         while len(non_active_opponent_mons) < 5:
             non_active_opponent_mons.append(None)
         return {
+            "battlefield": _BattlefieldEmbedding.embed_battlefield(battle),
             "active_mon": _PokemonEmbedding.embed_pokemon(battle.active_pokemon),
             "player_mon_1": _PokemonEmbedding.embed_pokemon(non_active_player_mons[0]),
             "player_mon_2": _PokemonEmbedding.embed_pokemon(non_active_player_mons[1]),
@@ -127,6 +138,7 @@ class AlphaPokeEmbedded(DQNPlayer, ABC):
     def embedding(self) -> Space:
         return Dict(
             {
+                "battlefield": _BattlefieldEmbedding.get_embedding(),
                 "active_mon": _PokemonEmbedding.get_embedding(),
                 "player_mon_1": _PokemonEmbedding.get_embedding(),
                 "player_mon_2": _PokemonEmbedding.get_embedding(),
