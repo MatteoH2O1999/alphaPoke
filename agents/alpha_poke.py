@@ -42,18 +42,42 @@ rewards = {
 class _BattlefieldEmbedding:
     @staticmethod
     def embed_battlefield(battle: AbstractBattle):
+        battlefield_dict = {}
         dynamax_turns = np.full(2, -1, dtype=int)
         if battle.dynamax_turns_left is not None:
             dynamax_turns[0] = battle.dynamax_turns_left
         if battle.opponent_dynamax_turns_left is not None:
             dynamax_turns[1] = battle.opponent_dynamax_turns_left
+        battlefield_dict["dynamax_turns"] = dynamax_turns
+        boolean_flags = np.full(5, False, dtype=bool)
+        if battle.can_mega_evolve:
+            boolean_flags[0] = True
+        if battle.can_z_move:
+            boolean_flags[1] = True
+        if battle.can_dynamax:
+            boolean_flags[2] = True
+        if battle.opponent_can_dynamax:
+            boolean_flags[3] = True
+        if battle.maybe_trapped:
+            boolean_flags[4] = True
+        battlefield_dict["booleans_flags"] = boolean_flags
+        return battlefield_dict
 
     @staticmethod
     def get_embedding():
-        low = [-1, -1]
-        high = [3, 3]
-        return Box(
-            low=np.array(low, dtype=int), high=np.array(high, dtype=int), dtype=int
+        dynamax_turns_low = [-1, -1]
+        dynamax_turns_high = [3, 3]
+        dynamax_turns = Box(
+            low=np.array(dynamax_turns_low, dtype=int),
+            high=np.array(dynamax_turns_high, dtype=int),
+            dtype=int,
+        )
+        boolean_flags = Box(low=False, high=True, shape=(5,), dtype=bool)
+        return Dict(
+            {
+                "dynamax_turns": dynamax_turns,
+                "boolean_flags": boolean_flags,
+            }
         )
 
 
