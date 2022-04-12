@@ -1,8 +1,9 @@
 # Module containing production-level agents with neural networks
+import numpy as np
 import tensorflow as tf
 
 from abc import ABC
-from gym.spaces import Space, Dict
+from gym.spaces import Space, Dict, Box
 from poke_env.environment.abstract_battle import AbstractBattle
 from poke_env.environment.move import Move
 from poke_env.environment.pokemon import Pokemon
@@ -41,11 +42,19 @@ rewards = {
 class _BattlefieldEmbedding:
     @staticmethod
     def embed_battlefield(battle: AbstractBattle):
-        pass
+        dynamax_turns = np.full(2, -1, dtype=int)
+        if battle.dynamax_turns_left is not None:
+            dynamax_turns[0] = battle.dynamax_turns_left
+        if battle.opponent_dynamax_turns_left is not None:
+            dynamax_turns[1] = battle.opponent_dynamax_turns_left
 
     @staticmethod
     def get_embedding():
-        pass
+        low = [-1, -1]
+        high = [3, 3]
+        return Box(
+            low=np.array(low, dtype=int), high=np.array(high, dtype=int), dtype=int
+        )
 
 
 class _PokemonEmbedding:
@@ -78,9 +87,11 @@ class _MoveEmbedding:
         pass
 
 
-class AlphaPokeEmbedded(DQNPlayer, ABC):
+class AlphaPokeSingleEmbedded(DQNPlayer, ABC):
     def __init__(self, log_interval=1000, eval_interval=10_000, *args, **kwargs):
         super().__init__(*args, **kwargs)
+        if self.format_is_doubles:
+            raise NotImplementedError("Double battles are not supported by this class")
         self.log_int = log_interval
         self.eval_int = eval_interval
 
@@ -200,7 +211,7 @@ class AlphaPokeEmbedded(DQNPlayer, ABC):
         self.evaluations["losses"][1].append(loss_info.loss)
 
 
-class AlphaPokeDQN(AlphaPokeEmbedded):
+class AlphaPokeSingleDQN(AlphaPokeSingleEmbedded):
     def get_agent(self) -> TFAgent:
         action_tensor_spec = tensor_spec.from_spec(self.environment.action_spec())
         num_actions = action_tensor_spec.maximum - action_tensor_spec.minimum + 1
