@@ -6,8 +6,10 @@ import tensorflow as tf
 from abc import ABC, abstractmethod
 from asyncio import Event
 from gym import Space
+from gym.utils.env_checker import check_env
 from poke_env.environment.abstract_battle import AbstractBattle
 from poke_env.player.battle_order import BattleOrder
+from poke_env.player.baselines import RandomPlayer
 from poke_env.player.openai_api import OpenAIGymEnv, ObservationType
 from poke_env.player.player import Player
 from tf_agents.agents import TFAgent
@@ -70,10 +72,12 @@ class _Env(OpenAIGymEnv):
 
 class TFPlayer(Player, ABC):
     def __init__(  # noqa: super().__init__ won't get called as this is a "fake" Player class
-        self, model: str = None, *args, **kwargs
+        self, model: str = None, test=True, *args, **kwargs
     ):
         self.battle_format = kwargs.get("battle_format", "gen8randombattle")
         kwargs["start_challenging"] = False
+        if test:
+            self.test_env()
         temp_env = _Env(
             self.__class__.__name__,
             self.calc_reward_func,
@@ -210,6 +214,22 @@ class TFPlayer(Player, ABC):
             or "metronome" in format_lowercase
         )
         return get_int_action_space_size(self.battle_format, double)
+
+    def test_env(self):
+        opponent = RandomPlayer(battle_format=self.battle_format)
+        test_environment = _Env(
+            "TestEnvironment",
+            self.calc_reward_func,
+            self.action_to_move_func,
+            self.embed_battle_func,
+            self.embedding,
+            self.space_size,
+            opponent,
+            battle_format=self.battle_format,
+            start_challenging=True,
+        )
+        check_env(test_environment)
+        test_environment.close()
 
     def create_evaluation_env(self, active=True):
         env = _Env(

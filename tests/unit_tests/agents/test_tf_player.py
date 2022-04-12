@@ -121,7 +121,9 @@ def test_init_player_for_training():
     ) as mock_tf_wrap, patch(
         "tf_agents.policies.policy_saver.PolicySaver"
     ) as mock_saver:
-        player = DummyTFPlayer(start_listening=False, start_challenging=False)
+        player = DummyTFPlayer(
+            start_listening=False, start_challenging=False, test=False
+        )
         assert isinstance(player, DummyTFPlayer)
         mock_wrap.assert_called_once()
         mock_tf_wrap.assert_called_once()
@@ -143,7 +145,7 @@ def test_init_player_model_success():
         mock_load.return_value = AgentMock.policy
         mock_isdir.return_value = True
         player = DummyTFPlayer(
-            "test path", start_listening=False, start_challenging=False
+            "test path", start_listening=False, start_challenging=False, test=False
         )
         mock_saved_model.assert_called_once_with("test path")
         mock_isdir.assert_called_once_with("test path")
@@ -171,7 +173,7 @@ def test_init_player_not_a_dir():
         player = None
         with pytest.raises(ValueError):
             player = DummyTFPlayer(
-                "test path", start_listening=False, start_challenging=False
+                "test path", start_listening=False, start_challenging=False, test=False
             )
         assert player is None
         mock_wrap.assert_called_once()
@@ -197,7 +199,7 @@ def test_init_player_not_a_model():
         player = None
         with pytest.raises(ValueError):
             player = DummyTFPlayer(
-                "test path", start_listening=False, start_challenging=False
+                "test path", start_listening=False, start_challenging=False, test=False
             )
         assert player is None
         mock_wrap.assert_called_once()
@@ -223,7 +225,7 @@ def test_init_player_not_a_policy():
         player = None
         with pytest.raises(RuntimeError):
             player = DummyTFPlayer(
-                "test path", start_listening=False, start_challenging=False
+                "test path", start_listening=False, start_challenging=False, test=False
             )
         assert player is None
         mock_wrap.assert_called_once()
@@ -239,7 +241,9 @@ def test_save_policy():
     ), patch("tf_agents.policies.policy_saver.PolicySaver") as mock_saver:
         mock_saver_object = MagicMock()
         mock_saver.return_value = mock_saver_object
-        player = DummyTFPlayer(start_listening=False, start_challenging=False)
+        player = DummyTFPlayer(
+            start_listening=False, start_challenging=False, test=False
+        )
         player.save_policy("save path")
         mock_saver_object.save.assert_called_once_with("save path")
 
@@ -253,7 +257,9 @@ def test_battle_format_properties_gen8_random_battle():
         "agents.base_classes.tf_player.get_int_action_space_size"
     ) as mock_space_size:
         mock_space_size.return_value = 42
-        player = DummyTFPlayer(start_listening=False, start_challenging=False)
+        player = DummyTFPlayer(
+            start_listening=False, start_challenging=False, test=False
+        )
         mock_a2m.assert_called_once_with("gen8randombattle", False)
         mock_space_size.assert_called_once_with("gen8randombattle", False)
 
@@ -268,7 +274,10 @@ def test_action_to_move_function_gen8_vgc_2022():
     ) as mock_space_size:
         mock_space_size.return_value = 42
         player = DummyTFPlayer(
-            start_listening=False, start_challenging=False, battle_format="gen8vgc2022"
+            start_listening=False,
+            start_challenging=False,
+            battle_format="gen8vgc2022",
+            test=False,
         )
         mock_a2m.assert_called_once_with("gen8vgc2022", True)
         mock_space_size.assert_called_once_with("gen8vgc2022", True)
@@ -281,7 +290,9 @@ def test_create_evaluation_env():
         "agents.base_classes.tf_player._Env"
     ) as mock_env:
         mock_tf_wrap.side_effect = ["base env", "created env"]
-        player = DummyTFPlayer(start_listening=False, start_challenging=False)
+        player = DummyTFPlayer(
+            start_listening=False, start_challenging=False, test=False
+        )
         env, agent = player.create_evaluation_env()
         assert player.environment == "base env"
         assert env == "created env"
@@ -293,7 +304,9 @@ def test_reward_computing_helper():
     with patch("tf_agents.environments.suite_gym.wrap_env"), patch(
         "tf_agents.environments.tf_py_environment.TFPyEnvironment"
     ), patch("tf_agents.policies.policy_saver.PolicySaver"):
-        player = DummyTFPlayer(start_listening=False, battle_format="gen8randombattle")
+        player = DummyTFPlayer(
+            start_listening=False, battle_format="gen8randombattle", test=False
+        )
         battle_1 = Battle("bat1", player.username, player.logger)
         battle_2 = Battle("bat2", player.username, player.logger)
         battle_3 = Battle("bat3", player.username, player.logger)
@@ -413,7 +426,9 @@ def test_play_episode():
     with patch("tf_agents.environments.suite_gym.wrap_env"), patch(
         "tf_agents.environments.tf_py_environment.TFPyEnvironment"
     ), patch("tf_agents.policies.policy_saver.PolicySaver"):
-        player = DummyTFPlayer(start_listening=False, start_challenging=False)
+        player = DummyTFPlayer(
+            start_listening=False, start_challenging=False, test=False
+        )
         mock_reset = MagicMock()
         player.environment.reset = mock_reset
         time_step = MagicMock()

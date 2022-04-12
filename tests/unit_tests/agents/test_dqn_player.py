@@ -76,7 +76,9 @@ def test_dqn_player_init():
         DummyDQNPlayer.mock_iterator = MagicMock()
         DummyDQNPlayer.mock_buffer = MagicMock()
 
-        player = DummyDQNPlayer(start_listening=False, start_challenging=False)
+        player = DummyDQNPlayer(
+            start_listening=False, start_challenging=False, test=False
+        )
 
         assert isinstance(player, DummyDQNPlayer)
         mock_wrap.assert_called_once()
@@ -114,7 +116,9 @@ def test_dqn_player_train():
         mock_random_policy_instance = MagicMock()
         mock_random_policy.return_value = mock_random_policy_instance
 
-        player = DummyDQNPlayer(start_listening=False, start_challenging=False)
+        player = DummyDQNPlayer(
+            start_listening=False, start_challenging=False, test=False
+        )
         player.eval_function = MagicMock()
         player.log_function = MagicMock()
         player.train(20)
