@@ -57,6 +57,16 @@ class _BattlefieldEmbedding:
         )
 
 
+class _ActivePokemonEmbedding:
+    @staticmethod
+    def embed_pokemon(battle: AbstractBattle):
+        pass
+
+    @staticmethod
+    def get_embedding() -> Space:
+        pass
+
+
 class _PokemonEmbedding:
     @staticmethod
     def embed_pokemon(mon: Pokemon):
@@ -119,7 +129,7 @@ class AlphaPokeSingleEmbedded(DQNPlayer, ABC):
             non_active_opponent_mons.append(None)
         return {
             "battlefield": _BattlefieldEmbedding.embed_battlefield(battle),
-            "active_mon": _PokemonEmbedding.embed_pokemon(battle.active_pokemon),
+            "active_mon": _ActivePokemonEmbedding.embed_pokemon(battle),
             "player_mon_1": _PokemonEmbedding.embed_pokemon(non_active_player_mons[0]),
             "player_mon_2": _PokemonEmbedding.embed_pokemon(non_active_player_mons[1]),
             "player_mon_3": _PokemonEmbedding.embed_pokemon(non_active_player_mons[2]),
@@ -150,7 +160,7 @@ class AlphaPokeSingleEmbedded(DQNPlayer, ABC):
         return Dict(
             {
                 "battlefield": _BattlefieldEmbedding.get_embedding(),
-                "active_mon": _PokemonEmbedding.get_embedding(),
+                "active_mon": _ActivePokemonEmbedding.get_embedding(),
                 "player_mon_1": _PokemonEmbedding.get_embedding(),
                 "player_mon_2": _PokemonEmbedding.get_embedding(),
                 "player_mon_3": _PokemonEmbedding.get_embedding(),
