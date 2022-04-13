@@ -454,3 +454,41 @@ def test_play_episode():
         mock_reset.assert_called_once()
         action.assert_called_once_with(time_step)
         mock_step.assert_called_once_with(42)
+
+
+def test_test_env_false():
+    with patch("tf_agents.environments.suite_gym.wrap_env") as mock_wrap, patch(
+        "tf_agents.environments.tf_py_environment.TFPyEnvironment"
+    ), patch("tf_agents.policies.policy_saver.PolicySaver"), patch(
+        "agents.base_classes.tf_player._Env"
+    ) as mock_env, patch(
+        "agents.base_classes.tf_player.check_env"
+    ) as mock_checker:
+        env1 = MagicMock()
+        env2 = MagicMock()
+        mock_env.side_effect = [env1, env2]
+        player = DummyTFPlayer(
+            start_listening=False, start_challenging=False, test=False
+        )
+        mock_env.assert_called_once()
+        mock_checker.assert_not_called()
+        mock_wrap.assert_called_once_with(env1)
+
+
+def test_test_env_true():
+    with patch("tf_agents.environments.suite_gym.wrap_env") as mock_wrap, patch(
+        "tf_agents.environments.tf_py_environment.TFPyEnvironment"
+    ), patch("tf_agents.policies.policy_saver.PolicySaver"), patch(
+        "agents.base_classes.tf_player._Env"
+    ) as mock_env, patch(
+        "agents.base_classes.tf_player.check_env"
+    ) as mock_checker:
+        env1 = MagicMock()
+        env2 = MagicMock()
+        mock_env.side_effect = [env1, env2]
+        player = DummyTFPlayer(
+            start_listening=False, start_challenging=False, test=True
+        )
+        assert mock_env.call_count == 2
+        mock_checker.assert_called_once_with(env1)
+        mock_wrap.assert_called_once_with(env2)
