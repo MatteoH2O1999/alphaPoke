@@ -7,6 +7,12 @@ from gym.spaces import Space, Dict, Box
 from poke_env.environment.abstract_battle import AbstractBattle
 from poke_env.environment.move import Move
 from poke_env.environment.pokemon import Pokemon
+from poke_env.environment.pokemon_type import PokemonType
+from poke_env.environment.status import Status
+from poke_env.environment.effect import Effect
+from poke_env.environment.field import Field
+from poke_env.environment.side_condition import SideCondition, STACKABLE_CONDITIONS
+from poke_env.environment.weather import Weather
 from poke_env.player.baselines import (
     RandomPlayer,
     MaxBasePowerPlayer,
@@ -37,6 +43,8 @@ rewards = {
     "starting_value": 0.0,
     "victory_reward": 1.0,
 }
+
+STATS = ["hp", "atk", "def", "spa", "spd", "spe"]
 
 
 class _BattlefieldEmbedding:
@@ -85,7 +93,7 @@ class _BattlefieldEmbedding:
 
 class _ActivePokemonEmbedding:
     @staticmethod
-    def embed_pokemon(battle: AbstractBattle):
+    def embed_pokemon(mon: Pokemon, battle: AbstractBattle):
         pass
 
     @staticmethod
@@ -95,7 +103,17 @@ class _ActivePokemonEmbedding:
 
 class _PokemonEmbedding:
     @staticmethod
-    def embed_pokemon(mon: Pokemon):
+    def embed_pokemon(mon: Pokemon, battle: AbstractBattle):
+        pass
+
+    @staticmethod
+    def get_embedding() -> Space:
+        pass
+
+
+class _EnemyActivePokemonEmbedding:
+    @staticmethod
+    def embed_pokemon(mon: Pokemon, battle: AbstractBattle):
         pass
 
     @staticmethod
@@ -121,6 +139,90 @@ class _MoveEmbedding:
     @staticmethod
     def get_embedding() -> Space:
         pass
+
+
+class _TypeEmbedding:
+    @staticmethod
+    def embed_type(mon_or_move: Union[Pokemon, Move]):
+        pass
+
+    @staticmethod
+    def get_embedding() -> Space:
+        pass
+
+
+class _WeatherEmbedding:
+    @staticmethod
+    def embed_weather(battle: AbstractBattle):
+        pass
+
+    @staticmethod
+    def get_embedding() -> Space:
+        pass
+
+
+class _StatusEmbedding:
+    @staticmethod
+    def embed_status(mon: Pokemon):
+        pass
+
+    @staticmethod
+    def get_embedding() -> Space:
+        pass
+
+
+class _EffectsEmbedding:
+    @staticmethod
+    def embed_effects(mon: Pokemon):
+        pass
+
+    @staticmethod
+    def get_embedding() -> Space:
+        pass
+
+
+class _SideConditionEmbedding:
+    @staticmethod
+    def embed_side_conditions(battle: AbstractBattle):
+        current_turn = battle.turn
+        battle_side_conditions = battle.side_conditions
+        side_conditions = np.full(len(SideCondition), -1)
+        for condition, value in battle_side_conditions.items():
+            if condition in STACKABLE_CONDITIONS.keys():
+                side_conditions[condition.value] = value
+            else:
+                side_conditions[condition.value] = current_turn - value
+        return side_conditions
+
+    @staticmethod
+    def get_embedding() -> Space:
+        low_bound = [-1 for _ in range(len(SideCondition))]
+        high_bound = [1000 for _ in range(len(SideCondition))]
+        return Box(
+            low=np.array(low_bound, dtype=int),
+            high=np.array(high_bound, dtype=int),
+            dtype=int,
+        )
+
+
+class _FieldEmbedding:
+    @staticmethod
+    def embed_field(battle: AbstractBattle):
+        fields = np.full(len(Field), -1)
+        battle_fields = battle.fields
+        for field, value in battle_fields.items():
+            fields[field.value] = value
+        return fields
+
+    @staticmethod
+    def get_embedding() -> Space:
+        low_bound = [-1 for _ in range(len(Field))]
+        high_bound = [10 for _ in range(len(Field))]
+        return Box(
+            low=np.array(low_bound, dtype=int),
+            high=np.array(high_bound, dtype=int),
+            dtype=int,
+        )
 
 
 class AlphaPokeSingleEmbedded(DQNPlayer, ABC):
@@ -155,14 +257,26 @@ class AlphaPokeSingleEmbedded(DQNPlayer, ABC):
             non_active_opponent_mons.append(None)
         return {
             "battlefield": _BattlefieldEmbedding.embed_battlefield(battle),
-            "active_mon": _ActivePokemonEmbedding.embed_pokemon(battle),
-            "player_mon_1": _PokemonEmbedding.embed_pokemon(non_active_player_mons[0]),
-            "player_mon_2": _PokemonEmbedding.embed_pokemon(non_active_player_mons[1]),
-            "player_mon_3": _PokemonEmbedding.embed_pokemon(non_active_player_mons[2]),
-            "player_mon_4": _PokemonEmbedding.embed_pokemon(non_active_player_mons[3]),
-            "player_mon_5": _PokemonEmbedding.embed_pokemon(non_active_player_mons[4]),
-            "opponent_active_mon": _PokemonEmbedding.embed_pokemon(
-                battle.opponent_active_pokemon
+            "active_mon": _ActivePokemonEmbedding.embed_pokemon(
+                battle.active_pokemon, battle
+            ),
+            "player_mon_1": _PokemonEmbedding.embed_pokemon(
+                non_active_player_mons[0], battle
+            ),
+            "player_mon_2": _PokemonEmbedding.embed_pokemon(
+                non_active_player_mons[1], battle
+            ),
+            "player_mon_3": _PokemonEmbedding.embed_pokemon(
+                non_active_player_mons[2], battle
+            ),
+            "player_mon_4": _PokemonEmbedding.embed_pokemon(
+                non_active_player_mons[3], battle
+            ),
+            "player_mon_5": _PokemonEmbedding.embed_pokemon(
+                non_active_player_mons[4], battle
+            ),
+            "opponent_active_mon": _EnemyActivePokemonEmbedding.embed_pokemon(
+                battle.opponent_active_pokemon, battle
             ),
             "opponent_mon_1": _EnemyPokemonEmbedding.embed_pokemon(
                 non_active_opponent_mons[0]
@@ -192,7 +306,7 @@ class AlphaPokeSingleEmbedded(DQNPlayer, ABC):
                 "player_mon_3": _PokemonEmbedding.get_embedding(),
                 "player_mon_4": _PokemonEmbedding.get_embedding(),
                 "player_mon_5": _PokemonEmbedding.get_embedding(),
-                "opponent_active_mon": _PokemonEmbedding.get_embedding(),
+                "opponent_active_mon": _EnemyActivePokemonEmbedding.get_embedding(),
                 "opponent_mon_1": _EnemyPokemonEmbedding.get_embedding(),
                 "opponent_mon_2": _EnemyPokemonEmbedding.get_embedding(),
                 "opponent_mon_3": _EnemyPokemonEmbedding.get_embedding(),
