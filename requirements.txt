@@ -1,6 +1,7 @@
 -c ./constraints.txt
 
 requests
+json5
 matplotlib
 seaborn
 tabulate

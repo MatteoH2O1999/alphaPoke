@@ -1,5 +1,10 @@
 import json
+import json5
 import requests
+
+from enum import Enum
+from poke_env.data import GEN_TO_POKEDEX
+from poke_env.utils import to_id_str
 
 
 def get_random_battle_learnset(gen: int):
@@ -48,3 +53,21 @@ def get_random_battle_learnset(gen: int):
             to_return["gastrodoneast"] = value
         to_return[new_key] = value
     return to_return
+
+
+def get_abilities(gen: int):
+    pokedex = GEN_TO_POKEDEX[gen]
+    abilities = []
+    for pokemon in pokedex.values():
+        for ability in pokemon["abilities"].values():
+            if len(ability) > 0 and to_id_str(ability) not in abilities:
+                abilities.append(to_id_str(ability))
+    abilities.sort()
+
+    return Enum("Abilities", abilities)  # noqa: functional API
+
+
+def get_items():
+    data = requests.get("https://play.pokemonshowdown.com/data/text/items.json5")
+    data = json5.loads(data.content)
+    return Enum("Items", list(data.keys()))  # noqa: functional API
