@@ -35,6 +35,7 @@ from typing import Iterator, Union, List
 
 from agents.base_classes.dqn_player import DQNPlayer
 from agents.seba import Seba
+from utils.get_smogon_data import get_abilities, get_items
 
 rewards = {
     "fainted_value": 0.0,
@@ -45,6 +46,12 @@ rewards = {
 }
 
 STATS = ["hp", "atk", "def", "spa", "spd", "spe"]
+
+INFINITE_WEATHER = [Weather.DELTASTREAM, Weather.PRIMORDIALSEA, Weather.DESOLATELAND]
+
+ABILITIES = get_abilities(8)
+
+ITEMS = get_items()
 
 
 class _BattlefieldEmbedding:
@@ -151,9 +158,9 @@ class _TypeEmbedding:
         pass
 
 
-class _WeatherEmbedding:
+class _ItemEmbedding:
     @staticmethod
-    def embed_weather(battle: AbstractBattle):
+    def embed_item(mon: Pokemon):
         pass
 
     @staticmethod
@@ -161,43 +168,29 @@ class _WeatherEmbedding:
         pass
 
 
-class _StatusEmbedding:
+# One hot encoding for the Pokémon abilities.
+class _AbilityEmbedding:
     @staticmethod
-    def embed_status(mon: Pokemon):
-        pass
-
-    @staticmethod
-    def get_embedding() -> Space:
-        pass
-
-
-class _EffectsEmbedding:
-    @staticmethod
-    def embed_effects(mon: Pokemon):
-        pass
-
-    @staticmethod
-    def get_embedding() -> Space:
-        pass
-
-
-class _SideConditionEmbedding:
-    @staticmethod
-    def embed_side_conditions(battle: AbstractBattle):
-        current_turn = battle.turn
-        battle_side_conditions = battle.side_conditions
-        side_conditions = np.full(len(SideCondition), -1)
-        for condition, value in battle_side_conditions.items():
-            if condition in STACKABLE_CONDITIONS.keys():
-                side_conditions[condition.value] = value
+    def embed_ability(mon: Pokemon):
+        if mon is None:
+            return np.full(len(ABILITIES), -1)
+        battle_abilities = np.full(len(ABILITIES), 0)
+        if mon.ability is None:
+            possible_abilities = mon.possible_abilities
+            if len(possible_abilities) == 1:
+                for ability in possible_abilities:
+                    battle_abilities[getattr(ABILITIES, ability).value] = 2
             else:
-                side_conditions[condition.value] = current_turn - value
-        return side_conditions
+                for ability in possible_abilities:
+                    battle_abilities[getattr(ABILITIES, ability).value] = 1
+            return battle_abilities
+        battle_abilities[getattr(ABILITIES, mon.ability).value] = 2
+        return battle_abilities
 
     @staticmethod
     def get_embedding() -> Space:
-        low_bound = [-1 for _ in range(len(SideCondition))]
-        high_bound = [1000 for _ in range(len(SideCondition))]
+        low_bound = [-1 for _ in range(len(ABILITIES))]
+        high_bound = [2 for _ in range(len(ABILITIES))]
         return Box(
             low=np.array(low_bound, dtype=int),
             high=np.array(high_bound, dtype=int),
@@ -205,19 +198,132 @@ class _SideConditionEmbedding:
         )
 
 
+# One hot encoding for the weather.
+class _WeatherEmbedding:
+    @staticmethod
+    def embed_weather(battle: AbstractBattle):
+        current_turn = battle.turn
+        weather = battle.weather
+        weathers = np.full(len(Weather), -1)
+        for w in INFINITE_WEATHER:
+            weathers[w.value] = 0
+        for w, value in weather.items():
+            if w in INFINITE_WEATHER:
+                weathers[w.value] = 1
+            else:
+                weathers[w.value] = current_turn - value
+        return weathers
+
+    @staticmethod
+    def get_embedding() -> Space:
+        low_bound = [-1 for _ in range(len(Weather))]
+        high_bound = [6 for _ in range(len(Weather))]
+        for w in INFINITE_WEATHER:
+            high_bound[w.value] = 1
+            low_bound[w.value] = 0
+        return Box(
+            low=np.array(low_bound, dtype=int),
+            high=np.array(high_bound, dtype=int),
+            dtype=int,
+        )
+
+
+# One hot encoding for the Pokémon statuses.
+class _StatusEmbedding:
+    @staticmethod
+    def embed_status(mon: Pokemon):
+        if mon is not None:
+            status = mon.status
+            statuses = np.full(len(Status), 0)
+            statuses[status.value] = 1
+        else:
+            statuses = np.full(len(Status), -1)
+        return statuses
+
+    @staticmethod
+    def get_embedding() -> Space:
+        low_bound = [-1 for _ in range(len(Status))]
+        high_bound = [1 for _ in range(len(Status))]
+        return Box(
+            low=np.array(low_bound, dtype=int),
+            high=np.array(high_bound, dtype=int),
+            dtype=int,
+        )
+
+
+# One hot encoding for the Pokémon effects.
+class _EffectsEmbedding:
+    @staticmethod
+    def embed_effects(mon: Pokemon):
+        battle_effects = {}
+        if mon is not None:
+            battle_effects = mon.effects
+        effects = np.full(len(Effect), -1)
+        for effect, counter in battle_effects.items():
+            effects[effect.value] = counter
+        return effects
+
+    @staticmethod
+    def get_embedding() -> Space:
+        low_bound = [-1 for _ in range(len(Effect))]
+        high_bound = [6 for _ in range(len(Effect))]
+        return Box(
+            low=np.array(low_bound, dtype=int),
+            high=np.array(high_bound, dtype=int),
+            dtype=int,
+        )
+
+
+# One hot encoding for the side conditions.
+class _SideConditionEmbedding:
+    @staticmethod
+    def embed_side_conditions(battle: AbstractBattle):
+        current_turn = battle.turn
+        battle_side_conditions = battle.side_conditions
+        side_conditions = np.full(len(SideCondition), -1)
+        side_conditions[SideCondition.STEALTH_ROCK.value] = 0
+        for condition in STACKABLE_CONDITIONS.keys():
+            side_conditions[condition.value] = 0
+        for condition, value in battle_side_conditions.items():
+            if condition in STACKABLE_CONDITIONS.keys():
+                side_conditions[condition.value] = value
+            elif condition == SideCondition.STEALTH_ROCK:
+                side_conditions[condition.value] = 1
+            else:
+                side_conditions[condition.value] = current_turn - value
+        return side_conditions
+
+    @staticmethod
+    def get_embedding() -> Space:
+        low_bound = [-1 for _ in range(len(SideCondition))]
+        high_bound = [6 for _ in range(len(SideCondition))]
+        low_bound[SideCondition.STEALTH_ROCK.value] = 0
+        high_bound[SideCondition.STEALTH_ROCK.value] = 1
+        for condition in STACKABLE_CONDITIONS.keys():
+            low_bound[condition.value] = 0
+            high_bound[condition.value] = STACKABLE_CONDITIONS[condition]
+        return Box(
+            low=np.array(low_bound, dtype=int),
+            high=np.array(high_bound, dtype=int),
+            dtype=int,
+        )
+
+
+# One hot encoding for the fields.
 class _FieldEmbedding:
     @staticmethod
     def embed_field(battle: AbstractBattle):
+        current_turn = battle.turn
         fields = np.full(len(Field), -1)
         battle_fields = battle.fields
         for field, value in battle_fields.items():
-            fields[field.value] = value
+            fields[field.value] = current_turn - value
         return fields
 
     @staticmethod
     def get_embedding() -> Space:
         low_bound = [-1 for _ in range(len(Field))]
-        high_bound = [10 for _ in range(len(Field))]
+        high_bound = [6 for _ in range(len(Field))]
         return Box(
             low=np.array(low_bound, dtype=int),
             high=np.array(high_bound, dtype=int),
