@@ -49,7 +49,7 @@ class _BattlefieldEmbedding:
         if battle.opponent_dynamax_turns_left is not None:
             dynamax_turns[1] = battle.opponent_dynamax_turns_left
         battlefield_dict["dynamax_turns"] = dynamax_turns
-        boolean_flags = np.full(5, False, dtype=bool)
+        boolean_flags = np.full(6, False, dtype=bool)
         if battle.can_mega_evolve:
             boolean_flags[0] = True
         if battle.can_z_move:
@@ -60,6 +60,8 @@ class _BattlefieldEmbedding:
             boolean_flags[3] = True
         if battle.maybe_trapped:
             boolean_flags[4] = True
+        if battle.force_switch:
+            boolean_flags[5] = True
         battlefield_dict["booleans_flags"] = boolean_flags
         return battlefield_dict
 
@@ -72,7 +74,7 @@ class _BattlefieldEmbedding:
             high=np.array(dynamax_turns_high, dtype=int),
             dtype=int,
         )
-        boolean_flags = Box(low=False, high=True, shape=(5,), dtype=bool)
+        boolean_flags = Box(low=False, high=True, shape=(6,), dtype=bool)
         return Dict(
             {
                 "dynamax_turns": dynamax_turns,
