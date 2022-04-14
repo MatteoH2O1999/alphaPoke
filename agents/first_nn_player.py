@@ -3,8 +3,8 @@ import numpy as np
 import tensorflow as tf
 
 from gym.spaces import Space, Box
-from poke_env.player.baselines import RandomPlayer
 from poke_env.environment.abstract_battle import AbstractBattle
+from poke_env.player.baselines import RandomPlayer
 from poke_env.player.openai_api import ObservationType
 from poke_env.player.player import Player
 from tensorflow.keras import activations, initializers, layers, optimizers

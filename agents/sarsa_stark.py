@@ -2,9 +2,9 @@
 from poke_env.environment.abstract_battle import AbstractBattle
 from poke_env.player.battle_order import BattleOrder
 
+from . import SARSA_DISCOUNT_FACTOR
 from .basic_rl import SimpleRLAgent
 from .expert_rl import ExpertRLAgent
-from . import SARSA_DISCOUNT_FACTOR
 
 
 class SarsaStark(SimpleRLAgent):

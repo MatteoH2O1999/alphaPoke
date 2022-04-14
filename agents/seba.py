@@ -1,16 +1,15 @@
 # Player with advanced heuristics from friend
-
-from typing import Awaitable, Optional, Union
 from poke_env.environment.abstract_battle import AbstractBattle
 from poke_env.environment.battle import Gen8Battle
 from poke_env.environment.move import Move
 from poke_env.environment.move_category import MoveCategory
-from poke_env.environment.status import Status
-from poke_env.environment.pokemon_type import PokemonType
 from poke_env.environment.pokemon import Pokemon
+from poke_env.environment.pokemon_type import PokemonType
+from poke_env.environment.status import Status
 from poke_env.player.battle_order import BattleOrder
 from poke_env.player.player import Player
 from poke_env.utils import compute_raw_stats
+from typing import Awaitable, Optional, Union
 
 from utils.get_smogon_data import get_random_battle_learnset
 

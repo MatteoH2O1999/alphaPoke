@@ -5,17 +5,17 @@ import tensorflow as tf
 from abc import ABC
 from gym.spaces import Space, Dict, Box
 from poke_env.environment.abstract_battle import AbstractBattle
+from poke_env.environment.effect import Effect
+from poke_env.environment.field import Field
 from poke_env.environment.move import Move
 from poke_env.environment.pokemon import Pokemon, UNKNOWN_ITEM
 from poke_env.environment.pokemon_type import PokemonType
-from poke_env.environment.status import Status
-from poke_env.environment.effect import Effect
-from poke_env.environment.field import Field
 from poke_env.environment.side_condition import SideCondition, STACKABLE_CONDITIONS
+from poke_env.environment.status import Status
 from poke_env.environment.weather import Weather
 from poke_env.player.baselines import (
-    RandomPlayer,
     MaxBasePowerPlayer,
+    RandomPlayer,
     SimpleHeuristicsPlayer,
 )
 from poke_env.player.openai_api import ObservationType
@@ -28,8 +28,8 @@ from tf_agents.agents.tf_agent import LossInfo
 from tf_agents.drivers.py_driver import PyDriver
 from tf_agents.networks.sequential import Sequential
 from tf_agents.policies.py_tf_eager_policy import PyTFEagerPolicy
-from tf_agents.replay_buffers.tf_uniform_replay_buffer import TFUniformReplayBuffer
 from tf_agents.replay_buffers.replay_buffer import ReplayBuffer
+from tf_agents.replay_buffers.tf_uniform_replay_buffer import TFUniformReplayBuffer
 from tf_agents.specs import tensor_spec
 from typing import Iterator, Union, List
 

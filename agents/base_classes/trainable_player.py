@@ -2,16 +2,20 @@
 import copy
 import math
 import random
-from abc import ABC, abstractmethod
 
+from abc import ABC, abstractmethod
 from poke_env.environment.abstract_battle import AbstractBattle
 from poke_env.environment.battle import Battle
 from poke_env.player.battle_order import BattleOrder
 from poke_env.player.player import Player
 from typing import Tuple, Callable, List
 
-from agents import LEARNING_RATE_WHILE_PLAYING, MIN_LEARNING_RATE_WHILE_TRAINING
-from agents import EPSILON_WHILE_TRAINING_AND_PLAYING, MIN_EPSILON_WHILE_TRAINING
+from agents import (
+    EPSILON_WHILE_TRAINING_AND_PLAYING,
+    LEARNING_RATE_WHILE_PLAYING,
+    MIN_EPSILON_WHILE_TRAINING,
+    MIN_LEARNING_RATE_WHILE_TRAINING,
+)
 from utils import init_action_space
 
 

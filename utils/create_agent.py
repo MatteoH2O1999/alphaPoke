@@ -7,13 +7,13 @@ from poke_env.player.player import Player
 from poke_env.server_configuration import LocalhostServerConfiguration
 from typing import List
 
+from agents.basic_rl import SimpleRLAgent
 from agents.dad import Dad
 from agents.eight_year_old_me import EightYearOldMe
-from agents.twenty_year_old_me import TwentyYearOldMe
-from agents.seba import Seba
-from agents.basic_rl import SimpleRLAgent
 from agents.expert_rl import ExpertRLAgent
 from agents.sarsa_stark import SarsaStark, ExpertSarsaStark
+from agents.seba import Seba
+from agents.twenty_year_old_me import TwentyYearOldMe
 
 
 MODELS_PATH = "./models"

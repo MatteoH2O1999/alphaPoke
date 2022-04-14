@@ -8,8 +8,8 @@ from asyncio import Event
 from gym import Space
 from gym.utils.env_checker import check_env
 from poke_env.environment.abstract_battle import AbstractBattle
-from poke_env.player.battle_order import BattleOrder
 from poke_env.player.baselines import RandomPlayer
+from poke_env.player.battle_order import BattleOrder
 from poke_env.player.openai_api import OpenAIGymEnv, ObservationType
 from poke_env.player.player import Player
 from tf_agents.agents import TFAgent

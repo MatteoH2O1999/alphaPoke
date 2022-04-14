@@ -10,14 +10,14 @@
 # 9: heal
 import random
 
-from typing import List
 from poke_env.environment.battle import Battle, AbstractBattle
 from poke_env.environment.pokemon_type import PokemonType
 from poke_env.player.battle_order import BattleOrder
 from poke_env.player.player import Player
+from typing import List
 
-from utils import InvalidArgument
 from .basic_rl import SimpleRLAgent
+from utils import InvalidArgument
 
 
 class ExpertRLAgent(SimpleRLAgent):
