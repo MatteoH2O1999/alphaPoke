@@ -482,7 +482,9 @@ def test_test_env_true():
         "agents.base_classes.tf_player._Env"
     ) as mock_env, patch(
         "agents.base_classes.tf_player.check_env"
-    ) as mock_checker:
+    ) as mock_checker, patch(
+        "agents.base_classes.tf_player.RandomPlayer"
+    ):
         env1 = MagicMock()
         env2 = MagicMock()
         mock_env.side_effect = [env1, env2]
