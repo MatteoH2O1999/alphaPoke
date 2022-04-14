@@ -6,7 +6,7 @@ from abc import ABC
 from gym.spaces import Space, Dict, Box
 from poke_env.environment.abstract_battle import AbstractBattle
 from poke_env.environment.move import Move
-from poke_env.environment.pokemon import Pokemon
+from poke_env.environment.pokemon import Pokemon, UNKNOWN_ITEM
 from poke_env.environment.pokemon_type import PokemonType
 from poke_env.environment.status import Status
 from poke_env.environment.effect import Effect
@@ -45,7 +45,16 @@ rewards = {
     "victory_reward": 1.0,
 }
 
-STATS = ["hp", "atk", "def", "spa", "spd", "spe"]
+STATS = {
+    "hp": 0,
+    "atk": 1,
+    "def": 2,
+    "spa": 3,
+    "spd": 4,
+    "spe": 5,
+    "accuracy": 6,
+    "evasion": 7,
+}
 
 INFINITE_WEATHER = [Weather.DELTASTREAM, Weather.PRIMORDIALSEA, Weather.DESOLATELAND]
 
@@ -148,24 +157,173 @@ class _MoveEmbedding:
         pass
 
 
-class _TypeEmbedding:
+class _MoveCategoryEmbedding:
     @staticmethod
-    def embed_type(mon_or_move: Union[Pokemon, Move]):
+    def embed_category(move: Move):
         pass
 
     @staticmethod
     def get_embedding() -> Space:
         pass
+
+
+class _MoveStatusEmbedding:
+    @staticmethod
+    def embed_move_status(move: Move):
+        pass
+
+    @staticmethod
+    def get_embedding() -> Space:
+        pass
+
+
+class _BoostsEmbedding:
+    @staticmethod
+    def embed_boosts(move: Move):
+        if move is None:
+            boosts = np.full(7, -7)
+            chance = np.full(7, -1, dtype=np.float64)
+        else:
+            boosts = np.full(7, 0)
+            chance = np.full(7, 0, dtype=np.float64)
+            secondary = move.secondary
+            move_boosts = {}
+            if move.target != "self" and move.boosts is not None:
+                move_boosts.update(move.boosts)
+            secondary_boosts = {}
+            for d in secondary:
+                if "boosts" in d.keys():
+                    secondary_chance = d["chance"] / 100
+                    for key, value in d["boosts"].items():
+                        secondary_boosts[key] = (value, secondary_chance)
+            for key, value in move_boosts.items():
+                boosts[STATS[key] - 1] = value
+                chance[STATS[key] - 1] = 1.0
+            for key, value in secondary_boosts.items():
+                boosts[STATS[key] - 1] = value[0]
+                chance[STATS[key] - 1] = value[1]
+        return {"boosts": boosts, "chances": chance}
+
+    @staticmethod
+    def get_embedding() -> Space:
+        boosts_low_bound = [-7 for _ in range(7)]
+        boosts_high_bound = [6 for _ in range(7)]
+        boosts_space = Box(
+            low=np.array(boosts_low_bound, dtype=int),
+            high=np.array(boosts_high_bound, dtype=int),
+            dtype=int,
+        )
+        chance_low_bound = [-1.0 for _ in range(7)]
+        chance_high_bound = [1.0 for _ in range(7)]
+        chance_space = Box(
+            low=np.array(chance_low_bound, dtype=np.float64),
+            high=np.array(chance_high_bound, dtype=np.float64),
+            dtype=np.float64,
+        )
+        return Dict({"boosts": boosts_space, "chances": chance_space})
+
+
+class _SelfBoostsEmbedding:
+    @staticmethod
+    def embed_self_boosts(move: Move):
+        if move is None:
+            self_boosts = np.full(7, -7)
+            chance = np.full(7, -1, dtype=np.float64)
+        else:
+            self_boosts = np.full(7, 0)
+            chance = np.full(7, 0, dtype=np.float64)
+            secondary = move.secondary
+            boosts = {}
+            if move.self_boost is not None:
+                boosts.update(move.self_boost)
+            if move.target == "self" and move.boosts is not None:
+                if move.self_boost is not None:
+                    raise RuntimeError(
+                        "Did not expect self_boosts and boosts to be active at the same time."
+                    )
+                boosts.update(move.boosts)
+            secondary_boosts = {}
+            for d in secondary:
+                if "self" in d.keys():
+                    data = d["self"]
+                    boost_chance = d["chance"] / 100
+                    if len(data) == 1 and list(data.keys()) == ["boosts"]:
+                        for key, value in data["boosts"].items():
+                            secondary_boosts[key] = (value, boost_chance)
+            for key, value in boosts.items():
+                self_boosts[STATS[key] - 1] = value
+                chance[STATS[key] - 1] = 1.0
+            for key, value in secondary_boosts.items():
+                self_boosts[STATS[key] - 1] = value[0]
+                chance[STATS[key] - 1] = value[1]
+        return {"boosts": self_boosts, "chances": chance}
+
+    @staticmethod
+    def get_embedding() -> Space:
+        self_boosts_low_bound = [-7 for _ in range(7)]
+        self_boosts_high_bound = [6 for _ in range(7)]
+        self_boosts_space = Box(
+            low=np.array(self_boosts_low_bound, dtype=int),
+            high=np.array(self_boosts_high_bound, dtype=int),
+            dtype=int,
+        )
+        chance_low_bound = [-1.0 for _ in range(7)]
+        chance_high_bound = [1.0 for _ in range(7)]
+        chance_space = Box(
+            low=np.array(chance_low_bound, dtype=np.float64),
+            high=np.array(chance_high_bound, dtype=np.float64),
+            dtype=np.float64,
+        )
+        return Dict({"boosts": self_boosts_space, "chances": chance_space})
+
+
+class _TypeEmbedding:
+    @staticmethod
+    def embed_type(mon_or_move: Union[Pokemon, Move]):
+        if mon_or_move is None:
+            return np.full(len(PokemonType), -1)
+        types = np.full(len(PokemonType), 0)
+        if isinstance(mon_or_move, Move):
+            battle_types = [mon_or_move.type]
+        elif isinstance(mon_or_move, Pokemon):
+            battle_types = mon_or_move.types
+        else:
+            raise RuntimeError(f"Expected Move or Pokemon, got {type(mon_or_move)}.")
+        for mon_type in battle_types:
+            if mon_type is not None:
+                types[mon_type.value] = 1
+        return types
+
+    @staticmethod
+    def get_embedding() -> Space:
+        low_bound = [-1 for _ in range(len(PokemonType))]
+        high_bound = [1 for _ in range(len(PokemonType))]
+        return Box(
+            low=np.array(low_bound, dtype=int),
+            high=np.array(high_bound, dtype=int),
+            dtype=int,
+        )
 
 
 class _ItemEmbedding:
     @staticmethod
     def embed_item(mon: Pokemon):
-        pass
+        if mon.item is None or mon.item == UNKNOWN_ITEM:
+            return np.full(len(ITEMS), -1)
+        battle_item = mon.item
+        items = np.full(len(ITEMS), 0)
+        items[getattr(ITEMS, battle_item).value] = 1
+        return items
 
     @staticmethod
     def get_embedding() -> Space:
-        pass
+        low_bound = [-1 for _ in range(len(ITEMS))]
+        high_bound = [1 for _ in range(len(ITEMS))]
+        return Box(
+            low=np.array(low_bound, dtype=int),
+            high=np.array(high_bound, dtype=int),
+            dtype=int,
+        )
 
 
 # One hot encoding for the Pokémon abilities.
@@ -235,7 +393,8 @@ class _StatusEmbedding:
         if mon is not None:
             status = mon.status
             statuses = np.full(len(Status), 0)
-            statuses[status.value] = 1
+            if status is not None:
+                statuses[status.value] = 1
         else:
             statuses = np.full(len(Status), -1)
         return statuses
