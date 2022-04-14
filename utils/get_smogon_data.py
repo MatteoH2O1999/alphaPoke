@@ -70,4 +70,9 @@ def get_abilities(gen: int):
 def get_items():
     data = requests.get("https://play.pokemonshowdown.com/data/text/items.json5")
     data = json5.loads(data.content)
-    return Enum("Items", list(data.keys()))  # noqa: functional API
+    json_items = list(data.keys())
+    items = []
+    for item in json_items:
+        items.append(to_id_str(item))
+    items.sort()
+    return Enum("Items", items)  # noqa: functional API
