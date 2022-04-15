@@ -35,7 +35,8 @@ jobs:
       - name: Wait for other workflows to finish
         uses: ahmadnassri/action-workflow-queue@v1
         with:
-          timeout: 2400000
+          timeout: 4800000
+          delay: 60000
   platform_independent_tests:
     name: Platform independent tests
     needs: wait_for_previous_workflows_to_finish
