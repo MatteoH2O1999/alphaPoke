@@ -644,6 +644,20 @@ class AlphaPokeSingleDQN(AlphaPokeSingleEmbedded):
     def get_network_layers(num_actions):
         layer_list = [
             layers.Dense(
+                16384,
+                activation=activations.elu,
+                kernel_initializer=initializers.VarianceScaling(
+                    scale=1.0, mode="fan_in", distribution="truncated_normal"
+                ),
+            ),
+            layers.Dense(
+                4096,
+                activation=activations.elu,
+                kernel_initializer=initializers.VarianceScaling(
+                    scale=1.0, mode="fan_in", distribution="truncated_normal"
+                ),
+            ),
+            layers.Dense(
                 1024,
                 activation=activations.elu,
                 kernel_initializer=initializers.VarianceScaling(
@@ -658,21 +672,7 @@ class AlphaPokeSingleDQN(AlphaPokeSingleEmbedded):
                 ),
             ),
             layers.Dense(
-                256,
-                activation=activations.elu,
-                kernel_initializer=initializers.VarianceScaling(
-                    scale=1.0, mode="fan_in", distribution="truncated_normal"
-                ),
-            ),
-            layers.Dense(
                 128,
-                activation=activations.elu,
-                kernel_initializer=initializers.VarianceScaling(
-                    scale=1.0, mode="fan_in", distribution="truncated_normal"
-                ),
-            ),
-            layers.Dense(
-                64,
                 activation=activations.elu,
                 kernel_initializer=initializers.VarianceScaling(
                     scale=1.0, mode="fan_in", distribution="truncated_normal"
