@@ -37,14 +37,6 @@ from agents.base_classes.dqn_player import DQNPlayer
 from agents.seba import Seba
 from utils.get_smogon_data import get_abilities, get_items
 
-rewards = {
-    "fainted_value": 0.0,
-    "hp": 0.0,
-    "number_of_pokemons": 6,
-    "starting_value": 0.0,
-    "victory_reward": 1.0,
-}
-
 STATS = {
     "hp": 0,
     "atk": 1,
@@ -498,17 +490,41 @@ class AlphaPokeSingleEmbedded(DQNPlayer, ABC):
         self.log_int = log_interval
         self.eval_int = eval_interval
 
+    @property
+    def fainted_value(self) -> float:
+        return 0.0
+
+    @property
+    def hp_value(self) -> float:
+        return 0.0
+
+    @property
+    def number_of_pokemons(self) -> int:
+        return 6
+
+    @property
+    def starting_value(self) -> float:
+        return 0.0
+
+    @property
+    def status_value(self) -> float:
+        return 0.0
+
+    @property
+    def victory_value(self) -> float:
+        return 1.0
+
     def calc_reward(
         self, last_battle: AbstractBattle, current_battle: AbstractBattle
     ) -> float:
         return self.reward_computing_helper(
             current_battle,
-            fainted_value=rewards["fainted"],
-            hp_value=rewards["hp"],
-            number_of_pokemons=rewards["number_of_pokemons"],
-            starting_value=rewards["starting_value"],
-            status_value=rewards["status_value"],
-            victory_value=rewards["victory_reward"],
+            fainted_value=self.fainted_value,
+            hp_value=self.hp_value,
+            number_of_pokemons=self.number_of_pokemons,
+            starting_value=self.starting_value,
+            status_value=self.status_value,
+            victory_value=self.victory_value,
         )
 
     def embed_battle(self, battle: AbstractBattle) -> ObservationType:
@@ -649,6 +665,7 @@ class AlphaPokeSingleDQN(AlphaPokeSingleEmbedded):
                 kernel_initializer=initializers.VarianceScaling(
                     scale=1.0, mode="fan_in", distribution="truncated_normal"
                 ),
+                use_bias=True,
             ),
             layers.Dense(
                 4096,
@@ -656,6 +673,7 @@ class AlphaPokeSingleDQN(AlphaPokeSingleEmbedded):
                 kernel_initializer=initializers.VarianceScaling(
                     scale=1.0, mode="fan_in", distribution="truncated_normal"
                 ),
+                use_bias=True,
             ),
             layers.Dense(
                 1024,
@@ -663,6 +681,7 @@ class AlphaPokeSingleDQN(AlphaPokeSingleEmbedded):
                 kernel_initializer=initializers.VarianceScaling(
                     scale=1.0, mode="fan_in", distribution="truncated_normal"
                 ),
+                use_bias=True,
             ),
             layers.Dense(
                 512,
@@ -670,6 +689,7 @@ class AlphaPokeSingleDQN(AlphaPokeSingleEmbedded):
                 kernel_initializer=initializers.VarianceScaling(
                     scale=1.0, mode="fan_in", distribution="truncated_normal"
                 ),
+                use_bias=True,
             ),
             layers.Dense(
                 128,
@@ -677,6 +697,7 @@ class AlphaPokeSingleDQN(AlphaPokeSingleEmbedded):
                 kernel_initializer=initializers.VarianceScaling(
                     scale=1.0, mode="fan_in", distribution="truncated_normal"
                 ),
+                use_bias=True,
             ),
             layers.Dense(
                 32,
@@ -684,6 +705,7 @@ class AlphaPokeSingleDQN(AlphaPokeSingleEmbedded):
                 kernel_initializer=initializers.VarianceScaling(
                     scale=1.0, mode="fan_in", distribution="truncated_normal"
                 ),
+                use_bias=True,
             ),
             layers.Dense(
                 num_actions,
@@ -691,6 +713,7 @@ class AlphaPokeSingleDQN(AlphaPokeSingleEmbedded):
                 kernel_initializer=initializers.RandomUniform(
                     minval=-0.05, maxval=0.05
                 ),
+                use_bias=True,
                 bias_initializer=initializers.Constant(-0.2),
             ),
         ]
