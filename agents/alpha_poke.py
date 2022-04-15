@@ -159,16 +159,49 @@ class _MoveCategoryEmbedding:
         pass
 
 
+# Two arrays. One with the status, the other with the chance of it happening.
 class _MoveStatusEmbedding:
     @staticmethod
     def embed_move_status(move: Move):
-        pass
+        if move is None:
+            status = np.full(len(Status), -1)
+            chance = np.full(len(Status), -1, dtype=np.float64)
+        else:
+            status = np.full(len(Status), 0)
+            chance = np.full(len(Status), 0, dtype=np.float64)
+            if move.status is not None:
+                status[move.status.value - 1] = 1
+                chance[move.status.value - 1] = 1.0
+            else:
+                secondary = move.secondary
+                for d in secondary:
+                    if "status" in d.keys():
+                        secondary_chance = d["chance"] / 100
+                        secondary_status = getattr(Status, d["status"].upper())
+                        status[secondary_status.value - 1] = 1
+                        chance[secondary_status.value - 1] = secondary_chance
+        return {"status": status, "chances": chance}
 
     @staticmethod
     def get_embedding() -> Space:
-        pass
+        status_low_bound = [-1 for _ in range(len(Status))]
+        status_high_bound = [1 for _ in range(len(Status))]
+        status_space = Box(
+            low=np.array(status_low_bound, dtype=int),
+            high=np.array(status_high_bound, dtype=int),
+            dtype=int,
+        )
+        chance_low_bound = [-1.0 for _ in range(len(Status))]
+        chance_high_bound = [1.0 for _ in range(len(Status))]
+        chance_space = Box(
+            low=np.array(chance_low_bound, dtype=np.float64),
+            high=np.array(chance_high_bound, dtype=np.float64),
+            dtype=np.float64,
+        )
+        return Dict({"status": status_space, "chances": chance_space})
 
 
+# Two arrays. One with the boost, the other with the chance of it happening.
 class _BoostsEmbedding:
     @staticmethod
     def embed_boosts(move: Move):
@@ -215,6 +248,7 @@ class _BoostsEmbedding:
         return Dict({"boosts": boosts_space, "chances": chance_space})
 
 
+# Two arrays. One with the boost, the other with the chance of it happening.
 class _SelfBoostsEmbedding:
     @staticmethod
     def embed_self_boosts(move: Move):
@@ -269,6 +303,7 @@ class _SelfBoostsEmbedding:
         return Dict({"boosts": self_boosts_space, "chances": chance_space})
 
 
+# One hot encoding for move and pokémon types
 class _TypeEmbedding:
     @staticmethod
     def embed_type(mon_or_move: Union[Pokemon, Move]):
@@ -297,6 +332,7 @@ class _TypeEmbedding:
         )
 
 
+# One hot encoding for Pokémon items.
 class _ItemEmbedding:
     @staticmethod
     def embed_item(mon: Pokemon):
