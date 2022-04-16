@@ -8,6 +8,7 @@ from poke_env.environment.abstract_battle import AbstractBattle
 from poke_env.environment.effect import Effect
 from poke_env.environment.field import Field
 from poke_env.environment.move import Move
+from poke_env.environment.move_category import MoveCategory
 from poke_env.environment.pokemon import Pokemon, UNKNOWN_ITEM
 from poke_env.environment.pokemon_type import PokemonType
 from poke_env.environment.side_condition import SideCondition, STACKABLE_CONDITIONS
@@ -149,14 +150,25 @@ class _MoveEmbedding:
         pass
 
 
+# One hot encoding for the move category
 class _MoveCategoryEmbedding:
     @staticmethod
     def embed_category(move: Move):
-        pass
+        if move is None:
+            return np.full(len(MoveCategory), -1, dtype=int)
+        category = np.full(len(MoveCategory), 0, dtype=int)
+        category[move.category.value - 1] = 1
+        return category
 
     @staticmethod
     def get_embedding() -> Space:
-        pass
+        low_bound = [-1 for _ in range(len(MoveCategory))]
+        high_bound = [1 for _ in range(len(MoveCategory))]
+        return Box(
+            low=np.array(low_bound, dtype=int),
+            high=np.array(high_bound, dtype=int),
+            dtype=int,
+        )
 
 
 # Two arrays. One with the status, the other with the chance of it happening.
