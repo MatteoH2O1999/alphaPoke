@@ -163,7 +163,7 @@ class _MoveFlagsEmbedding:
             flags[1] = 1
         if move.stalling_move:
             flags[2] = 1
-        if move.ignore_immunity:
+        if move.ignore_immunity and opponent is not None:
             for t in opponent.types:
                 if t in move.ignore_immunity:
                     flags[3] = 1
