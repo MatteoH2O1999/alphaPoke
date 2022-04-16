@@ -176,10 +176,10 @@ class _MoveStatusEmbedding:
     @staticmethod
     def embed_move_status(move: Move):
         if move is None:
-            status = np.full(len(Status), -1)
+            status = np.full(len(Status), -1, dtype=int)
             chance = np.full(len(Status), -1, dtype=np.float64)
         else:
-            status = np.full(len(Status), 0)
+            status = np.full(len(Status), 0, dtype=int)
             chance = np.full(len(Status), 0, dtype=np.float64)
             if move.status is not None:
                 status[move.status.value - 1] = 1
@@ -218,10 +218,10 @@ class _BoostsEmbedding:
     @staticmethod
     def embed_boosts(move: Move):
         if move is None:
-            boosts = np.full(7, -7)
+            boosts = np.full(7, -7, dtype=int)
             chance = np.full(7, -1, dtype=np.float64)
         else:
-            boosts = np.full(7, 0)
+            boosts = np.full(7, 0, dtype=int)
             chance = np.full(7, 0, dtype=np.float64)
             secondary = move.secondary
             move_boosts = {}
@@ -265,10 +265,10 @@ class _SelfBoostsEmbedding:
     @staticmethod
     def embed_self_boosts(move: Move):
         if move is None:
-            self_boosts = np.full(7, -7)
+            self_boosts = np.full(7, -7, dtype=int)
             chance = np.full(7, -1, dtype=np.float64)
         else:
-            self_boosts = np.full(7, 0)
+            self_boosts = np.full(7, 0, dtype=int)
             chance = np.full(7, 0, dtype=np.float64)
             secondary = move.secondary
             boosts = {}
@@ -320,8 +320,8 @@ class _TypeEmbedding:
     @staticmethod
     def embed_type(mon_or_move: Union[Pokemon, Move]):
         if mon_or_move is None:
-            return np.full(len(PokemonType), -1)
-        types = np.full(len(PokemonType), 0)
+            return np.full(len(PokemonType), -1, dtype=int)
+        types = np.full(len(PokemonType), 0, dtype=int)
         if isinstance(mon_or_move, Move):
             battle_types = [mon_or_move.type]
         elif isinstance(mon_or_move, Pokemon):
@@ -349,9 +349,9 @@ class _ItemEmbedding:
     @staticmethod
     def embed_item(mon: Pokemon):
         if mon.item is None or mon.item == UNKNOWN_ITEM:
-            return np.full(len(ITEMS), -1)
+            return np.full(len(ITEMS), -1, dtype=int)
         battle_item = mon.item
-        items = np.full(len(ITEMS), 0)
+        items = np.full(len(ITEMS), 0, dtype=int)
         items[getattr(ITEMS, battle_item).value] = 1
         return items
 
@@ -371,8 +371,8 @@ class _AbilityEmbedding:
     @staticmethod
     def embed_ability(mon: Pokemon):
         if mon is None:
-            return np.full(len(ABILITIES), -1)
-        battle_abilities = np.full(len(ABILITIES), 0)
+            return np.full(len(ABILITIES), -1, dtype=int)
+        battle_abilities = np.full(len(ABILITIES), 0, dtype=int)
         if mon.ability is None:
             possible_abilities = mon.possible_abilities
             if len(possible_abilities) == 1:
@@ -402,7 +402,7 @@ class _WeatherEmbedding:
     def embed_weather(battle: AbstractBattle):
         current_turn = battle.turn
         weather = battle.weather
-        weathers = np.full(len(Weather), -1)
+        weathers = np.full(len(Weather), -1, dtype=int)
         for w in INFINITE_WEATHER:
             weathers[w.value] = 0
         for w, value in weather.items():
@@ -432,11 +432,11 @@ class _StatusEmbedding:
     def embed_status(mon: Pokemon):
         if mon is not None:
             status = mon.status
-            statuses = np.full(len(Status), 0)
+            statuses = np.full(len(Status), 0, dtype=int)
             if status is not None:
                 statuses[status.value] = 1
         else:
-            statuses = np.full(len(Status), -1)
+            statuses = np.full(len(Status), -1, dtype=int)
         return statuses
 
     @staticmethod
@@ -457,7 +457,7 @@ class _EffectsEmbedding:
         battle_effects = {}
         if mon is not None:
             battle_effects = mon.effects
-        effects = np.full(len(Effect), -1)
+        effects = np.full(len(Effect), -1, dtype=int)
         for effect, counter in battle_effects.items():
             effects[effect.value] = counter
         return effects
@@ -479,7 +479,7 @@ class _SideConditionEmbedding:
     def embed_side_conditions(battle: AbstractBattle):
         current_turn = battle.turn
         battle_side_conditions = battle.side_conditions
-        side_conditions = np.full(len(SideCondition), -1)
+        side_conditions = np.full(len(SideCondition), -1, dtype=int)
         side_conditions[SideCondition.STEALTH_ROCK.value] = 0
         for condition in STACKABLE_CONDITIONS.keys():
             side_conditions[condition.value] = 0
@@ -513,7 +513,7 @@ class _FieldEmbedding:
     @staticmethod
     def embed_field(battle: AbstractBattle):
         current_turn = battle.turn
-        fields = np.full(len(Field), -1)
+        fields = np.full(len(Field), -1, dtype=int)
         battle_fields = battle.fields
         for field, value in battle_fields.items():
             fields[field.value] = current_turn - value
