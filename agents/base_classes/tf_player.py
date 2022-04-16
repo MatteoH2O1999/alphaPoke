@@ -72,7 +72,7 @@ class _Env(OpenAIGymEnv):
 
 class TFPlayer(Player, ABC):
     def __init__(  # noqa: super().__init__ won't get called as this is a "fake" Player class
-        self, model: str = None, test=True, *args, **kwargs
+        self, model: str = None, test=False, *args, **kwargs
     ):
         self.battle_format = kwargs.get("battle_format", "gen8randombattle")
         kwargs["start_challenging"] = False
