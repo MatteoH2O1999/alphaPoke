@@ -58,6 +58,12 @@ def test_env():
 class AgentMock:
     policy = create_autospec(TFPolicy)
 
+    def __init__(self):
+        self.calls = 0
+
+    def initialize(self):
+        self.calls += 1
+
     def __eq__(self, other):
         return other == "Agent"
 
@@ -129,6 +135,7 @@ def test_init_player_for_training():
         mock_tf_wrap.assert_called_once()
         mock_saver.assert_called_once_with(AgentMock.policy)
         assert player.can_train
+        assert player.agent.calls == 1
 
 
 def test_init_player_model_success():

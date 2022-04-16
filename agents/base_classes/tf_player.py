@@ -103,6 +103,7 @@ class TFPlayer(Player, ABC):
             self.can_train = True
             self.evaluations = {}
             self.agent = self.get_agent()
+            self.agent.initialize()
             self.policy = self.agent.policy
             self.replay_buffer = self.get_replay_buffer()
             self.replay_buffer_iterator = self.get_replay_buffer_iterator()

@@ -701,7 +701,6 @@ class AlphaPokeSingleDQN(AlphaPokeSingleEmbedded):
         train_step_counter = tf.Variable(0)
 
         agent = self.create_agent(q_net, optimizer, train_step_counter)
-        agent.initialise()
         return agent
 
     @staticmethod
