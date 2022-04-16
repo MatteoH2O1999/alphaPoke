@@ -150,6 +150,40 @@ class _MoveEmbedding:
         pass
 
 
+# Array of int flags for the move embedding
+class _MoveFlagsEmbedding:
+    @staticmethod
+    def embed_move_flags(move: Move, opponent: Pokemon):
+        if move is None:
+            return np.full(6, -1, dtype=int)
+        flags = np.full(6, 0, dtype=int)
+        if move.can_z_move:
+            flags[0] = 1
+        if move.thaws_target:
+            flags[1] = 1
+        if move.stalling_move:
+            flags[2] = 1
+        if move.ignore_immunity:
+            for t in opponent.types:
+                if t in move.ignore_immunity:
+                    flags[3] = 1
+        if move.force_switch:
+            flags[4] = 1
+        if move.breaks_protect:
+            flags[5] = 1
+        return flags
+
+    @staticmethod
+    def get_embedding() -> Space:
+        low_bound = [-1 for _ in range(6)]
+        high_bound = [1 for _ in range(6)]
+        return Box(
+            low=np.full(low_bound, dtype=int),
+            high=np.full(high_bound, dtype=int),
+            dtype=int,
+        )
+
+
 # One hot encoding for the move category
 class _MoveCategoryEmbedding:
     @staticmethod
