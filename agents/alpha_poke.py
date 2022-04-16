@@ -132,7 +132,7 @@ class _EnemyActivePokemonEmbedding:
 
 class _EnemyPokemonEmbedding:
     @staticmethod
-    def embed_pokemon(mon: Pokemon):
+    def embed_pokemon(mon: Pokemon, battle: AbstractBattle):
         pass
 
     @staticmethod
@@ -142,7 +142,7 @@ class _EnemyPokemonEmbedding:
 
 class _MoveEmbedding:
     @staticmethod
-    def embed_move(move: Move):
+    def embed_move(move: Move, mon: Pokemon, opponent: Pokemon):
         pass
 
     @staticmethod
@@ -608,19 +608,19 @@ class AlphaPokeSingleEmbedded(DQNPlayer, ABC):
                 battle.opponent_active_pokemon, battle
             ),
             "opponent_mon_1": _EnemyPokemonEmbedding.embed_pokemon(
-                non_active_opponent_mons[0]
+                non_active_opponent_mons[0], battle
             ),
             "opponent_mon_2": _EnemyPokemonEmbedding.embed_pokemon(
-                non_active_opponent_mons[1]
+                non_active_opponent_mons[1], battle
             ),
             "opponent_mon_3": _EnemyPokemonEmbedding.embed_pokemon(
-                non_active_opponent_mons[2]
+                non_active_opponent_mons[2], battle
             ),
             "opponent_mon_4": _EnemyPokemonEmbedding.embed_pokemon(
-                non_active_opponent_mons[3]
+                non_active_opponent_mons[3], battle
             ),
             "opponent_mon_5": _EnemyPokemonEmbedding.embed_pokemon(
-                non_active_opponent_mons[4]
+                non_active_opponent_mons[4], battle
             ),
         }
 
