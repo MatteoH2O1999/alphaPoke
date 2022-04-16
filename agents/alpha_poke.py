@@ -143,11 +143,79 @@ class _EnemyPokemonEmbedding:
 class _MoveEmbedding:
     @staticmethod
     def embed_move(move: Move, mon: Pokemon, opponent: Pokemon):
-        pass
+        if move is None:
+            base_power = -1.0
+            accuracy = -1.0
+            pps = -1.0
+            drain = -1.0
+            heal = -1.0
+            recoil = -1.0
+            min_hits = -1
+            max_hits = -1
+            mean_hits = -1.0
+            crit_ratio = -1
+            priority = -8
+            damage = -1
+        else:
+            base_power = move.base_power / 100
+            accuracy = move.accuracy
+            pps = move.current_pp / move.max_pp
+            drain = move.drain
+            heal = move.heal
+            recoil = move.recoil
+            min_hits, max_hits = move.n_hit
+            mean_hits = move.expected_hits
+            crit_ratio = move.crit_ratio
+            priority = move.priority
+            damage = move.damage
+            if damage == "level":
+                damage = mon.level
+        float_move_info = np.array(
+            [base_power, accuracy, pps, drain, heal, mean_hits, recoil],
+            dtype=np.float64,
+        )
+        int_move_info = np.array(
+            [min_hits, max_hits, crit_ratio, priority, damage], dtype=int
+        )
+        return {
+            "float_move_info": float_move_info,
+            "int_move_info": int_move_info,
+            "move_category": _MoveCategoryEmbedding.embed_category(move),
+            "move_type": _TypeEmbedding.embed_type(move),
+            "move_flags": _MoveFlagsEmbedding.embed_move_flags(move, opponent),
+            "move_status": _MoveStatusEmbedding.embed_move_status(move),
+            "boosts": _BoostsEmbedding.embed_boosts(move),
+            "self_boosts": _SelfBoostsEmbedding.embed_self_boosts(move),
+        }
 
     @staticmethod
     def get_embedding() -> Space:
-        pass
+        float_info_low_bound = [-1.0, -1.0, -1.0, -1.0, -1.0, -1.0, -1.0]
+        float_info_high_bound = [4.0, 1.0, 1.0, 1.0, 1.0, 5.0, 1.0]
+        float_info_space = Box(
+            low=np.array(float_info_low_bound, dtype=np.float64),
+            high=np.array(float_info_high_bound, dtype=np.float64),
+            dtype=np.float64,
+        )
+        int_info_low_bound = [-1, -1, -1, -8, -1]
+        int_info_high_bound = [5, 5, 6, 5, 100]
+        int_info_space = Box(
+            low=np.array(int_info_low_bound, dtype=int),
+            high=np.array(int_info_high_bound, dtype=int),
+            dtype=int,
+        )
+        return Dict(
+            {
+                "float_move_info": float_info_space,
+                "int_move_info": int_info_space,
+                "move_category": _MoveCategoryEmbedding.get_embedding(),
+                "move_type": _TypeEmbedding.get_embedding(),
+                "move_flags": _MoveFlagsEmbedding.get_embedding(),
+                "move_status": _MoveStatusEmbedding.get_embedding(),
+                "boosts": _BoostsEmbedding.get_embedding(),
+                "self_boosts": _SelfBoostsEmbedding.get_embedding(),
+            }
+        )
 
 
 # Array of int flags for the move embedding
