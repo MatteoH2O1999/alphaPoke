@@ -103,40 +103,48 @@ class _BattlefieldEmbedding:
 class _ActivePokemonEmbedding:
     @staticmethod
     def embed_pokemon(mon: Pokemon, battle: AbstractBattle):
+        # TODO
         pass
 
     @staticmethod
     def get_embedding() -> Space:
+        # TODO
         pass
 
 
 class _PokemonEmbedding:
     @staticmethod
     def embed_pokemon(mon: Pokemon, battle: AbstractBattle):
+        # TODO
         pass
 
     @staticmethod
     def get_embedding() -> Space:
+        # TODO
         pass
 
 
 class _EnemyActivePokemonEmbedding:
     @staticmethod
     def embed_pokemon(mon: Pokemon, battle: AbstractBattle):
+        # TODO
         pass
 
     @staticmethod
     def get_embedding() -> Space:
+        # TODO
         pass
 
 
 class _EnemyPokemonEmbedding:
     @staticmethod
     def embed_pokemon(mon: Pokemon, battle: AbstractBattle):
+        # TODO
         pass
 
     @staticmethod
     def get_embedding() -> Space:
+        # TODO
         pass
 
 
