@@ -324,7 +324,7 @@ class _MonBoostsEmbedding:
         low_bound = [-1.0 for _ in range(len(STATS) - 1)]
         high_bound = [4.0 for _ in range(len(STATS) - 1)]
         return Box(
-            low=np.full(low_bound, dtype=np.float64),
+            low=np.array(low_bound, dtype=np.float64),
             high=np.array(high_bound, dtype=np.float64),
             dtype=np.float64,
         )
