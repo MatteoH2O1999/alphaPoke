@@ -7,7 +7,7 @@ from gym.spaces import Space, Dict, Box
 from poke_env.environment.abstract_battle import AbstractBattle
 from poke_env.environment.effect import Effect
 from poke_env.environment.field import Field
-from poke_env.environment.move import Move
+from poke_env.environment.move import DynamaxMove, Move
 from poke_env.environment.move_category import MoveCategory
 from poke_env.environment.pokemon import Pokemon, UNKNOWN_ITEM
 from poke_env.environment.pokemon_type import PokemonType
@@ -159,37 +159,150 @@ class _ActivePokemonEmbedding:
 class _PokemonEmbedding:
     @staticmethod
     def embed_pokemon(mon: Pokemon, battle: AbstractBattle):
-        # TODO
-        pass
+        moves = []
+        current_hp_fraction = np.full(1, -1.0, dtype=np.float64)
+        if mon is not None:
+            current_hp_fraction[0] = mon.current_hp_fraction
+            moves = list(mon.moves.values())
+        while len(moves) < 4:
+            moves.append(None)
+        return {
+            "current_hp_fraction": current_hp_fraction,
+            "base_stats": _BaseStatsEmbedding.embed_stats(mon),
+            "type": _TypeEmbedding.embed_type(mon),
+            "status": _StatusEmbedding.embed_status(mon),
+            "move_1": _MoveEmbedding.embed_move(
+                moves[0], mon, battle.opponent_active_pokemon
+            ),
+            "move_2": _MoveEmbedding.embed_move(
+                moves[1], mon, battle.opponent_active_pokemon
+            ),
+            "move_3": _MoveEmbedding.embed_move(
+                moves[2], mon, battle.opponent_active_pokemon
+            ),
+            "move_4": _MoveEmbedding.embed_move(
+                moves[3], mon, battle.opponent_active_pokemon
+            ),
+        }
 
     @staticmethod
     def get_embedding() -> Space:
-        # TODO
-        pass
+        current_hp_fraction_space = Box(
+            low=-1.0, high=1.0, shape=(1,), dtype=np.float64
+        )
+        return Dict(
+            {
+                "current_hp_fraction": current_hp_fraction_space,
+                "base_stats": _BaseStatsEmbedding.get_embedding(),
+                "type": _TypeEmbedding.get_embedding(),
+                "status": _StatusEmbedding.get_embedding(),
+                "move_1": _MoveEmbedding.get_embedding(),
+                "move_2": _MoveEmbedding.get_embedding(),
+                "move_3": _MoveEmbedding.get_embedding(),
+                "move_4": _MoveEmbedding.get_embedding(),
+            }
+        )
 
 
 class _EnemyActivePokemonEmbedding:
     @staticmethod
     def embed_pokemon(mon: Pokemon, battle: AbstractBattle):
-        # TODO
-        pass
+        moves = []
+        current_hp_fraction = np.full(1, -1.0, dtype=np.float64)
+        if mon is not None:
+            current_hp_fraction[0] = mon.current_hp_fraction
+            moves = list(mon.moves.values())
+            for move in moves:
+                if isinstance(move, DynamaxMove) != mon.is_dynamaxed:
+                    moves.remove(move)
+        while len(moves) < 4:
+            moves.append(None)
+        return {
+            "current_hp_fraction": current_hp_fraction,
+            "base_stats": _BaseStatsEmbedding.embed_stats(mon),
+            "type": _TypeEmbedding.embed_type(mon),
+            "status": _StatusEmbedding.embed_status(mon),
+            "boosts": _MonBoostsEmbedding.embed_boosts(mon),
+            "move_1": _MoveEmbedding.embed_move(
+                moves[0], mon, battle.opponent_active_pokemon
+            ),
+            "move_2": _MoveEmbedding.embed_move(
+                moves[1], mon, battle.opponent_active_pokemon
+            ),
+            "move_3": _MoveEmbedding.embed_move(
+                moves[2], mon, battle.opponent_active_pokemon
+            ),
+            "move_4": _MoveEmbedding.embed_move(
+                moves[3], mon, battle.opponent_active_pokemon
+            ),
+        }
 
     @staticmethod
     def get_embedding() -> Space:
-        # TODO
-        pass
+        current_hp_fraction_space = Box(
+            low=-1.0, high=1.0, shape=(1,), dtype=np.float64
+        )
+        return Dict(
+            {
+                "current_hp_fraction": current_hp_fraction_space,
+                "base_stats": _BaseStatsEmbedding.get_embedding(),
+                "type": _TypeEmbedding.get_embedding(),
+                "status": _StatusEmbedding.get_embedding(),
+                "boosts": _MonBoostsEmbedding.get_embedding(),
+                "move_1": _MoveEmbedding.get_embedding(),
+                "move_2": _MoveEmbedding.get_embedding(),
+                "move_3": _MoveEmbedding.get_embedding(),
+                "move_4": _MoveEmbedding.get_embedding(),
+            }
+        )
 
 
 class _EnemyPokemonEmbedding:
     @staticmethod
     def embed_pokemon(mon: Pokemon, battle: AbstractBattle):
-        # TODO
-        pass
+        moves = []
+        current_hp_fraction = np.full(1, -1.0, dtype=np.float64)
+        if mon is not None:
+            current_hp_fraction[0] = mon.current_hp_fraction
+            moves = list(mon.moves.values())
+        while len(moves) < 4:
+            moves.append(None)
+        return {
+            "current_hp_fraction": current_hp_fraction,
+            "base_stats": _BaseStatsEmbedding.embed_stats(mon),
+            "type": _TypeEmbedding.embed_type(mon),
+            "status": _StatusEmbedding.embed_status(mon),
+            "move_1": _MoveEmbedding.embed_move(
+                moves[0], mon, battle.opponent_active_pokemon
+            ),
+            "move_2": _MoveEmbedding.embed_move(
+                moves[1], mon, battle.opponent_active_pokemon
+            ),
+            "move_3": _MoveEmbedding.embed_move(
+                moves[2], mon, battle.opponent_active_pokemon
+            ),
+            "move_4": _MoveEmbedding.embed_move(
+                moves[3], mon, battle.opponent_active_pokemon
+            ),
+        }
 
     @staticmethod
     def get_embedding() -> Space:
-        # TODO
-        pass
+        current_hp_fraction_space = Box(
+            low=-1.0, high=1.0, shape=(1,), dtype=np.float64
+        )
+        return Dict(
+            {
+                "current_hp_fraction": current_hp_fraction_space,
+                "base_stats": _BaseStatsEmbedding.get_embedding(),
+                "type": _TypeEmbedding.get_embedding(),
+                "status": _StatusEmbedding.get_embedding(),
+                "move_1": _MoveEmbedding.get_embedding(),
+                "move_2": _MoveEmbedding.get_embedding(),
+                "move_3": _MoveEmbedding.get_embedding(),
+                "move_4": _MoveEmbedding.get_embedding(),
+            }
+        )
 
 
 # Array embedding of boosts
