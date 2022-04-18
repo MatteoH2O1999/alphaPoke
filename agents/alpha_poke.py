@@ -62,13 +62,12 @@ ITEMS = get_items()
 class _BattlefieldEmbedding:
     @staticmethod
     def embed_battlefield(battle: AbstractBattle):
-        battlefield_dict = {}
         dynamax_turns = np.full(2, -1, dtype=int)
         if battle.dynamax_turns_left is not None:
             dynamax_turns[0] = battle.dynamax_turns_left
         if battle.opponent_dynamax_turns_left is not None:
             dynamax_turns[1] = battle.opponent_dynamax_turns_left
-        battlefield_dict["dynamax_turns"] = dynamax_turns
+
         boolean_flags = np.full(6, False, dtype=bool)
         if battle.can_mega_evolve:
             boolean_flags[0] = True
@@ -82,8 +81,11 @@ class _BattlefieldEmbedding:
             boolean_flags[4] = True
         if battle.force_switch:
             boolean_flags[5] = True
-        battlefield_dict["booleans_flags"] = boolean_flags
-        return battlefield_dict
+
+        return {
+            "dynamax_turns": dynamax_turns,
+            "boolean_flags": boolean_flags,
+        }
 
     @staticmethod
     def get_embedding():
