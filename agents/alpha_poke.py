@@ -49,6 +49,9 @@ STATS = {
     "evasion": 7,
 }
 
+BOOSTS_MULTIPLIERS = [0.25, 0.28, 0.33, 0.4, 0.5, 0.66, 1, 1.5, 2, 2.5, 3, 3.5, 4]
+
+
 INFINITE_WEATHER = [Weather.DELTASTREAM, Weather.PRIMORDIALSEA, Weather.DESOLATELAND]
 
 ABILITIES = get_abilities(8)
@@ -148,6 +151,58 @@ class _EnemyPokemonEmbedding:
         pass
 
 
+# Array embedding of boosts
+class _MonBoostsEmbedding:
+    @staticmethod
+    def embed_boosts(mon: Pokemon):
+        if mon is None:
+            return np.full(len(STATS) - 1, -1.0, dtype=np.float64)
+        boosts = np.full(len(STATS) - 1, 1.0, dtype=np.float64)
+        mon_boosts = mon.boosts
+        for boost, boost_value in mon_boosts.items():
+            stat_index = STATS[boost] - 1
+            boost_multiplier = BOOSTS_MULTIPLIERS[boost_value + 6]
+            boosts[stat_index] = boost_multiplier
+        return boosts
+
+    @staticmethod
+    def get_embedding():
+        low_bound = [-1.0 for _ in range(len(STATS) - 1)]
+        high_bound = [4.0 for _ in range(len(STATS) - 1)]
+        return Box(
+            low=np.full(low_bound, dtype=np.float64),
+            high=np.array(high_bound, dtype=np.float64),
+            dtype=np.float64,
+        )
+
+
+# Array embedding of base stats
+class _BaseStatsEmbedding:
+    @staticmethod
+    def embed_stats(mon: Pokemon):
+        if mon is None:
+            return np.full(6, -1.0, dtype=np.float64)
+        stats = np.full(6, 0.0, dtype=np.float64)
+        stats[0] = mon.base_stats["hp"] / 255
+        stats[1] = mon.base_stats["atk"] / 255
+        stats[2] = mon.base_stats["def"] / 255
+        stats[3] = mon.base_stats["spa"] / 255
+        stats[4] = mon.base_stats["spd"] / 255
+        stats[5] = mon.base_stats["spe"] / 255
+        return stats
+
+    @staticmethod
+    def get_embedding() -> Space:
+        low_bound = [-1.0 for _ in range(6)]
+        high_bound = [1.0 for _ in range(6)]
+        return Box(
+            low=np.array(low_bound, dtype=np.float64),
+            high=np.array(high_bound, dtype=np.float64),
+            dtype=np.float64,
+        )
+
+
+# Dict embedding of a move.
 class _MoveEmbedding:
     @staticmethod
     def embed_move(move: Move, mon: Pokemon, opponent: Pokemon):
