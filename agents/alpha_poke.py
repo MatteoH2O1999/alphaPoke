@@ -108,13 +108,52 @@ class _BattlefieldEmbedding:
 class _ActivePokemonEmbedding:
     @staticmethod
     def embed_pokemon(mon: Pokemon, battle: AbstractBattle):
-        # TODO
-        pass
+        current_hp_fraction = np.full(1, -1.0, dtype=np.float64)
+        if mon is not None:
+            current_hp_fraction[0] = mon.current_hp_fraction
+        available_moves = battle.available_moves
+        while len(available_moves) < 4:
+            available_moves.append(None)
+        return {
+            "current_hp_fraction": current_hp_fraction,
+            "base_stats": _BaseStatsEmbedding.embed_stats(mon),
+            "type": _TypeEmbedding.embed_type(mon),
+            "boosts": _MonBoostsEmbedding.embed_boosts(mon),
+            "status": _StatusEmbedding.embed_status(mon),
+            "effects": _EffectsEmbedding.embed_effects(mon),
+            "move_1": _MoveEmbedding.embed_move(
+                available_moves[0], mon, battle.opponent_active_pokemon
+            ),
+            "move_2": _MoveEmbedding.embed_move(
+                available_moves[1], mon, battle.opponent_active_pokemon
+            ),
+            "move_3": _MoveEmbedding.embed_move(
+                available_moves[2], mon, battle.opponent_active_pokemon
+            ),
+            "move_4": _MoveEmbedding.embed_move(
+                available_moves[3], mon, battle.opponent_active_pokemon
+            ),
+        }
 
     @staticmethod
     def get_embedding() -> Space:
-        # TODO
-        pass
+        current_hp_fraction_space = Box(
+            low=-1.0, high=1.0, shape=(1,), dtype=np.float64
+        )
+        return Dict(
+            {
+                "current_hp_fraction": current_hp_fraction_space,
+                "base_stats": _BaseStatsEmbedding.get_embedding(),
+                "type": _TypeEmbedding.get_embedding(),
+                "boosts": _MonBoostsEmbedding.get_embedding(),
+                "status": _StatusEmbedding.get_embedding(),
+                "effects": _EffectsEmbedding.get_embedding(),
+                "move_1": _MoveEmbedding.get_embedding(),
+                "move_2": _MoveEmbedding.get_embedding(),
+                "move_3": _MoveEmbedding.get_embedding(),
+                "move_4": _MoveEmbedding.get_embedding(),
+            }
+        )
 
 
 class _PokemonEmbedding:
