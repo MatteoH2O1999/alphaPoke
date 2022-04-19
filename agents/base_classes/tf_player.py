@@ -74,6 +74,7 @@ class TFPlayer(Player, ABC):
     def __init__(  # noqa: super().__init__ won't get called as this is a "fake" Player class
         self, model: str = None, test=False, *args, **kwargs
     ):
+        self._reward_buffer = {}
         self.battle_format = kwargs.get("battle_format", "gen8randombattle")
         kwargs["start_challenging"] = False
         if test:
@@ -93,7 +94,6 @@ class TFPlayer(Player, ABC):
         self.wrapped_env = temp_env
         temp_env = suite_gym.wrap_env(temp_env)
         self.environment = tf_py_environment.TFPyEnvironment(temp_env)
-        self._reward_buffer = {}
         self.agent: TFAgent
         self.policy: TFPolicy
         self.replay_buffer: ReplayBuffer
@@ -401,4 +401,8 @@ class TFPlayer(Player, ABC):
         await challenge_task
 
     def __getattr__(self, item):
-        return self.internal_agent.__getattribute__(item)
+        if item == "internal_agent":
+            return None
+        if getattr(self, "internal_agent", None) is None:
+            return None
+        return getattr(self.internal_agent, item)
