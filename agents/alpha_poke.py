@@ -68,19 +68,19 @@ class _BattlefieldEmbedding:
         if battle.opponent_dynamax_turns_left is not None:
             dynamax_turns[1] = battle.opponent_dynamax_turns_left
 
-        boolean_flags = np.full(6, False, dtype=bool)
+        boolean_flags = np.full(6, 0, dtype=int)
         if battle.can_mega_evolve:
-            boolean_flags[0] = True
+            boolean_flags[0] = 1
         if battle.can_z_move:
-            boolean_flags[1] = True
+            boolean_flags[1] = 1
         if battle.can_dynamax:
-            boolean_flags[2] = True
+            boolean_flags[2] = 1
         if battle.opponent_can_dynamax:
-            boolean_flags[3] = True
+            boolean_flags[3] = 1
         if battle.maybe_trapped:
-            boolean_flags[4] = True
+            boolean_flags[4] = 1
         if battle.force_switch:
-            boolean_flags[5] = True
+            boolean_flags[5] = 1
 
         return {
             "dynamax_turns": dynamax_turns,
@@ -96,7 +96,7 @@ class _BattlefieldEmbedding:
             high=np.array(dynamax_turns_high, dtype=int),
             dtype=int,
         )
-        boolean_flags = Box(low=False, high=True, shape=(6,), dtype=bool)
+        boolean_flags = Box(low=0, high=1, shape=(6,), dtype=int)
         return Dict(
             {
                 "dynamax_turns": dynamax_turns,
@@ -449,9 +449,12 @@ class _MoveFlagsEmbedding:
         if move.stalling_move:
             flags[2] = 1
         if move.ignore_immunity and opponent is not None:
-            for t in opponent.types:
-                if t in move.ignore_immunity:
-                    flags[3] = 1
+            if isinstance(move.ignore_immunity, bool):
+                flags[3] = 1
+            else:
+                for t in opponent.types:
+                    if t in move.ignore_immunity:
+                        flags[3] = 1
         if move.force_switch:
             flags[4] = 1
         if move.breaks_protect:
@@ -463,8 +466,8 @@ class _MoveFlagsEmbedding:
         low_bound = [-1 for _ in range(6)]
         high_bound = [1 for _ in range(6)]
         return Box(
-            low=np.full(low_bound, dtype=int),
-            high=np.full(high_bound, dtype=int),
+            low=np.array(low_bound, dtype=int),
+            high=np.array(high_bound, dtype=int),
             dtype=int,
         )
 
@@ -649,7 +652,7 @@ class _TypeEmbedding:
             raise RuntimeError(f"Expected Move or Pokemon, got {type(mon_or_move)}.")
         for mon_type in battle_types:
             if mon_type is not None:
-                types[mon_type.value] = 1
+                types[mon_type.value - 1] = 1
         return types
 
     @staticmethod
@@ -671,7 +674,7 @@ class _ItemEmbedding:
             return np.full(len(ITEMS), -1, dtype=int)
         battle_item = mon.item
         items = np.full(len(ITEMS), 0, dtype=int)
-        items[getattr(ITEMS, battle_item).value] = 1
+        items[getattr(ITEMS, battle_item).value - 1] = 1
         return items
 
     @staticmethod
@@ -696,12 +699,12 @@ class _AbilityEmbedding:
             possible_abilities = mon.possible_abilities
             if len(possible_abilities) == 1:
                 for ability in possible_abilities:
-                    battle_abilities[getattr(ABILITIES, ability).value] = 2
+                    battle_abilities[getattr(ABILITIES, ability).value - 1] = 2
             else:
                 for ability in possible_abilities:
-                    battle_abilities[getattr(ABILITIES, ability).value] = 1
+                    battle_abilities[getattr(ABILITIES, ability).value - 1] = 1
             return battle_abilities
-        battle_abilities[getattr(ABILITIES, mon.ability).value] = 2
+        battle_abilities[getattr(ABILITIES, mon.ability).value - 1] = 2
         return battle_abilities
 
     @staticmethod
@@ -723,12 +726,12 @@ class _WeatherEmbedding:
         weather = battle.weather
         weathers = np.full(len(Weather), -1, dtype=int)
         for w in INFINITE_WEATHER:
-            weathers[w.value] = 0
+            weathers[w.value - 1] = 0
         for w, value in weather.items():
             if w in INFINITE_WEATHER:
-                weathers[w.value] = 1
+                weathers[w.value - 1] = 1
             else:
-                weathers[w.value] = current_turn - value
+                weathers[w.value - 1] = current_turn - value
         return weathers
 
     @staticmethod
@@ -736,8 +739,8 @@ class _WeatherEmbedding:
         low_bound = [-1 for _ in range(len(Weather))]
         high_bound = [6 for _ in range(len(Weather))]
         for w in INFINITE_WEATHER:
-            high_bound[w.value] = 1
-            low_bound[w.value] = 0
+            high_bound[w.value - 1] = 1
+            low_bound[w.value - 1] = 0
         return Box(
             low=np.array(low_bound, dtype=int),
             high=np.array(high_bound, dtype=int),
@@ -753,7 +756,7 @@ class _StatusEmbedding:
             status = mon.status
             statuses = np.full(len(Status), 0, dtype=int)
             if status is not None:
-                statuses[status.value] = 1
+                statuses[status.value - 1] = 1
         else:
             statuses = np.full(len(Status), -1, dtype=int)
         return statuses
@@ -778,7 +781,7 @@ class _EffectsEmbedding:
             battle_effects = mon.effects
         effects = np.full(len(Effect), -1, dtype=int)
         for effect, counter in battle_effects.items():
-            effects[effect.value] = counter
+            effects[effect.value - 1] = counter
         return effects
 
     @staticmethod
@@ -801,14 +804,14 @@ class _SideConditionEmbedding:
         side_conditions = np.full(len(SideCondition), -1, dtype=int)
         side_conditions[SideCondition.STEALTH_ROCK.value] = 0
         for condition in STACKABLE_CONDITIONS.keys():
-            side_conditions[condition.value] = 0
+            side_conditions[condition.value - 1] = 0
         for condition, value in battle_side_conditions.items():
             if condition in STACKABLE_CONDITIONS.keys():
-                side_conditions[condition.value] = value
+                side_conditions[condition.value - 1] = value
             elif condition == SideCondition.STEALTH_ROCK:
-                side_conditions[condition.value] = 1
+                side_conditions[condition.value - 1] = 1
             else:
-                side_conditions[condition.value] = current_turn - value
+                side_conditions[condition.value - 1] = current_turn - value
         return side_conditions
 
     @staticmethod
@@ -818,8 +821,8 @@ class _SideConditionEmbedding:
         low_bound[SideCondition.STEALTH_ROCK.value] = 0
         high_bound[SideCondition.STEALTH_ROCK.value] = 1
         for condition in STACKABLE_CONDITIONS.keys():
-            low_bound[condition.value] = 0
-            high_bound[condition.value] = STACKABLE_CONDITIONS[condition]
+            low_bound[condition.value - 1] = 0
+            high_bound[condition.value - 1] = STACKABLE_CONDITIONS[condition]
         return Box(
             low=np.array(low_bound, dtype=int),
             high=np.array(high_bound, dtype=int),
@@ -835,7 +838,7 @@ class _FieldEmbedding:
         fields = np.full(len(Field), -1, dtype=int)
         battle_fields = battle.fields
         for field, value in battle_fields.items():
-            fields[field.value] = current_turn - value
+            fields[field.value - 1] = current_turn - value
         return fields
 
     @staticmethod
