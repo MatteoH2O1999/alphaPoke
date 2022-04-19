@@ -27,6 +27,7 @@ from tf_agents.agents import TFAgent
 from tf_agents.agents.dqn.dqn_agent import DqnAgent
 from tf_agents.agents.tf_agent import LossInfo
 from tf_agents.drivers.py_driver import PyDriver
+from tf_agents.networks.nest_map import NestFlatten, NestMap
 from tf_agents.networks.sequential import Sequential
 from tf_agents.policies.py_tf_eager_policy import PyTFEagerPolicy
 from tf_agents.replay_buffers.replay_buffer import ReplayBuffer
@@ -111,9 +112,9 @@ class _ActivePokemonEmbedding:
         current_hp_fraction = np.full(1, -1.0, dtype=np.float64)
         if mon is not None:
             current_hp_fraction[0] = mon.current_hp_fraction
-        available_moves = battle.available_moves
-        while len(available_moves) < 4:
-            available_moves.append(None)
+        available_moves = [None, None, None, None]
+        for i, move in enumerate(battle.available_moves):
+            available_moves[i] = move
         return {
             "current_hp_fraction": current_hp_fraction,
             "base_stats": _BaseStatsEmbedding.embed_stats(mon),
@@ -408,7 +409,10 @@ class _MoveEmbedding:
     @staticmethod
     def get_embedding() -> Space:
         float_info_low_bound = [-1.0, -1.0, -1.0, -1.0, -1.0, -1.0, -1.0]
-        float_info_high_bound = [4.0, 1.0, 1.0, 1.0, 1.0, 5.0, 1.0]
+        float_info_high_bound = [4.0, 1.0, 1.0, 1.0, 1.0, 5.23, 1.0]
+        #                                                 ^^^^
+        # 5.23 is the expected hit number for triple kick and triple axel
+        #
         float_info_space = Box(
             low=np.array(float_info_low_bound, dtype=np.float64),
             high=np.array(float_info_high_bound, dtype=np.float64),
@@ -1004,12 +1008,16 @@ class AlphaPokeSingleEmbedded(DQNPlayer, ABC):
             self.evaluations["evaluations"] = [[], []]
         self.evaluations["evaluations"][0].append(step)
         self.evaluations["evaluations"][1].append(evaluation)
+        print(
+            f"step: {step} - Evaluation: {evaluation[0]}. 95% confidence interval: {evaluation[1]}"
+        )
 
     def log_function(self, step, loss_info: LossInfo):
         if "losses" not in self.evaluations.keys():
             self.evaluations["losses"] = [[], []]
         self.evaluations["losses"][0].append(step)
         self.evaluations["losses"][1].append(loss_info.loss)
+        print(f"step: {step} - Loss: {loss_info.loss}")
 
 
 class AlphaPokeSingleDQN(AlphaPokeSingleEmbedded):
@@ -1017,7 +1025,9 @@ class AlphaPokeSingleDQN(AlphaPokeSingleEmbedded):
         action_tensor_spec = tensor_spec.from_spec(self.environment.action_spec())
         num_actions = action_tensor_spec.maximum - action_tensor_spec.minimum + 1
 
-        q_net = Sequential(self.get_network_layers(num_actions))
+        obs_spec = tensor_spec.from_spec(self.environment.observation_spec())
+
+        q_net = Sequential(self.get_network_layers(obs_spec, num_actions))
         optimizer = self.get_optimizer()
 
         train_step_counter = tf.Variable(0)
@@ -1026,16 +1036,27 @@ class AlphaPokeSingleDQN(AlphaPokeSingleEmbedded):
         return agent
 
     @staticmethod
-    def get_network_layers(num_actions):
+    def get_network_layers(obs_spec, num_actions):
+        dict_list = obs_spec.copy()
+        to_see = [dict_list]
+        for d in to_see:
+            for key, value in d.items():
+                if isinstance(value, dict):
+                    d[key] = value.copy()
+                    to_see.append(d[key])
+                else:
+                    d[key] = layers.Dense(
+                        value.shape[0],
+                        activation=activations.elu,
+                        kernel_initializer=initializers.VarianceScaling(
+                            scale=1.0, mode="fan_in", distribution="truncated_normal"
+                        ),
+                        use_bias=True,
+                    )
         layer_list = [
-            layers.Dense(
-                16384,
-                activation=activations.elu,
-                kernel_initializer=initializers.VarianceScaling(
-                    scale=1.0, mode="fan_in", distribution="truncated_normal"
-                ),
-                use_bias=True,
-            ),
+            NestMap(dict_list, input_spec=obs_spec),
+            NestFlatten(),
+            layers.Concatenate(),
             layers.Dense(
                 4096,
                 activation=activations.elu,
