@@ -1,4 +1,5 @@
 # Module containing production-level agents with neural networks
+import os
 import numpy as np
 import tensorflow as tf
 
@@ -21,7 +22,6 @@ from poke_env.player.baselines import (
 )
 from poke_env.player.openai_api import ObservationType
 from poke_env.player.player import Player
-from poke_env.player.utils import background_evaluate_player
 from tensorflow.keras import activations, initializers, layers, losses, optimizers
 from tf_agents.agents import TFAgent
 from tf_agents.agents.dqn.dqn_agent import DqnAgent
@@ -989,28 +989,32 @@ class AlphaPokeSingleEmbedded(DQNPlayer, ABC):
         return self.eval_int
 
     def eval_function(self, step):
-        num_challenges = 2000
-        placement_challenges = 40
+        num_challenges = 50
 
-        eval_env, agent = self.create_evaluation_env(active=False)
-        policy = self.agent.policy
-        task = background_evaluate_player(
-            agent, n_battles=num_challenges, n_placement_battles=placement_challenges
+        opponent = RandomPlayer(
+            battle_format=self.battle_format, max_concurrent_battles=1
         )
+        eval_env, agent = self.create_evaluation_env(active=True, opponents=[opponent])
+        policy = self.agent.policy
+
+        total_return = 0.0
         for _ in range(num_challenges):
             time_step = eval_env.reset()
+            episode_return = 0.0
             while not time_step.is_last():
                 action_step = policy.action(time_step)
                 time_step = eval_env.step(action_step)
-        evaluation = task.result()
+                episode_return += time_step.reward
+            total_return += episode_return
+
+        evaluation = (total_return / num_challenges).numpy()[0]
 
         if "evaluations" not in self.evaluations.keys():
             self.evaluations["evaluations"] = [[], []]
         self.evaluations["evaluations"][0].append(step)
         self.evaluations["evaluations"][1].append(evaluation)
-        print(
-            f"step: {step} - Evaluation: {evaluation[0]}. 95% confidence interval: {evaluation[1]}"
-        )
+        print(f"step: {step} - Average return: {evaluation}")
+        eval_env.close()
 
     def log_function(self, step, loss_info: LossInfo):
         if "losses" not in self.evaluations.keys():
@@ -1018,6 +1022,17 @@ class AlphaPokeSingleEmbedded(DQNPlayer, ABC):
         self.evaluations["losses"][0].append(step)
         self.evaluations["losses"][1].append(loss_info.loss)
         print(f"step: {step} - Loss: {loss_info.loss}")
+
+    def save_training_data(self, save_dir):
+        os.makedirs(save_dir, exist_ok=True)
+        with open(save_dir + "/training_losses.csv", "w") as training_file:
+            training_file.write("step;loss\n")
+            for evaluation in self.evaluations["losses"]:
+                training_file.write(f"{evaluation[0]};{evaluation[1]}\n")
+        with open(save_dir + "/training_returns.csv", "w") as training_file:
+            training_file.write("step;avg_returns\n")
+            for evaluation in self.evaluations["evaluations"]:
+                training_file.write(f"{evaluation[0]};{evaluation[1]}\n")
 
 
 class AlphaPokeSingleDQN(AlphaPokeSingleEmbedded):
@@ -1058,7 +1073,7 @@ class AlphaPokeSingleDQN(AlphaPokeSingleEmbedded):
             NestFlatten(),
             layers.Concatenate(),
             layers.Dense(
-                4096,
+                2048,
                 activation=activations.elu,
                 kernel_initializer=initializers.VarianceScaling(
                     scale=1.0, mode="fan_in", distribution="truncated_normal"
@@ -1074,7 +1089,7 @@ class AlphaPokeSingleDQN(AlphaPokeSingleEmbedded):
                 use_bias=True,
             ),
             layers.Dense(
-                512,
+                256,
                 activation=activations.elu,
                 kernel_initializer=initializers.VarianceScaling(
                     scale=1.0, mode="fan_in", distribution="truncated_normal"
@@ -1082,15 +1097,7 @@ class AlphaPokeSingleDQN(AlphaPokeSingleEmbedded):
                 use_bias=True,
             ),
             layers.Dense(
-                128,
-                activation=activations.elu,
-                kernel_initializer=initializers.VarianceScaling(
-                    scale=1.0, mode="fan_in", distribution="truncated_normal"
-                ),
-                use_bias=True,
-            ),
-            layers.Dense(
-                32,
+                64,
                 activation=activations.elu,
                 kernel_initializer=initializers.VarianceScaling(
                     scale=1.0, mode="fan_in", distribution="truncated_normal"
