@@ -191,7 +191,13 @@ class TFPlayer(Player, ABC):
     def train(self, num_iterations: int):  # pragma: no cover
         pass
 
+    def save_training_data(self, save_dir):  # pragma: no cover
+        pass
+
     def save_policy(self, save_dir):
+        if os.path.isdir(save_dir) and len(os.listdir(save_dir)) > 0:
+            raise ValueError(f"{save_dir} is not empty.")
+        os.makedirs(save_dir, exist_ok=True)
         self.saver.save(save_dir)
 
     @property
@@ -232,7 +238,7 @@ class TFPlayer(Player, ABC):
         check_env(test_environment)
         test_environment.close()
 
-    def create_evaluation_env(self, active=True):
+    def create_evaluation_env(self, active=True, opponents=None):
         env = _Env(
             self.__class__.__name__,
             self.calc_reward_func,
@@ -240,7 +246,11 @@ class TFPlayer(Player, ABC):
             self.embed_battle_func,
             self.embedding,
             self.space_size,
-            self.opponents if active else None,
+            opponents
+            if opponents is not None and active
+            else self.opponents
+            if active
+            else None,
             battle_format=self.battle_format,
             start_challenging=active,
         )
