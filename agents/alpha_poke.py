@@ -1154,3 +1154,21 @@ class AlphaPokeSingleDQN(AlphaPokeSingleEmbedded):
             [self.replay_buffer.add_batch],
             max_steps=collect_steps_per_iteration,
         )
+
+    def fainted_value(self) -> float:
+        return 2.0
+
+    def hp_value(self) -> float:
+        return 1.0
+
+    def number_of_pokemons(self) -> int:
+        return 6
+
+    def starting_value(self) -> float:
+        return 0.0
+
+    def status_value(self) -> float:
+        return 0.0
+
+    def victory_value(self) -> float:
+        return 30.0
