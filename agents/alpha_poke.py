@@ -864,27 +864,21 @@ class AlphaPokeSingleEmbedded(DQNPlayer, ABC):
         self.log_int = log_interval
         self.eval_int = eval_interval
 
-    @property
     def fainted_value(self) -> float:
         return 0.0
 
-    @property
     def hp_value(self) -> float:
         return 0.0
 
-    @property
     def number_of_pokemons(self) -> int:
         return 6
 
-    @property
     def starting_value(self) -> float:
         return 0.0
 
-    @property
     def status_value(self) -> float:
         return 0.0
 
-    @property
     def victory_value(self) -> float:
         return 1.0
 
@@ -893,12 +887,12 @@ class AlphaPokeSingleEmbedded(DQNPlayer, ABC):
     ) -> float:
         return self.reward_computing_helper(
             current_battle,
-            fainted_value=self.fainted_value,
-            hp_value=self.hp_value,
-            number_of_pokemons=self.number_of_pokemons,
-            starting_value=self.starting_value,
-            status_value=self.status_value,
-            victory_value=self.victory_value,
+            fainted_value=self.fainted_value(),
+            hp_value=self.hp_value(),
+            number_of_pokemons=self.number_of_pokemons(),
+            starting_value=self.starting_value(),
+            status_value=self.status_value(),
+            victory_value=self.victory_value(),
         )
 
     def embed_battle(self, battle: AbstractBattle) -> ObservationType:
