@@ -136,6 +136,10 @@ def test_init_player_for_training():
         mock_saver.assert_called_once_with(AgentMock.policy)
         assert player.can_train
         assert player.agent.calls == 1
+        assert player.__getattr__("internal_agent") is None
+        player.internal_agent = None
+        assert player.battles is None
+        assert player.format_is_doubles is None
 
 
 def test_init_player_model_success():
@@ -242,17 +246,53 @@ def test_init_player_not_a_policy():
         mock_load.assert_called_once_with("test path")
 
 
-def test_save_policy():
+def test_save_policy_success():
     with patch("tf_agents.environments.suite_gym.wrap_env"), patch(
         "tf_agents.environments.tf_py_environment.TFPyEnvironment"
-    ), patch("tf_agents.policies.policy_saver.PolicySaver") as mock_saver:
+    ), patch("tf_agents.policies.policy_saver.PolicySaver") as mock_saver, patch(
+        "os.makedirs"
+    ) as mock_makedirs, patch(
+        "os.listdir"
+    ) as mock_listdir, patch(
+        "os.path.isdir"
+    ) as mock_isdir:
         mock_saver_object = MagicMock()
         mock_saver.return_value = mock_saver_object
+        mock_isdir.return_value = True
+        mock_listdir.return_value = []
         player = DummyTFPlayer(
             start_listening=False, start_challenging=False, test=False
         )
         player.save_policy("save path")
+        mock_isdir.assert_called_once_with("save path")
+        mock_listdir.assert_called_once_with("save path")
+        mock_makedirs.assert_called_once_with("save path", exist_ok=True)
         mock_saver_object.save.assert_called_once_with("save path")
+
+
+def test_save_policy_failure():
+    with patch("tf_agents.environments.suite_gym.wrap_env"), patch(
+        "tf_agents.environments.tf_py_environment.TFPyEnvironment"
+    ), patch("tf_agents.policies.policy_saver.PolicySaver") as mock_saver, patch(
+        "os.makedirs"
+    ) as mock_makedirs, patch(
+        "os.listdir"
+    ) as mock_listdir, patch(
+        "os.path.isdir"
+    ) as mock_isdir:
+        mock_saver_object = MagicMock()
+        mock_saver.return_value = mock_saver_object
+        mock_listdir.return_value = ["file"]
+        mock_isdir.return_value = True
+        player = DummyTFPlayer(
+            start_listening=False, start_challenging=False, test=False
+        )
+        with pytest.raises(ValueError):
+            player.save_policy("save path")
+        mock_isdir.assert_called_once_with("save path")
+        mock_listdir.assert_called_once_with("save path")
+        mock_makedirs.assert_not_called()
+        mock_saver_object.save.assert_not_called()
 
 
 def test_battle_format_properties_gen8_random_battle():
