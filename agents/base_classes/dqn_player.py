@@ -38,7 +38,10 @@ class DQNPlayer(TFPlayer, ABC):
                 self.log_function(step, loss_data)
 
             if step % self.eval_interval == 0:
+                self.wrapped_env.close(purge=False)
                 self.eval_function(step)
+                self.wrapped_env.start_challenging()
+                time_step = self.environment.reset()
 
     @abstractmethod
     def eval_function(self, step):  # pragma: no cover

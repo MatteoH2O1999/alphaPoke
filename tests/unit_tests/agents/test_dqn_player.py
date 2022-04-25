@@ -121,6 +121,7 @@ def test_dqn_player_train():
         )
         player.eval_function = MagicMock()
         player.log_function = MagicMock()
+        player.wrapped_env = MagicMock()
         player.train(20)
 
         assert player.eval_function.call_count == 3
