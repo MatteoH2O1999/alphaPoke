@@ -1137,7 +1137,6 @@ class AlphaPokeSingleDQN(AlphaPokeSingleEmbedded):
             optimizer=optimizer,
             train_step_counter=train_step_counter,
             td_errors_loss_fn=losses.MeanSquaredError(),
-            gamma=0.5,
         )
 
     def get_replay_buffer(self) -> ReplayBuffer:
