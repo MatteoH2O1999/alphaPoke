@@ -34,7 +34,9 @@ if __name__ == "__main__":
     policy_path = input("Insert policy path: ")
     b_format = input("Insert battle format: ")
     log_folder = input("Insert log folder: ")
-    choose_message = "\n\nChoose which agent to train:\n" "1: DQN single battle\n"
+    choose_message = "\n\nChoose which agent to train:\n"
+    choose_message += "1: DQN single battle\n"
+    choose_message += "2: Double DQN single battle\n"
     choice = int(input(choose_message))
     if choice == 1:
         train_single_dqn(iterations, policy_path, b_format, log_folder)
