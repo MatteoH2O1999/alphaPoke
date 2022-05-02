@@ -24,7 +24,7 @@ from poke_env.player.openai_api import ObservationType
 from poke_env.player.player import Player
 from tensorflow.keras import activations, initializers, layers, losses, optimizers
 from tf_agents.agents import TFAgent
-from tf_agents.agents.dqn.dqn_agent import DqnAgent
+from tf_agents.agents.dqn.dqn_agent import DqnAgent, DdqnAgent
 from tf_agents.agents.tf_agent import LossInfo
 from tf_agents.drivers.py_driver import PyDriver
 from tf_agents.networks.nest_map import NestFlatten, NestMap
@@ -1137,6 +1137,7 @@ class AlphaPokeSingleDQN(AlphaPokeSingleEmbedded):
             optimizer=optimizer,
             train_step_counter=train_step_counter,
             td_errors_loss_fn=losses.MeanSquaredError(),
+            gamma=0.5,
         )
 
     def get_replay_buffer(self) -> ReplayBuffer:
@@ -1186,3 +1187,16 @@ class AlphaPokeSingleDQN(AlphaPokeSingleEmbedded):
 
     def victory_value(self) -> float:
         return 30.0
+
+
+class AlphaPokeDoubleDQN(AlphaPokeSingleDQN):
+    def create_agent(self, q_net, optimizer, train_step_counter):
+        return DdqnAgent(
+            self.environment.time_step_spec(),
+            self.environment.action_spec(),
+            q_network=q_net,
+            optimizer=optimizer,
+            train_step_counter=train_step_counter,
+            td_errors_loss_fn=losses.MeanSquaredError(),
+            gamma=0.5,
+        )
