@@ -30,6 +30,7 @@ from tf_agents.drivers.py_driver import PyDriver
 from tf_agents.networks.nest_map import NestFlatten, NestMap
 from tf_agents.networks.sequential import Sequential
 from tf_agents.policies.py_tf_eager_policy import PyTFEagerPolicy
+from tf_agents.policies.random_tf_policy import RandomTFPolicy
 from tf_agents.replay_buffers.replay_buffer import ReplayBuffer
 from tf_agents.replay_buffers.tf_uniform_replay_buffer import TFUniformReplayBuffer
 from tf_agents.specs import tensor_spec
@@ -1158,6 +1159,19 @@ class AlphaPokeSingleDQN(AlphaPokeSingleEmbedded):
         ).prefetch(3)
 
         return iter(dataset)
+
+    def get_random_driver(self) -> PyDriver:
+        random_policy = RandomTFPolicy(
+            self.environment.time_step_spec(), self.environment.action_spec()
+        )
+        return PyDriver(
+            self.environment,
+            PyTFEagerPolicy(
+                random_policy, use_tf_function=True, batch_time_steps=False
+            ),
+            [self.replay_buffer.add_batch],
+            max_steps=100,
+        )
 
     def get_collect_driver(self) -> PyDriver:
         collect_steps_per_iteration = 1

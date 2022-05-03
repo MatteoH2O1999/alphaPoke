@@ -18,6 +18,7 @@ class DummyDQNPlayer(DQNPlayer):
     mock_agent: TFAgent
     mock_buffer: ReplayBuffer
     mock_iterator: Iterator
+    mock_random_driver: PyDriver
     mock_driver: PyDriver
 
     def eval_function(self, step):
@@ -51,6 +52,9 @@ class DummyDQNPlayer(DQNPlayer):
     def get_replay_buffer_iterator(self) -> Iterator:
         return self.mock_iterator
 
+    def get_random_driver(self) -> PyDriver:
+        return self.mock_random_driver
+
     def get_collect_driver(self) -> PyDriver:
         return self.mock_driver
 
@@ -74,6 +78,7 @@ def test_dqn_player_init():
         DummyDQNPlayer.mock_agent.policy = mock_policy
         DummyDQNPlayer.mock_driver = MagicMock()
         DummyDQNPlayer.mock_iterator = MagicMock()
+        DummyDQNPlayer.mock_random_driver = MagicMock()
         DummyDQNPlayer.mock_buffer = MagicMock()
 
         player = DummyDQNPlayer(
@@ -89,13 +94,7 @@ def test_dqn_player_init():
 def test_dqn_player_train():
     with patch("tf_agents.environments.suite_gym.wrap_env"), patch(
         "tf_agents.environments.tf_py_environment.TFPyEnvironment"
-    ), patch("tf_agents.policies.policy_saver.PolicySaver"), patch(
-        "tf_agents.drivers.py_driver.PyDriver"
-    ) as mock_driver, patch(
-        "tf_agents.policies.random_tf_policy.RandomTFPolicy"
-    ) as mock_random_policy, patch(
-        "tf_agents.policies.py_tf_eager_policy.PyTFEagerPolicy"
-    ) as mock_eager_policy:
+    ), patch("tf_agents.policies.policy_saver.PolicySaver"):
         DummyDQNPlayer.mock_agent = MagicMock()
         DummyDQNPlayer.mock_agent.train_step_counter.numpy.side_effect = [
             i for i in range(21)
@@ -105,16 +104,11 @@ def test_dqn_player_train():
         mock_policy = create_autospec(TFPolicy)
         DummyDQNPlayer.mock_agent.policy = mock_policy
         DummyDQNPlayer.mock_driver = MagicMock()
+        DummyDQNPlayer.mock_random_driver = MagicMock()
         DummyDQNPlayer.mock_driver.run.return_value = (1, 2)
         DummyDQNPlayer.mock_iterator = MagicMock()
         DummyDQNPlayer.mock_iterator.__next__.return_value = (3, 4)
         DummyDQNPlayer.mock_buffer = MagicMock()
-        mock_random_driver = MagicMock()
-        mock_driver.return_value = mock_random_driver
-        mock_eager_policy_instance = MagicMock()
-        mock_eager_policy.return_value = mock_eager_policy_instance
-        mock_random_policy_instance = MagicMock()
-        mock_random_policy.return_value = mock_random_policy_instance
 
         player = DummyDQNPlayer(
             start_listening=False, start_challenging=False, test=False
@@ -130,15 +124,4 @@ def test_dqn_player_train():
         player.log_function.assert_has_calls(
             [call(i, mock_train_data) for i in range(1, 21)]
         )
-        mock_driver.assert_called_once_with(
-            player.environment,
-            mock_eager_policy_instance,
-            [player.replay_buffer.add_batch],
-            max_steps=100,
-        )
-        mock_eager_policy.assert_called_once_with(
-            mock_random_policy_instance, use_tf_function=True, batch_time_steps=False
-        )
-        mock_random_policy.assert_called_once_with(
-            player.environment.time_step_spec(), player.environment.action_spec()
-        )
+        DummyDQNPlayer.mock_random_driver.run.assert_called_once()

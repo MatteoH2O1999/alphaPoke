@@ -97,10 +97,17 @@ class DummyTFPlayer(TFPlayer):
         assert self.replay_buffer == "Replay buffer"
         return "Iterator"
 
+    def get_random_driver(self) -> PyDriver:
+        assert self.agent == "Agent"
+        assert self.replay_buffer == "Replay buffer"
+        assert self.replay_buffer_iterator == "Iterator"
+        return "Random driver"  # noqa: used for testing
+
     def get_collect_driver(self) -> PyDriver:
         assert self.agent == "Agent"
         assert self.replay_buffer == "Replay buffer"
         assert self.replay_buffer_iterator == "Iterator"
+        assert self.random_driver == "Random driver"
         return "Collect driver"  # noqa: used for testing
 
     def log_function(self, *args, **kwargs):

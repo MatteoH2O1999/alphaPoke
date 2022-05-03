@@ -98,6 +98,7 @@ class TFPlayer(Player, ABC):
         self.policy: TFPolicy
         self.replay_buffer: ReplayBuffer
         self.replay_buffer_iterator: Iterator
+        self.random_driver: PyDriver
         self.collect_driver: PyDriver
         if model is None:
             self.can_train = True
@@ -107,6 +108,7 @@ class TFPlayer(Player, ABC):
             self.policy = self.agent.policy
             self.replay_buffer = self.get_replay_buffer()
             self.replay_buffer_iterator = self.get_replay_buffer_iterator()
+            self.random_driver = self.get_random_driver()
             self.collect_driver = self.get_collect_driver()
             self.saver = policy_saver.PolicySaver(self.agent.policy)
         else:
@@ -167,6 +169,10 @@ class TFPlayer(Player, ABC):
 
     @abstractmethod
     def get_collect_driver(self) -> PyDriver:  # pragma: no cover
+        pass
+
+    @abstractmethod
+    def get_random_driver(self) -> PyDriver:  # pragma: no cover
         pass
 
     @abstractmethod
