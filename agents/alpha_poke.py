@@ -86,6 +86,9 @@ class _BattlefieldEmbedding:
         return {
             "dynamax_turns": dynamax_turns,
             "boolean_flags": boolean_flags,
+            "fields": _FieldEmbedding.embed_field(battle),
+            "side_conditions": _SideConditionEmbedding.embed_side_conditions(battle),
+            "weather": _WeatherEmbedding.embed_weather(battle),
         }
 
     @staticmethod
@@ -102,6 +105,9 @@ class _BattlefieldEmbedding:
             {
                 "dynamax_turns": dynamax_turns,
                 "boolean_flags": boolean_flags,
+                "fields": _FieldEmbedding.get_embedding(),
+                "side_conditions": _SideConditionEmbedding.get_embedding(),
+                "weather": _WeatherEmbedding.get_embedding(),
             }
         )
 
