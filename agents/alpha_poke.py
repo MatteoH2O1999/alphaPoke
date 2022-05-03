@@ -224,18 +224,10 @@ class _EnemyActivePokemonEmbedding:
             "type": _TypeEmbedding.embed_type(mon),
             "status": _StatusEmbedding.embed_status(mon),
             "boosts": _MonBoostsEmbedding.embed_boosts(mon),
-            "move_1": _MoveEmbedding.embed_move(
-                moves[0], mon, battle.opponent_active_pokemon
-            ),
-            "move_2": _MoveEmbedding.embed_move(
-                moves[1], mon, battle.opponent_active_pokemon
-            ),
-            "move_3": _MoveEmbedding.embed_move(
-                moves[2], mon, battle.opponent_active_pokemon
-            ),
-            "move_4": _MoveEmbedding.embed_move(
-                moves[3], mon, battle.opponent_active_pokemon
-            ),
+            "move_1": _MoveEmbedding.embed_move(moves[0], mon, battle.active_pokemon),
+            "move_2": _MoveEmbedding.embed_move(moves[1], mon, battle.active_pokemon),
+            "move_3": _MoveEmbedding.embed_move(moves[2], mon, battle.active_pokemon),
+            "move_4": _MoveEmbedding.embed_move(moves[3], mon, battle.active_pokemon),
         }
 
     @staticmethod
@@ -273,18 +265,10 @@ class _EnemyPokemonEmbedding:
             "base_stats": _BaseStatsEmbedding.embed_stats(mon),
             "type": _TypeEmbedding.embed_type(mon),
             "status": _StatusEmbedding.embed_status(mon),
-            "move_1": _MoveEmbedding.embed_move(
-                moves[0], mon, battle.opponent_active_pokemon
-            ),
-            "move_2": _MoveEmbedding.embed_move(
-                moves[1], mon, battle.opponent_active_pokemon
-            ),
-            "move_3": _MoveEmbedding.embed_move(
-                moves[2], mon, battle.opponent_active_pokemon
-            ),
-            "move_4": _MoveEmbedding.embed_move(
-                moves[3], mon, battle.opponent_active_pokemon
-            ),
+            "move_1": _MoveEmbedding.embed_move(moves[0], mon, battle.active_pokemon),
+            "move_2": _MoveEmbedding.embed_move(moves[1], mon, battle.active_pokemon),
+            "move_3": _MoveEmbedding.embed_move(moves[2], mon, battle.active_pokemon),
+            "move_4": _MoveEmbedding.embed_move(moves[3], mon, battle.active_pokemon),
         }
 
     @staticmethod
@@ -368,6 +352,7 @@ class _MoveEmbedding:
             drain = -1.0
             heal = -1.0
             recoil = -1.0
+            damage_multiplier = -1.0
             min_hits = -1
             max_hits = -1
             mean_hits = -1.0
@@ -381,6 +366,7 @@ class _MoveEmbedding:
             drain = move.drain
             heal = move.heal
             recoil = move.recoil
+            damage_multiplier = opponent.damage_multiplier(move)
             min_hits, max_hits = move.n_hit
             mean_hits = move.expected_hits
             crit_ratio = move.crit_ratio
@@ -389,7 +375,16 @@ class _MoveEmbedding:
             if damage == "level":
                 damage = mon.level
         float_move_info = np.array(
-            [base_power, accuracy, pps, drain, heal, mean_hits, recoil],
+            [
+                base_power,
+                accuracy,
+                pps,
+                drain,
+                heal,
+                mean_hits,
+                recoil,
+                damage_multiplier,
+            ],
             dtype=np.float64,
         )
         int_move_info = np.array(
@@ -408,8 +403,8 @@ class _MoveEmbedding:
 
     @staticmethod
     def get_embedding() -> Space:
-        float_info_low_bound = [-1.0, -1.0, -1.0, -1.0, -1.0, -1.0, -1.0]
-        float_info_high_bound = [4.0, 1.0, 1.0, 1.0, 1.0, 5.23, 1.0]
+        float_info_low_bound = [-1.0, -1.0, -1.0, -1.0, -1.0, -1.0, -1.0, -1.0]
+        float_info_high_bound = [4.0, 1.0, 1.0, 1.0, 1.0, 5.23, 1.0, 4.0]
         #                                                 ^^^^
         # 5.23 is the expected hit number for triple kick and triple axel
         #
