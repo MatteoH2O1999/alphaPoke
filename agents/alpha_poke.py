@@ -839,8 +839,8 @@ class _SideConditionEmbedding:
     def get_embedding() -> Space:
         low_bound = [-1 for _ in range(len(SideCondition))]
         high_bound = [6 for _ in range(len(SideCondition))]
-        low_bound[SideCondition.STEALTH_ROCK.value] = 0
-        high_bound[SideCondition.STEALTH_ROCK.value] = 1
+        low_bound[SideCondition.STEALTH_ROCK.value - 1] = 0
+        high_bound[SideCondition.STEALTH_ROCK.value - 1] = 1
         for condition in STACKABLE_CONDITIONS.keys():
             low_bound[condition.value - 1] = 0
             high_bound[condition.value - 1] = STACKABLE_CONDITIONS[condition]
