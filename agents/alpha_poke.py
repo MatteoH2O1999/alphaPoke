@@ -1001,7 +1001,7 @@ class AlphaPokeSingleEmbedded(DQNPlayer, ABC):
         return self.eval_int
 
     def eval_function(self, step):
-        num_challenges = 50
+        num_challenges = 100
 
         opponent = RandomPlayer(
             battle_format=self.battle_format, max_concurrent_battles=1
