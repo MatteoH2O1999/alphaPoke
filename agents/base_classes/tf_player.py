@@ -23,6 +23,7 @@ from utils.action_to_move_function import (
     get_int_action_to_move,
     get_int_action_space_size,
 )
+from utils.close_player import close_player
 
 
 class _Env(OpenAIGymEnv):
@@ -243,6 +244,8 @@ class TFPlayer(Player, ABC):
         )
         check_env(test_environment)
         test_environment.close()
+        close_player(test_environment.agent)
+        close_player(opponent)
 
     def create_evaluation_env(self, active=True, opponents=None):
         env = _Env(

@@ -38,6 +38,7 @@ from typing import Iterator, Union, List
 
 from agents.base_classes.dqn_player import DQNPlayer
 from agents.seba import Seba
+from utils.close_player import close_player
 from utils.get_smogon_data import get_abilities, get_items
 
 STATS = {
@@ -1026,6 +1027,8 @@ class AlphaPokeSingleEmbedded(DQNPlayer, ABC):
         self.evaluations["evaluations"][1].append(evaluation)
         print(f"step: {step} - Average return: {evaluation}")
         eval_env.close()
+        close_player(agent)
+        close_player(opponent)
 
     def log_function(self, step, loss_info: LossInfo):
         if "losses" not in self.evaluations.keys():
