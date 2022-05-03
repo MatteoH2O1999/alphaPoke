@@ -13,7 +13,7 @@ from tf_agents.drivers.py_driver import PyDriver
 from tf_agents.replay_buffers.replay_buffer import ReplayBuffer
 from tf_agents.policies import TFPolicy
 from typing import Iterator, Union, List
-from unittest.mock import create_autospec, patch, MagicMock
+from unittest.mock import create_autospec, patch, MagicMock, call
 
 from agents.base_classes.tf_player import TFPlayer, _Env
 
@@ -538,9 +538,13 @@ def test_test_env_true():
         "agents.base_classes.tf_player.check_env"
     ) as mock_checker, patch(
         "agents.base_classes.tf_player.RandomPlayer"
-    ):
+    ) as mock_random, patch(
+        "agents.base_classes.tf_player.close_player"
+    ) as mock_close:
         env1 = MagicMock()
         env2 = MagicMock()
+        mock_opponent = MagicMock()
+        mock_random.return_value = mock_opponent
         mock_env.side_effect = [env1, env2]
         player = DummyTFPlayer(
             start_listening=False, start_challenging=False, test=True
@@ -548,3 +552,4 @@ def test_test_env_true():
         assert mock_env.call_count == 2
         mock_checker.assert_called_once_with(env1)
         mock_wrap.assert_called_once_with(env2)
+        mock_close.assert_has_calls([call(env1.agent), call(mock_opponent)])
