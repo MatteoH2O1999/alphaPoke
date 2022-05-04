@@ -374,7 +374,10 @@ class _MoveEmbedding:
             drain = move.drain
             heal = move.heal
             recoil = move.recoil
-            damage_multiplier = opponent.damage_multiplier(move)
+            if opponent is not None:
+                damage_multiplier = opponent.damage_multiplier(move)
+            else:
+                damage_multiplier = -1.0
             min_hits, max_hits = move.n_hit
             mean_hits = move.expected_hits
             crit_ratio = move.crit_ratio
