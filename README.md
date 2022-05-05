@@ -5,7 +5,9 @@
 [![Code style: black](https://img.shields.io/badge/code%20style-black-000000.svg)](https://github.com/psf/black)
 
 A pokémon showdown battle-bot project based on reinforcement learning techniques.
-It includes and easy to use GUI interface to challenge the created models.
+It includes an easy-to-use GUI interface to challenge the created models.
+Keep in mind that this is a project I'm doing for a uni course.
+As such, usage of other files is not officially supported and may change unexpectedly.
 
 ## Installation
 The software does not require an installation process.
