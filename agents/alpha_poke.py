@@ -1004,7 +1004,7 @@ class AlphaPokeSingleEmbedded(DQNPlayer, ABC):
         return self.eval_int
 
     def eval_function(self, step):
-        num_challenges = 100
+        num_challenges = 300
 
         opponent = RandomPlayer(
             battle_format=self.battle_format, max_concurrent_battles=1
@@ -1098,23 +1098,7 @@ class AlphaPokeSingleDQN(AlphaPokeSingleEmbedded):
                 use_bias=True,
             ),
             layers.Dense(
-                1024,
-                activation=activations.elu,
-                kernel_initializer=initializers.VarianceScaling(
-                    scale=1.0, mode="fan_in", distribution="truncated_normal"
-                ),
-                use_bias=True,
-            ),
-            layers.Dense(
                 256,
-                activation=activations.elu,
-                kernel_initializer=initializers.VarianceScaling(
-                    scale=1.0, mode="fan_in", distribution="truncated_normal"
-                ),
-                use_bias=True,
-            ),
-            layers.Dense(
-                64,
                 activation=activations.elu,
                 kernel_initializer=initializers.VarianceScaling(
                     scale=1.0, mode="fan_in", distribution="truncated_normal"
@@ -1145,11 +1129,12 @@ class AlphaPokeSingleDQN(AlphaPokeSingleEmbedded):
             optimizer=optimizer,
             train_step_counter=train_step_counter,
             td_errors_loss_fn=losses.MeanSquaredError(),
-            gamma=0.5,
+            gamma=0.8,
+            n_step_update=3,
         )
 
     def get_replay_buffer(self) -> ReplayBuffer:
-        buffer_max_capacity = 20_000
+        buffer_max_capacity = 100_000
 
         return TFUniformReplayBuffer(
             self.agent.collect_data_spec,
@@ -1158,10 +1143,10 @@ class AlphaPokeSingleDQN(AlphaPokeSingleEmbedded):
         )
 
     def get_replay_buffer_iterator(self) -> Iterator:
-        batch_size = 64
+        batch_size = 256
 
         dataset = self.replay_buffer.as_dataset(
-            num_parallel_calls=3, sample_batch_size=batch_size, num_steps=2
+            num_parallel_calls=3, sample_batch_size=batch_size, num_steps=4
         ).prefetch(3)
 
         return iter(dataset)
@@ -1176,11 +1161,11 @@ class AlphaPokeSingleDQN(AlphaPokeSingleEmbedded):
                 random_policy, use_tf_function=True, batch_time_steps=False
             ),
             [self.replay_buffer.add_batch],
-            max_steps=100,
+            max_steps=500,
         )
 
     def get_collect_driver(self) -> PyDriver:
-        collect_steps_per_iteration = 1
+        collect_steps_per_iteration = 10
 
         return PyDriver(
             self.environment,
@@ -1219,5 +1204,6 @@ class AlphaPokeDoubleDQN(AlphaPokeSingleDQN):
             optimizer=optimizer,
             train_step_counter=train_step_counter,
             td_errors_loss_fn=losses.MeanSquaredError(),
-            gamma=0.5,
+            gamma=0.8,
+            n_step_update=3,
         )
