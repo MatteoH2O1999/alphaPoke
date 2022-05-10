@@ -1129,7 +1129,7 @@ class AlphaPokeSingleDQN(AlphaPokeSingleEmbedded):
             optimizer=optimizer,
             train_step_counter=train_step_counter,
             td_errors_loss_fn=losses.MeanSquaredError(),
-            gamma=0.8,
+            gamma=0.9,
             n_step_update=3,
         )
 
@@ -1143,7 +1143,7 @@ class AlphaPokeSingleDQN(AlphaPokeSingleEmbedded):
         )
 
     def get_replay_buffer_iterator(self) -> Iterator:
-        batch_size = 512
+        batch_size = 256
 
         dataset = self.replay_buffer.as_dataset(
             num_parallel_calls=3, sample_batch_size=batch_size, num_steps=4
@@ -1161,7 +1161,7 @@ class AlphaPokeSingleDQN(AlphaPokeSingleEmbedded):
                 random_policy, use_tf_function=True, batch_time_steps=False
             ),
             [self.replay_buffer.add_batch],
-            max_steps=1500,
+            max_steps=500,
         )
 
     def get_collect_driver(self) -> PyDriver:
@@ -1194,6 +1194,28 @@ class AlphaPokeSingleDQN(AlphaPokeSingleEmbedded):
     def victory_value(self) -> float:
         return 30.0
 
+    def log_function(self, step, loss_info: LossInfo):
+        super().log_function(step * 10, loss_info)
+
+    def eval_function(self, step):
+        super().eval_function(step * 10)
+
+    @property
+    def eval_interval(self) -> int:
+        if super().eval_interval % 10 != 0:
+            raise ValueError(
+                f"Evaluation interval should be a multiple of 10. Got {super().eval_interval}"
+            )
+        return super().eval_interval // 10
+
+    @property
+    def log_interval(self) -> int:
+        if super().log_interval % 10 != 0:
+            raise ValueError(
+                f"Logging interval should be a multiple of 10. Got {super().log_interval}"
+            )
+        return super().log_interval // 10
+
 
 class AlphaPokeDoubleDQN(AlphaPokeSingleDQN):
     def create_agent(self, q_net, optimizer, train_step_counter):
@@ -1204,6 +1226,6 @@ class AlphaPokeDoubleDQN(AlphaPokeSingleDQN):
             optimizer=optimizer,
             train_step_counter=train_step_counter,
             td_errors_loss_fn=losses.MeanSquaredError(),
-            gamma=0.8,
+            gamma=0.9,
             n_step_update=3,
         )
