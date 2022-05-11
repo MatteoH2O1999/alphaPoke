@@ -8,7 +8,7 @@ def train_single_dqn(
     logs: str = "./logs",
 ):
     agent = AlphaPokeSingleDQN(
-        battle_format=battle_format, eval_interval=10_000, log_interval=1000, test=True
+        battle_format=battle_format, eval_interval=50_000, log_interval=1000, test=True
     )
     agent.train(steps)
     agent.save_policy(save_policy)
@@ -22,7 +22,7 @@ def train_double_dqn(
     logs: str = "./logs",
 ):
     agent = AlphaPokeDoubleDQN(
-        battle_format=battle_format, eval_interval=10_000, log_interval=1000, test=True
+        battle_format=battle_format, eval_interval=50_000, log_interval=1000, test=True
     )
     agent.train(steps)
     agent.save_policy(save_policy)
