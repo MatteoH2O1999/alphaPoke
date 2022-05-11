@@ -1028,7 +1028,11 @@ class AlphaPokeSingleEmbedded(DQNPlayer, ABC):
             self.evaluations["evaluations"] = [[], []]
         self.evaluations["evaluations"][0].append(step)
         self.evaluations["evaluations"][1].append(evaluation)
-        print(f"step: {step} - Average return: {evaluation}")
+        print(
+            f"step: {step} - "
+            f"Average return: {evaluation} - "
+            f"Winrate against a random opponent: {agent.win_rate * 100}%"
+        )
         eval_env.close()
         close_player(agent)
         close_player(opponent)
