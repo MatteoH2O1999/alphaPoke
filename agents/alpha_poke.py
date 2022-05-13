@@ -1181,10 +1181,10 @@ class AlphaPokeSingleDQN(AlphaPokeSingleEmbedded):
         )
 
     def fainted_value(self) -> float:
-        return 2.0
+        return 3.0
 
     def hp_value(self) -> float:
-        return 1.0
+        return 2.0
 
     def number_of_pokemons(self) -> int:
         return 6
