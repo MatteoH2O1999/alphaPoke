@@ -4,6 +4,8 @@ from poke_env.player.battle_order import BattleOrder, ForfeitBattleOrder
 from poke_env.player.player import Player
 from typing import Callable
 
+from utils.invalid_argument import InvalidAction
+
 
 def get_int_action_to_move(
     battle_format: str, is_double: bool
@@ -28,7 +30,7 @@ def get_int_action_space_size(battle_format: str, is_double: bool) -> int:
 
 
 def action_to_move_gen8single(
-    agent: Player, action: int, battle: AbstractBattle
+    agent: Player, action: int, battle: AbstractBattle, random_if_invalid=True
 ) -> BattleOrder:
     if action == -1:
         return ForfeitBattleOrder()
@@ -40,9 +42,7 @@ def action_to_move_gen8single(
         not battle.force_switch
         and battle.can_z_move
         and battle.active_pokemon
-        and 0
-        <= action - 4
-        < len(battle.active_pokemon.available_z_moves)  # pyre-ignore
+        and 0 <= action - 4 < len(battle.active_pokemon.available_z_moves)
     ):
         return agent.create_order(
             battle.active_pokemon.available_z_moves[action - 4], z_move=True
@@ -62,4 +62,6 @@ def action_to_move_gen8single(
     elif 0 <= action - 16 < len(battle.available_switches):
         return agent.create_order(battle.available_switches[action - 16])
     else:
+        if not random_if_invalid:
+            raise InvalidAction()
         return agent.choose_random_move(battle)

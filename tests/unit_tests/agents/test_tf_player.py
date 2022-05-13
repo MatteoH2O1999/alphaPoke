@@ -16,6 +16,7 @@ from typing import Iterator, Union, List
 from unittest.mock import create_autospec, patch, MagicMock, call
 
 from agents.base_classes.tf_player import TFPlayer, _Env
+from utils.invalid_argument import InvalidAction
 
 
 def test_env():
@@ -42,6 +43,7 @@ def test_env():
     )
     current_battle = Battle("tag", "username", None)  # noqa
     last_battle = Battle("tag", "username", None)  # noqa
+
     assert env.username == "Username 1"
     assert env.calc_reward(last_battle, current_battle) == 69.0
     assert isinstance(env.action_to_move(3, current_battle), ForfeitBattleOrder)
@@ -53,6 +55,64 @@ def test_env():
     action_to_move.assert_called_once_with(env.agent, 3, current_battle)
     embed_battle.assert_called_once_with(current_battle)
     embedding_description.assert_not_called()
+
+
+def test_step_not_none():
+    with patch("poke_env.player.openai_api.OpenAIGymEnv.step") as mock_step:
+        username = "Username"
+        calc_reward = MagicMock()
+        calc_reward.return_value = 69.0
+        action_to_move = MagicMock()
+        action_to_move.return_value = ForfeitBattleOrder()
+        embed_battle = MagicMock()
+        embed_battle.return_value = [0, 1, 2]
+        embedding_description = MagicMock()
+        action_space_size = 42
+        opponents = ["Opponent 1", "Opponent 2"]
+        env = _Env(
+            username,
+            calc_reward,  # noqa
+            action_to_move,  # noqa
+            embed_battle,
+            embedding_description,
+            action_space_size,
+            opponents,
+            start_listening=False,
+            start_challenging=False,
+        )
+
+        env.step(2)
+        mock_step.assert_called_once_with(2)
+
+
+def test_step_none():
+    with patch("poke_env.player.openai_api.OpenAIGymEnv.step") as mock_step:
+        username = "Username"
+        calc_reward = MagicMock()
+        calc_reward.return_value = 69.0
+        action_to_move = MagicMock()
+        action_to_move.side_effect = InvalidAction
+        embed_battle = MagicMock()
+        embed_battle.return_value = [0, 1, 2]
+        embedding_description = MagicMock()
+        action_space_size = 42
+        opponents = ["Opponent 1", "Opponent 2"]
+        env = _Env(
+            username,
+            calc_reward,  # noqa
+            action_to_move,  # noqa
+            embed_battle,
+            embedding_description,
+            action_space_size,
+            opponents,
+            start_listening=False,
+            start_challenging=False,
+        )
+        env.current_battle = MagicMock()
+        env.current_battle.finished = False
+
+        env.step(2)
+        mock_step.assert_called_once_with(-1)
 
 
 class AgentMock:

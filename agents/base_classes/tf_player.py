@@ -10,20 +10,21 @@ from gym.utils.env_checker import check_env
 from poke_env.environment.abstract_battle import AbstractBattle
 from poke_env.player.baselines import RandomPlayer
 from poke_env.player.battle_order import BattleOrder
-from poke_env.player.openai_api import OpenAIGymEnv, ObservationType
+from poke_env.player.openai_api import ActionType, OpenAIGymEnv, ObservationType
 from poke_env.player.player import Player
 from tf_agents.agents import TFAgent
 from tf_agents.drivers.py_driver import PyDriver
 from tf_agents.environments import suite_gym, tf_py_environment
 from tf_agents.policies import TFPolicy, policy_saver
 from tf_agents.replay_buffers.replay_buffer import ReplayBuffer
-from typing import Awaitable, Callable, Iterator, List, Optional, Union
+from typing import Awaitable, Callable, Iterator, List, Optional, Tuple, Union
 
 from utils.action_to_move_function import (
     get_int_action_to_move,
     get_int_action_space_size,
 )
 from utils.close_player import close_player
+from utils.invalid_argument import InvalidAction
 
 
 class _Env(OpenAIGymEnv):
@@ -70,24 +71,36 @@ class _Env(OpenAIGymEnv):
     def get_opponent(self) -> Union[Player, str, List[Player], List[str]]:
         return self.opponents
 
+    def step(self, action: ActionType) -> Tuple[ObservationType, float, bool, dict]:
+        if self.current_battle is not None:
+            try:
+                self.action_to_move(action, self.current_battle)
+            except InvalidAction:
+                action = -1
+        return super().step(action)
+
 
 class TFPlayer(Player, ABC):
     def __init__(  # noqa: super().__init__ won't get called as this is a "fake" Player class
-        self, model: str = None, test=False, *args, **kwargs
+        self, model: str = None, test=False, random_if_invalid=False, *args, **kwargs
     ):
         self._reward_buffer = {}
         self.battle_format = kwargs.get("battle_format", "gen8randombattle")
         kwargs["start_challenging"] = False
+        action_to_move_func = self.action_to_move_func
         if test:
             self.test_env()
         temp_env = _Env(
             self.__class__.__name__,
             self.calc_reward_func,
-            self.action_to_move_func,
+            lambda agent, action, battle: action_to_move_func(
+                agent, action, battle, random_if_invalid
+            ),
             self.embed_battle_func,
             self.embedding,
             self.space_size,
             self.opponents if model is None else None,
+            self.invalid_action_penalty,
             *args,
             **kwargs,
         )
@@ -210,7 +223,7 @@ class TFPlayer(Player, ABC):
     @property
     def action_to_move_func(
         self,
-    ) -> Callable[[Player, int, AbstractBattle], BattleOrder]:
+    ) -> Callable[[Player, int, AbstractBattle, Optional[bool]], BattleOrder]:
         format_lowercase = self.battle_format.lower()
         double = (
             "vgc" in format_lowercase

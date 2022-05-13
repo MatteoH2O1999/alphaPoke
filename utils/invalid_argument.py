@@ -4,3 +4,7 @@ class InvalidArgumentNumber(Exception):
 
 class InvalidArgument(Exception):
     pass
+
+
+class InvalidAction(Exception):
+    pass

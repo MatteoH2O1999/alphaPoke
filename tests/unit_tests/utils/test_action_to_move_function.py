@@ -13,6 +13,7 @@ from utils.action_to_move_function import (
     get_int_action_to_move,
     get_int_action_space_size,
 )
+from utils.invalid_argument import InvalidAction
 
 
 def get_mocks():
@@ -263,3 +264,12 @@ def test_gen8single_switch_failure():
     battle._available_switches = switches
     action_to_move_gen8single(mock_agent, 18, battle)
     mock_agent.choose_random_move.assert_called_with(battle)
+
+
+def test_gen8single_failure_exception():
+    mock_agent, battle = get_mocks()
+    switches = [Pokemon(species="charizard"), Pokemon(species="pikachu")]
+    battle._available_switches = switches
+    with pytest.raises(InvalidAction):
+        action_to_move_gen8single(mock_agent, 18, battle, False)
+    mock_agent.choose_random_move.assert_not_called()
