@@ -1094,7 +1094,7 @@ class AlphaPokeSingleDQN(AlphaPokeSingleEmbedded):
             NestFlatten(),
             layers.Concatenate(),
             layers.Dense(
-                2048,
+                8192,
                 activation=activations.elu,
                 kernel_initializer=initializers.VarianceScaling(
                     scale=1.0, mode="fan_in", distribution="truncated_normal"
@@ -1102,7 +1102,15 @@ class AlphaPokeSingleDQN(AlphaPokeSingleEmbedded):
                 use_bias=True,
             ),
             layers.Dense(
-                256,
+                1024,
+                activation=activations.elu,
+                kernel_initializer=initializers.VarianceScaling(
+                    scale=1.0, mode="fan_in", distribution="truncated_normal"
+                ),
+                use_bias=True,
+            ),
+            layers.Dense(
+                128,
                 activation=activations.elu,
                 kernel_initializer=initializers.VarianceScaling(
                     scale=1.0, mode="fan_in", distribution="truncated_normal"
@@ -1133,7 +1141,7 @@ class AlphaPokeSingleDQN(AlphaPokeSingleEmbedded):
             optimizer=optimizer,
             train_step_counter=train_step_counter,
             td_errors_loss_fn=losses.MeanSquaredError(),
-            gamma=0.9,
+            gamma=0.99,
             n_step_update=3,
         )
 
@@ -1230,6 +1238,6 @@ class AlphaPokeDoubleDQN(AlphaPokeSingleDQN):
             optimizer=optimizer,
             train_step_counter=train_step_counter,
             td_errors_loss_fn=losses.MeanSquaredError(),
-            gamma=0.9,
+            gamma=0.99,
             n_step_update=3,
         )
