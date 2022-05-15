@@ -88,6 +88,8 @@ class TFPlayer(Player, ABC):
         self.battle_format = kwargs.get("battle_format", "gen8randombattle")
         kwargs["start_challenging"] = False
         action_to_move_func = self.action_to_move_func
+        if model is not None:
+            random_if_invalid = True
         if test:
             self.test_env()
         temp_env = _Env(
