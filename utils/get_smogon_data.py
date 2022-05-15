@@ -3,10 +3,12 @@ import json5
 import requests
 
 from enum import Enum
+from functools import lru_cache
 from poke_env.data import GEN_TO_POKEDEX
 from poke_env.utils import to_id_str
 
 
+@lru_cache(8)
 def get_random_battle_learnset(gen: int):
     data = requests.get(
         f"https://raw.githubusercontent.com/pkmn/randbats/main/data/gen{gen}randombattle.json"
@@ -67,6 +69,7 @@ def get_abilities(gen: int):
     return Enum("Abilities", abilities)  # noqa: functional API
 
 
+@lru_cache(1)
 def get_items():
     data = requests.get("https://play.pokemonshowdown.com/data/text/items.json5")
     data = json5.loads(data.content)
