@@ -7,10 +7,17 @@ def train_single_dqn(
     battle_format: str = "gen8randombattle",
     logs: str = "./logs",
 ):
+    step_factor = 10
+
+    if steps % step_factor != 0:
+        raise ValueError(
+            f"Expected number of steps to be a multiple of 10. Got {steps}"
+        )
+
     agent = AlphaPokeSingleDQN(
         battle_format=battle_format, eval_interval=50_000, log_interval=1000, test=True
     )
-    agent.train(steps)
+    agent.train(steps // 10)
     agent.save_policy(save_policy)
     agent.save_training_data(logs)
 
@@ -21,10 +28,17 @@ def train_double_dqn(
     battle_format: str = "gen8randombattle",
     logs: str = "./logs",
 ):
+    step_factor = 10
+
+    if steps % step_factor != 0:
+        raise ValueError(
+            f"Expected number of steps to be a multiple of 10. Got {steps}"
+        )
+
     agent = AlphaPokeDoubleDQN(
         battle_format=battle_format, eval_interval=50_000, log_interval=1000, test=True
     )
-    agent.train(steps)
+    agent.train(steps // 10)
     agent.save_policy(save_policy)
     agent.save_training_data(logs)
 
