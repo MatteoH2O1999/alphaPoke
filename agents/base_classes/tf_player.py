@@ -2,6 +2,7 @@
 import asyncio
 import os
 import tensorflow as tf
+import time
 
 from abc import ABC, abstractmethod
 from asyncio import Event
@@ -19,6 +20,7 @@ from tf_agents.policies import TFPolicy, policy_saver
 from tf_agents.replay_buffers.replay_buffer import ReplayBuffer
 from typing import Awaitable, Callable, Iterator, List, Optional, Tuple, Union
 
+from . import BATTLE_INACTIVE_LIMIT_IN_MINUTES
 from utils.action_to_move_function import (
     get_int_action_to_move,
     get_int_action_space_size,
@@ -38,8 +40,11 @@ class _Env(OpenAIGymEnv):
         action_space_size: int,
         opponents: Union[Player, str, List[Player], List[str]],
         *args,
+        invalid_action_penalty: float = 0.0,
         **kwargs,
     ):
+        self.invalid_action_penalty = invalid_action_penalty
+        self.last_step_timestamp = time.time() / 60
         self.calc_reward_func = calc_reward
         self.action_to_move_func = action_to_move
         self.embed_battle_func = embed_battle
@@ -76,8 +81,27 @@ class _Env(OpenAIGymEnv):
             try:
                 self.action_to_move(action, self.current_battle)
             except InvalidAction:
-                action = -1
+                if (
+                    self.battle_is_inactive(BATTLE_INACTIVE_LIMIT_IN_MINUTES)
+                    or self.invalid_action_penalty == 0.0
+                ):
+                    action = -1
+                else:
+                    return (
+                        self.embed_battle(self.current_battle),
+                        -self.invalid_action_penalty,
+                        self.current_battle.finished,
+                        {},
+                    )
+        self.step_called()
         return super().step(action)
+
+    def step_called(self):
+        self.last_step_timestamp = time.time() / 60
+
+    def battle_is_inactive(self, inactivity_interval: int) -> bool:
+        time_diff = (time.time() / 60) - self.last_step_timestamp
+        return time_diff > inactivity_interval
 
 
 class TFPlayer(Player, ABC):
@@ -102,8 +126,8 @@ class TFPlayer(Player, ABC):
             self.embedding,
             self.space_size,
             self.opponents if model is None else None,
-            self.invalid_action_penalty,
             *args,
+            invalid_action_penalty=self.invalid_action_penalty,
             **kwargs,
         )
         self.internal_agent = temp_env.agent
@@ -138,6 +162,10 @@ class TFPlayer(Player, ABC):
             raise RuntimeError(
                 f"Expected subclass of TFPolicy, got {type(self.policy)}"
             )
+
+    @property
+    def invalid_action_penalty(self) -> float:
+        return 0.0
 
     @property
     def calc_reward_func(self) -> Callable[[AbstractBattle, AbstractBattle], float]:
