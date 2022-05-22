@@ -1190,7 +1190,7 @@ class AlphaPokeSingleDQN(AlphaPokeSingleEmbedded):
 
     @property
     def invalid_action_penalty(self) -> float:
-        return 30.0
+        return 3 * self.victory_value()
 
     def fainted_value(self) -> float:
         return 3.0
