@@ -122,8 +122,10 @@ class _ActivePokemonEmbedding:
     @staticmethod
     def embed_pokemon(mon: Pokemon, battle: AbstractBattle):
         current_hp_fraction = np.full(1, -1.0, dtype=np.float64)
+        protect_counter = np.full(1, 0, dtype=int)
         if mon is not None:
             current_hp_fraction[0] = mon.current_hp_fraction
+            protect_counter[0] = mon.protect_counter
         available_moves = [None, None, None, None]
         for i, move in enumerate(mon.moves.values()):
             if move.id in [m.id for m in battle.available_moves]:
@@ -133,6 +135,7 @@ class _ActivePokemonEmbedding:
                     available_moves[i] = move
         return {
             "current_hp_fraction": current_hp_fraction,
+            "protect_counter": protect_counter,
             "base_stats": _BaseStatsEmbedding.embed_stats(mon),
             "type": _TypeEmbedding.embed_type(mon),
             "boosts": _MonBoostsEmbedding.embed_boosts(mon),
@@ -157,9 +160,11 @@ class _ActivePokemonEmbedding:
         current_hp_fraction_space = Box(
             low=-1.0, high=1.0, shape=(1,), dtype=np.float64
         )
+        protect_counter_space = Box(low=0, high=10, shape=(1,), dtype=int)
         return Dict(
             {
                 "current_hp_fraction": current_hp_fraction_space,
+                "protect_counter": protect_counter_space,
                 "base_stats": _BaseStatsEmbedding.get_embedding(),
                 "type": _TypeEmbedding.get_embedding(),
                 "boosts": _MonBoostsEmbedding.get_embedding(),
@@ -226,8 +231,10 @@ class _EnemyActivePokemonEmbedding:
     def embed_pokemon(mon: Pokemon, battle: AbstractBattle):
         moves = []
         current_hp_fraction = np.full(1, -1.0, dtype=np.float64)
+        protect_counter = np.full(1, 0, dtype=int)
         if mon is not None:
             current_hp_fraction[0] = mon.current_hp_fraction
+            protect_counter[0] = mon.protect_counter
             moves = list(mon.moves.values())
             for move in moves:
                 if isinstance(move, DynamaxMove) != mon.is_dynamaxed:
@@ -236,6 +243,7 @@ class _EnemyActivePokemonEmbedding:
             moves.append(None)
         return {
             "current_hp_fraction": current_hp_fraction,
+            "protect_counter": protect_counter,
             "base_stats": _BaseStatsEmbedding.embed_stats(mon),
             "type": _TypeEmbedding.embed_type(mon),
             "status": _StatusEmbedding.embed_status(mon),
@@ -251,9 +259,11 @@ class _EnemyActivePokemonEmbedding:
         current_hp_fraction_space = Box(
             low=-1.0, high=1.0, shape=(1,), dtype=np.float64
         )
+        protect_counter_space = Box(low=0, high=10, shape=(1,), dtype=int)
         return Dict(
             {
                 "current_hp_fraction": current_hp_fraction_space,
+                "protect_counter": protect_counter_space,
                 "base_stats": _BaseStatsEmbedding.get_embedding(),
                 "type": _TypeEmbedding.get_embedding(),
                 "status": _StatusEmbedding.get_embedding(),
