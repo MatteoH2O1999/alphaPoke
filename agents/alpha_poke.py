@@ -82,7 +82,11 @@ class _BattlefieldEmbedding:
             boolean_flags[3] = 1
         if battle.maybe_trapped:
             boolean_flags[4] = 1
-        if battle.force_switch:
+        try:
+            forced_switch = any(battle.force_switch)
+        except TypeError:
+            forced_switch = battle.force_switch
+        if forced_switch:
             boolean_flags[5] = 1
 
         return {
@@ -121,8 +125,12 @@ class _ActivePokemonEmbedding:
         if mon is not None:
             current_hp_fraction[0] = mon.current_hp_fraction
         available_moves = [None, None, None, None]
-        for i, move in enumerate(battle.available_moves):
-            available_moves[i] = move
+        for i, move in enumerate(mon.moves.values()):
+            if move.id in [m.id for m in battle.available_moves]:
+                if mon.is_dynamaxed:
+                    available_moves[i] = move.dynamaxed
+                else:
+                    available_moves[i] = move
         return {
             "current_hp_fraction": current_hp_fraction,
             "base_stats": _BaseStatsEmbedding.embed_stats(mon),
