@@ -2,14 +2,14 @@
 from poke_env.environment.abstract_battle import AbstractBattle
 from poke_env.player.battle_order import BattleOrder, ForfeitBattleOrder
 from poke_env.player.player import Player
-from typing import Callable
+from typing import Optional, Callable
 
 from utils.invalid_argument import InvalidAction
 
 
 def get_int_action_to_move(
     battle_format: str, is_double: bool
-) -> Callable[[Player, int, AbstractBattle], BattleOrder]:
+) -> Callable[[Player, int, AbstractBattle, Optional[bool]], BattleOrder]:
     if is_double:
         raise NotImplementedError("Double battles are not yet implemented.")
     else:
