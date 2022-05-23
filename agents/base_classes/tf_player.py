@@ -115,7 +115,9 @@ class TFPlayer(Player, ABC):
         if model is not None:
             random_if_invalid = True
         if test:
+            print("Testing environment...")
             self.test_env()
+        print("Creating training environment...")
         temp_env = _Env(
             self.__class__.__name__,
             self.calc_reward_func,
@@ -132,6 +134,7 @@ class TFPlayer(Player, ABC):
         )
         self.internal_agent = temp_env.agent
         self.wrapped_env = temp_env
+        print("Wrapping environment...")
         temp_env = suite_gym.wrap_env(temp_env)
         self.environment = tf_py_environment.TFPyEnvironment(temp_env)
         self.agent: TFAgent
@@ -143,13 +146,20 @@ class TFPlayer(Player, ABC):
         if model is None:
             self.can_train = True
             self.evaluations = {}
+            print("Creating agent...")
             self.agent = self.get_agent()
+            print("Initializing agent...")
             self.agent.initialize()
             self.policy = self.agent.policy
+            print("Creating replay buffer...")
             self.replay_buffer = self.get_replay_buffer()
+            print("Creating replay buffer iterator...")
             self.replay_buffer_iterator = self.get_replay_buffer_iterator()
+            print("Creating initial collect random driver...")
             self.random_driver = self.get_random_driver()
+            print("Creating collect driver...")
             self.collect_driver = self.get_collect_driver()
+            print("Creating policy saver...")
             self.saver = policy_saver.PolicySaver(self.agent.policy)
         else:
             if not os.path.isdir(model):
