@@ -750,25 +750,16 @@ class _AbilityEmbedding:
 class _WeatherEmbedding:
     @staticmethod
     def embed_weather(battle: AbstractBattle):
-        current_turn = battle.turn
         weather = battle.weather
-        weathers = np.full(len(Weather), -1, dtype=int)
-        for w in INFINITE_WEATHER:
-            weathers[w.value - 1] = 0
+        weathers = np.full(len(Weather), 0, dtype=int)
         for w, value in weather.items():
-            if w in INFINITE_WEATHER:
-                weathers[w.value - 1] = 1
-            else:
-                weathers[w.value - 1] = current_turn - value
+            weathers[w.value - 1] = 1
         return weathers
 
     @staticmethod
     def get_embedding() -> Space:
-        low_bound = [-1 for _ in range(len(Weather))]
-        high_bound = [6 for _ in range(len(Weather))]
-        for w in INFINITE_WEATHER:
-            high_bound[w.value - 1] = 1
-            low_bound[w.value - 1] = 0
+        low_bound = [0 for _ in range(len(Weather))]
+        high_bound = [1 for _ in range(len(Weather))]
         return Box(
             low=np.array(low_bound, dtype=int),
             high=np.array(high_bound, dtype=int),
@@ -827,30 +818,20 @@ class _EffectsEmbedding:
 class _SideConditionEmbedding:
     @staticmethod
     def embed_side_conditions(battle: AbstractBattle):
-        current_turn = battle.turn
         battle_side_conditions = battle.side_conditions
         opponent_battle_side_conditions = battle.opponent_side_conditions
-        side_conditions = np.full(len(SideCondition), -1, dtype=int)
-        opponent_side_conditions = np.full(len(SideCondition), -1, dtype=int)
-        side_conditions[SideCondition.STEALTH_ROCK.value - 1] = 0
-        opponent_side_conditions[SideCondition.STEALTH_ROCK.value - 1] = 0
-        for condition in STACKABLE_CONDITIONS.keys():
-            side_conditions[condition.value - 1] = 0
-            opponent_side_conditions[condition.value - 1] = 0
+        side_conditions = np.full(len(SideCondition), 0, dtype=int)
+        opponent_side_conditions = np.full(len(SideCondition), 0, dtype=int)
         for condition, value in battle_side_conditions.items():
             if condition in STACKABLE_CONDITIONS.keys():
                 side_conditions[condition.value - 1] = value
-            elif condition == SideCondition.STEALTH_ROCK:
-                side_conditions[condition.value - 1] = 1
             else:
-                side_conditions[condition.value - 1] = current_turn - value
+                side_conditions[condition.value - 1] = 1
         for condition, value in opponent_battle_side_conditions.items():
             if condition in STACKABLE_CONDITIONS.keys():
                 opponent_side_conditions[condition.value - 1] = value
-            elif condition == SideCondition.STEALTH_ROCK:
-                opponent_side_conditions[condition.value - 1] = 1
             else:
-                opponent_side_conditions[condition.value - 1] = current_turn - value
+                opponent_side_conditions[condition.value - 1] = 1
         return {
             "player_conditions": side_conditions,
             "opponent_conditions": opponent_side_conditions,
@@ -858,10 +839,8 @@ class _SideConditionEmbedding:
 
     @staticmethod
     def get_embedding() -> Space:
-        low_bound = [-1 for _ in range(len(SideCondition))]
-        high_bound = [6 for _ in range(len(SideCondition))]
-        low_bound[SideCondition.STEALTH_ROCK.value - 1] = 0
-        high_bound[SideCondition.STEALTH_ROCK.value - 1] = 1
+        low_bound = [0 for _ in range(len(SideCondition))]
+        high_bound = [1 for _ in range(len(SideCondition))]
         for condition in STACKABLE_CONDITIONS.keys():
             low_bound[condition.value - 1] = 0
             high_bound[condition.value - 1] = STACKABLE_CONDITIONS[condition]
@@ -877,17 +856,16 @@ class _SideConditionEmbedding:
 class _FieldEmbedding:
     @staticmethod
     def embed_field(battle: AbstractBattle):
-        current_turn = battle.turn
-        fields = np.full(len(Field), -1, dtype=int)
+        fields = np.full(len(Field), 0, dtype=int)
         battle_fields = battle.fields
         for field, value in battle_fields.items():
-            fields[field.value - 1] = current_turn - value
+            fields[field.value - 1] = 1
         return fields
 
     @staticmethod
     def get_embedding() -> Space:
-        low_bound = [-1 for _ in range(len(Field))]
-        high_bound = [6 for _ in range(len(Field))]
+        low_bound = [0 for _ in range(len(Field))]
+        high_bound = [1 for _ in range(len(Field))]
         return Box(
             low=np.array(low_bound, dtype=int),
             high=np.array(high_bound, dtype=int),
