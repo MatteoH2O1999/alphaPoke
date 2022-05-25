@@ -81,9 +81,8 @@ class _Env(OpenAIGymEnv):
             try:
                 self.action_to_move(action, self.current_battle)
             except InvalidAction:
-                if (
-                    self.battle_is_inactive(BATTLE_INACTIVE_LIMIT_IN_MINUTES)
-                    or self.invalid_action_penalty == 0.0
+                if self.invalid_action_penalty == 0.0 or self.battle_is_inactive(
+                    BATTLE_INACTIVE_LIMIT_IN_MINUTES
                 ):
                     action = -1
                 else:
