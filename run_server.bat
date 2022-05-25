@@ -1,6 +1,7 @@
 @echo off
+git submodule update
 cd pokemon-showdown
-git pull
+copy config\config-example.js config\config.js
 call npm install
 echo 0 > logs/lastbattle.txt
 node pokemon-showdown start --no-security
