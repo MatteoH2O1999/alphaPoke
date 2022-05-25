@@ -16,7 +16,7 @@ jobs:
       python: ${{ steps.filters.outputs.python }}
     steps:
       - name: Checkout code
-        uses: actions/checkout@v2
+        uses: actions/checkout@v3
       - name: Check diff filters
         id: filters
         uses: dorny/paths-filter@v2
