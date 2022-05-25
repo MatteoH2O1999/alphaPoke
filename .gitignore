@@ -1,7 +1,6 @@
 *.pyc
 venv/
 .idea/
-pokemon-showdown/
 logs/
 replays/
 poke_env/
