@@ -1206,10 +1206,6 @@ class AlphaPokeSingleDQN(AlphaPokeSingleEmbedded):
             max_steps=collect_steps_per_iteration,
         )
 
-    @property
-    def invalid_action_penalty(self) -> float:
-        return 3 * self.victory_value()
-
     def fainted_value(self) -> float:
         return 3.0
 
