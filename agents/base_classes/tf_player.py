@@ -41,9 +41,13 @@ class _Env(OpenAIGymEnv):
         opponents: Union[Player, str, List[Player], List[str]],
         *args,
         invalid_action_penalty: float = 0.0,
+        invalid_tolerance: float = 0.0,
         **kwargs,
     ):
         self.invalid_action_penalty = invalid_action_penalty
+        self.invalid_tolerance = invalid_tolerance
+        self.invalid_actions = 0
+        self.executed_actions = 0
         self.last_step_timestamp = time.time() / 60
         self.calc_reward_func = calc_reward
         self.action_to_move_func = action_to_move
@@ -81,11 +85,11 @@ class _Env(OpenAIGymEnv):
             try:
                 self.action_to_move(action, self.current_battle)
             except InvalidAction:
-                if self.invalid_action_penalty == 0.0 or self.battle_is_inactive(
-                    BATTLE_INACTIVE_LIMIT_IN_MINUTES
-                ):
+                if self.should_forfeit():
                     action = -1
                 else:
+                    self.invalid_actions += 1
+                    self.executed_actions += 1
                     return (
                         self.embed_battle(self.current_battle),
                         -self.invalid_action_penalty,
@@ -95,8 +99,19 @@ class _Env(OpenAIGymEnv):
         self.step_called()
         return super().step(action)
 
+    def should_forfeit(self) -> bool:
+        if self.invalid_action_penalty == 0.0 or self.battle_is_inactive(
+            BATTLE_INACTIVE_LIMIT_IN_MINUTES
+        ):
+            return True
+        invalid_actions_ratio = self.invalid_actions / self.executed_actions
+        if invalid_actions_ratio > self.invalid_tolerance:
+            return True
+        return False
+
     def step_called(self):
         self.last_step_timestamp = time.time() / 60
+        self.executed_actions += 1
 
     def battle_is_inactive(self, inactivity_interval: int) -> bool:
         time_diff = (time.time() / 60) - self.last_step_timestamp
@@ -129,6 +144,7 @@ class TFPlayer(Player, ABC):
             self.opponents if model is None else None,
             *args,
             invalid_action_penalty=self.invalid_action_penalty,
+            invalid_tolerance=self.invalid_tolerance,
             **kwargs,
         )
         self.internal_agent = temp_env.agent
@@ -174,6 +190,10 @@ class TFPlayer(Player, ABC):
 
     @property
     def invalid_action_penalty(self) -> float:
+        return 0.0
+
+    @property
+    def invalid_tolerance(self) -> float:
         return 0.0
 
     @property
