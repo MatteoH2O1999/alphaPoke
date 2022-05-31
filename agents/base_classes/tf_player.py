@@ -6,6 +6,7 @@ import time
 
 from abc import ABC, abstractmethod
 from asyncio import Event
+from functools import lru_cache
 from gym import Space
 from gym.utils.env_checker import check_env
 from poke_env.environment.abstract_battle import AbstractBattle
@@ -280,6 +281,7 @@ class TFPlayer(Player, ABC):
         self.saver.save(save_dir)
 
     @property
+    @lru_cache()
     def action_to_move_func(
         self,
     ) -> Callable[[Player, int, AbstractBattle, Optional[bool]], BattleOrder]:
@@ -292,6 +294,7 @@ class TFPlayer(Player, ABC):
         return get_int_action_to_move(self.battle_format, double)
 
     @property
+    @lru_cache()
     def space_size(self) -> int:
         format_lowercase = self.battle_format.lower()
         double = (
