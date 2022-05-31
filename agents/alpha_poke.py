@@ -37,6 +37,7 @@ from tf_agents.specs import tensor_spec
 from typing import Iterator, Union, List
 
 from agents.base_classes.dqn_player import DQNPlayer
+from agents.base_classes.tf_player import InvalidAction
 from agents.seba import Seba
 from utils.close_player import close_player
 from utils.get_smogon_data import get_abilities, get_items
@@ -921,7 +922,15 @@ class AlphaPokeSingleEmbedded(DQNPlayer, ABC):
             non_active_player_mons.append(None)
         while len(non_active_opponent_mons) < 5:
             non_active_opponent_mons.append(None)
+        available_moves = np.full(self.space_size, 1, dtype=int)
+        int_to_move_func = self.action_to_move_func
+        for i in range(len(available_moves)):
+            try:
+                int_to_move_func(self, i, battle, False)
+            except InvalidAction:
+                available_moves[i] = 0
         return {
+            "available_actions": available_moves,
             "battlefield": _BattlefieldEmbedding.embed_battlefield(battle),
             "active_mon": _ActivePokemonEmbedding.embed_pokemon(
                 battle.active_pokemon, battle
@@ -963,8 +972,10 @@ class AlphaPokeSingleEmbedded(DQNPlayer, ABC):
 
     @property
     def embedding(self) -> Space:
+        available_moves_space = Box(low=0, high=1, shape=(self.space_size,), dtype=int)
         return Dict(
             {
+                "available_actions": available_moves_space,
                 "battlefield": _BattlefieldEmbedding.get_embedding(),
                 "active_mon": _ActivePokemonEmbedding.get_embedding(),
                 "player_mon_1": _PokemonEmbedding.get_embedding(),
