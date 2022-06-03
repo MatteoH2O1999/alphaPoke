@@ -37,8 +37,8 @@ from tf_agents.specs import tensor_spec
 from typing import Iterator, Union, List
 
 from agents.base_classes.dqn_player import DQNPlayer
-from agents.base_classes.tf_player import InvalidAction
 from agents.seba import Seba
+from utils.action_to_move_function import InvalidAction
 from utils.close_player import close_player
 from utils.get_smogon_data import get_abilities, get_items
 
@@ -1032,9 +1032,10 @@ class AlphaPokeSingleEmbedded(DQNPlayer, ABC):
         evaluation = (total_return / num_challenges).numpy()[0]
 
         if "evaluations" not in self.evaluations.keys():
-            self.evaluations["evaluations"] = [[], []]
+            self.evaluations["evaluations"] = [[], [], []]
         self.evaluations["evaluations"][0].append(step)
         self.evaluations["evaluations"][1].append(evaluation)
+        self.evaluations["evaluations"][2].append(agent.win_rate)
         print(
             f"step: {step} - "
             f"Average return: {evaluation} - "
@@ -1055,12 +1056,12 @@ class AlphaPokeSingleEmbedded(DQNPlayer, ABC):
         os.makedirs(save_dir, exist_ok=True)
         with open(save_dir + "/training_losses.csv", "w") as training_file:
             training_file.write("step;loss\n")
-            for evaluation in self.evaluations["losses"]:
-                training_file.write(f"{evaluation[0]};{evaluation[1]}\n")
+            for step, evaluation in zip(*self.evaluations["losses"]):
+                training_file.write(f"{step};{evaluation}\n")
         with open(save_dir + "/training_returns.csv", "w") as training_file:
-            training_file.write("step;avg_returns\n")
-            for evaluation in self.evaluations["evaluations"]:
-                training_file.write(f"{evaluation[0]};{evaluation[1]}\n")
+            training_file.write("step;avg_returns;win_rate\n")
+            for step, evaluation, win_rate in zip(*self.evaluations["evaluations"]):
+                training_file.write(f"{step};{evaluation};{win_rate}\n")
 
 
 class AlphaPokeSingleDQN(AlphaPokeSingleEmbedded):
@@ -1126,6 +1127,10 @@ class AlphaPokeSingleDQN(AlphaPokeSingleEmbedded):
     def get_optimizer():
         return optimizers.Adam(learning_rate=0.0025)
 
+    @staticmethod
+    def split_fn(obs):
+        return obs, obs["available_actions"]
+
     def create_agent(self, q_net, optimizer, train_step_counter):
         return DqnAgent(
             self.environment.time_step_spec(),
@@ -1136,6 +1141,7 @@ class AlphaPokeSingleDQN(AlphaPokeSingleEmbedded):
             td_errors_loss_fn=losses.MeanSquaredError(),
             gamma=0.99,
             n_step_update=3,
+            observation_and_action_constraint_splitter=self.split_fn,
         )
 
     def get_replay_buffer(self) -> ReplayBuffer:
@@ -1158,7 +1164,9 @@ class AlphaPokeSingleDQN(AlphaPokeSingleEmbedded):
 
     def get_random_driver(self) -> PyDriver:
         random_policy = RandomTFPolicy(
-            self.environment.time_step_spec(), self.environment.action_spec()
+            self.environment.time_step_spec(),
+            self.environment.action_spec(),
+            observation_and_action_constraint_splitter=self.split_fn,
         )
         return PyDriver(
             self.environment,
@@ -1180,14 +1188,6 @@ class AlphaPokeSingleDQN(AlphaPokeSingleEmbedded):
             [self.replay_buffer.add_batch],
             max_steps=collect_steps_per_iteration,
         )
-
-    @property
-    def invalid_action_penalty(self) -> float:
-        return self.victory_value() + 1
-
-    @property
-    def invalid_tolerance(self) -> float:
-        return 0.1
 
     def fainted_value(self) -> float:
         return 3.0
@@ -1241,4 +1241,5 @@ class AlphaPokeDoubleDQN(AlphaPokeSingleDQN):
             td_errors_loss_fn=losses.MeanSquaredError(),
             gamma=0.99,
             n_step_update=3,
+            observation_and_action_constraint_splitter=self.split_fn,
         )

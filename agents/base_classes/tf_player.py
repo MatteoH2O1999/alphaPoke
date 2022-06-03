@@ -2,7 +2,6 @@
 import asyncio
 import os
 import tensorflow as tf
-import time
 
 from abc import ABC, abstractmethod
 from asyncio import Event
@@ -12,22 +11,20 @@ from gym.utils.env_checker import check_env
 from poke_env.environment.abstract_battle import AbstractBattle
 from poke_env.player.baselines import RandomPlayer
 from poke_env.player.battle_order import BattleOrder
-from poke_env.player.openai_api import ActionType, OpenAIGymEnv, ObservationType
+from poke_env.player.openai_api import OpenAIGymEnv, ObservationType
 from poke_env.player.player import Player
 from tf_agents.agents import TFAgent
 from tf_agents.drivers.py_driver import PyDriver
 from tf_agents.environments import suite_gym, tf_py_environment
 from tf_agents.policies import TFPolicy, policy_saver
 from tf_agents.replay_buffers.replay_buffer import ReplayBuffer
-from typing import Awaitable, Callable, Iterator, List, Optional, Tuple, Union
+from typing import Awaitable, Callable, Iterator, List, Optional, Union
 
-from . import BATTLE_INACTIVE_LIMIT_IN_MINUTES
 from utils.action_to_move_function import (
     get_int_action_to_move,
     get_int_action_space_size,
 )
 from utils.close_player import close_player
-from utils.invalid_argument import InvalidAction
 
 
 class _Env(OpenAIGymEnv):
@@ -41,15 +38,8 @@ class _Env(OpenAIGymEnv):
         action_space_size: int,
         opponents: Union[Player, str, List[Player], List[str]],
         *args,
-        invalid_action_penalty: float = 0.0,
-        invalid_tolerance: float = 0.0,
         **kwargs,
     ):
-        self.invalid_action_penalty = invalid_action_penalty
-        self.invalid_tolerance = invalid_tolerance
-        self.invalid_actions = 0
-        self.executed_actions = 0
-        self.last_step_timestamp = time.time() / 60
         self.calc_reward_func = calc_reward
         self.action_to_move_func = action_to_move
         self.embed_battle_func = embed_battle
@@ -81,54 +71,14 @@ class _Env(OpenAIGymEnv):
     def get_opponent(self) -> Union[Player, str, List[Player], List[str]]:
         return self.opponents
 
-    def step(self, action: ActionType) -> Tuple[ObservationType, float, bool, dict]:
-        if self.current_battle is not None:
-            try:
-                self.action_to_move(action, self.current_battle)
-            except InvalidAction:
-                if self.should_forfeit():
-                    action = -1
-                else:
-                    self.invalid_actions += 1
-                    self.executed_actions += 1
-                    return (
-                        self.embed_battle(self.current_battle),
-                        -self.invalid_action_penalty,
-                        self.current_battle.finished,
-                        {},
-                    )
-        self.step_called()
-        return super().step(action)
-
-    def should_forfeit(self) -> bool:
-        if self.invalid_action_penalty == 0.0 or self.battle_is_inactive(
-            BATTLE_INACTIVE_LIMIT_IN_MINUTES
-        ):
-            return True
-        invalid_actions_ratio = self.invalid_actions / self.executed_actions
-        if invalid_actions_ratio > self.invalid_tolerance:
-            return True
-        return False
-
-    def step_called(self):
-        self.last_step_timestamp = time.time() / 60
-        self.executed_actions += 1
-
-    def battle_is_inactive(self, inactivity_interval: int) -> bool:
-        time_diff = (time.time() / 60) - self.last_step_timestamp
-        return time_diff > inactivity_interval
-
 
 class TFPlayer(Player, ABC):
     def __init__(  # noqa: super().__init__ won't get called as this is a "fake" Player class
-        self, model: str = None, test=False, random_if_invalid=False, *args, **kwargs
+        self, model: str = None, test=False, *args, **kwargs
     ):
         self._reward_buffer = {}
         self.battle_format = kwargs.get("battle_format", "gen8randombattle")
         kwargs["start_challenging"] = False
-        action_to_move_func = self.action_to_move_func
-        if model is not None:
-            random_if_invalid = True
         if test:
             print("Testing environment...")
             self.test_env()
@@ -136,16 +86,12 @@ class TFPlayer(Player, ABC):
         temp_env = _Env(
             self.__class__.__name__,
             self.calc_reward_func,
-            lambda agent, action, battle: action_to_move_func(
-                agent, action, battle, random_if_invalid
-            ),
+            self.action_to_move_func,
             self.embed_battle_func,
             self.embedding,
             self.space_size,
             self.opponents if model is None else None,
             *args,
-            invalid_action_penalty=self.invalid_action_penalty,
-            invalid_tolerance=self.invalid_tolerance,
             **kwargs,
         )
         self.internal_agent = temp_env.agent
@@ -190,14 +136,6 @@ class TFPlayer(Player, ABC):
             raise RuntimeError(
                 f"Expected TFPolicy or loaded model, got {type(self.policy)}"
             )
-
-    @property
-    def invalid_action_penalty(self) -> float:
-        return 0.0
-
-    @property
-    def invalid_tolerance(self) -> float:
-        return 0.0
 
     @property
     def calc_reward_func(self) -> Callable[[AbstractBattle, AbstractBattle], float]:
