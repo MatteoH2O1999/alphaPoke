@@ -1070,12 +1070,15 @@ class AlphaPokeSingleDQN(AlphaPokeSingleEmbedded):
 
         obs_spec = tensor_spec.from_spec(self.environment.observation_spec())
 
+        print("Creating QNetwork...")
         q_net = Sequential(self.get_network_layers(obs_spec, num_actions))
         optimizer = self.get_optimizer()
 
         train_step_counter = tf.Variable(0)
 
         agent = self.create_agent(q_net, optimizer, train_step_counter)
+        print("Created QNetwork with following info:")
+        q_net.summary()
         return agent
 
     @staticmethod

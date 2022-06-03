@@ -132,7 +132,7 @@ class TFPlayer(Player, ABC):
         if test:
             print("Testing environment...")
             self.test_env()
-        print("Creating training environment...")
+        print("Creating environment...")
         temp_env = _Env(
             self.__class__.__name__,
             self.calc_reward_func,
@@ -275,6 +275,7 @@ class TFPlayer(Player, ABC):
         pass
 
     def save_policy(self, save_dir):
+        print("Saving policy...")
         if os.path.isdir(save_dir) and len(os.listdir(save_dir)) > 0:
             raise ValueError(f"{save_dir} is not empty.")
         os.makedirs(save_dir, exist_ok=True)
