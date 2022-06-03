@@ -450,7 +450,7 @@ class TFPlayer(Player, ABC):
                 or self.internal_agent.current_battle.finished
             ):
                 await asyncio.sleep(0.1)
-            self.play_episode()
+            await asyncio.get_running_loop().run_in_executor(None, self.play_episode)
         await challenge_task
 
     async def send_challenges(
@@ -465,7 +465,7 @@ class TFPlayer(Player, ABC):
                 or self.internal_agent.current_battle.finished
             ):
                 await asyncio.sleep(0.1)
-            self.play_episode()
+            await asyncio.get_running_loop().run_in_executor(None, self.play_episode)
         await challenge_task
 
     async def battle_against(
@@ -480,7 +480,7 @@ class TFPlayer(Player, ABC):
                 or self.internal_agent.current_battle.finished
             ):
                 await asyncio.sleep(0.1)
-            self.play_episode()
+            await asyncio.get_running_loop().run_in_executor(None, self.play_episode)
         await challenge_task
 
     async def ladder(self, n_games):  # pragma: no cover
@@ -491,7 +491,7 @@ class TFPlayer(Player, ABC):
                 or self.internal_agent.current_battle.finished
             ):
                 await asyncio.sleep(0.1)
-            self.play_episode()
+            await asyncio.get_running_loop().run_in_executor(None, self.play_episode)
         await challenge_task
 
     def __getattr__(self, item):
