@@ -1,6 +1,8 @@
 name: Platform independent tests
+
 on:
   workflow_call:
+
 jobs:
   code-style:
     runs-on: ubuntu-latest

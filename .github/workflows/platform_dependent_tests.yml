@@ -1,10 +1,12 @@
 name: Platform dependent tests
+
 on:
   workflow_call:
     inputs:
       testing:
         required: true
         type: boolean
+
 jobs:
   pytest:
     runs-on: ${{ matrix.os }}

@@ -1,6 +1,8 @@
 name: CodeQL security scan
+
 on:
   workflow_call:
+
 jobs:
   code-scanning:
     permissions:

@@ -1,4 +1,5 @@
 name: Tests
+
 on:
   push:
     tags-ignore:
@@ -8,6 +9,7 @@ on:
   pull_request:
     branches:
       - '**'
+
 jobs:
   check_if_code_changed:
     name: Check if the codebase has changed
