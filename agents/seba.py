@@ -201,7 +201,11 @@ class Seba(Player):
     def boost(battle: Gen8Battle) -> Move:
         mon = battle.active_pokemon
         for move in mon.moves.values():
-            if sum(move.self_boost.values()) > 0 and move in battle.available_moves:
+            if (
+                move.self_boost is not None
+                and sum(move.self_boost.values()) > 0
+                and move in battle.available_moves
+            ):
                 return move
 
     def can_i_bi_shot(self, battle: Gen8Battle) -> bool:
