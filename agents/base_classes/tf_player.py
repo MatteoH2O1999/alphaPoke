@@ -184,9 +184,11 @@ class TFPlayer(Player, ABC):
                 raise ValueError("Expected saved model as model parameter.")
             self.can_train = False
             self.policy = tf.saved_model.load(model)
-        if not isinstance(self.policy, TFPolicy):
+        if getattr(self.policy, "action", None) is None or not callable(
+            self.policy.action
+        ):
             raise RuntimeError(
-                f"Expected subclass of TFPolicy, got {type(self.policy)}"
+                f"Expected TFPolicy or loaded model, got {type(self.policy)}"
             )
 
     @property
