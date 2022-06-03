@@ -34,7 +34,7 @@ jobs:
       - name: Install development requirements
         run: pip install -r ./requirements-dev.txt --upgrade
       - name: Run tests
-        run: coverage run -m pytest -x ./tests
+        run: coverage run -m pytest -x ./tests/unit_tests
       - name: Generate report
         if: inputs.testing
         run: |
