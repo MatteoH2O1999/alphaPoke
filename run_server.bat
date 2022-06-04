@@ -1,5 +1,5 @@
 @echo off
-git submodule update
+git submodule update --remote
 cd pokemon-showdown
 copy config\config-example.js config\config.js
 call npm install
