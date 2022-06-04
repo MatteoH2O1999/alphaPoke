@@ -1,0 +1,32 @@
+name: Keepalive scheduled workflows
+
+on:
+  workflow_dispatch:
+  schedule:
+    - cron: 0 0 1 * *
+
+jobs:
+  keepalive_workflow:
+    name: Keepalive workflow
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
+        with:
+          fetch-depth: 0
+      - name: Setup git credentials
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+      - name: Create empty commit and push
+        run: |
+          touch dummy.file
+          git add .
+          git commit -m "Dummy commit"
+          git push
+      - name: Wait for a bit to allow repository to update
+        run: sleep 5s
+      - name: Restore repository status
+        run: git reset --hard HEAD^
+      - name: Force push repository
+        run: git push -f
