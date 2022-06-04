@@ -1,0 +1,39 @@
+name: Update submodules
+
+on:
+  workflow_dispatch:
+  schedule:
+    - cron: 0 0 1,15 * *
+
+jobs:
+  update_submodules:
+    name: Update submodules
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
+        with:
+          fetch-depth: 0
+      - name: Setup git credentials
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+      - name: Initialize and update submodules
+        run: git submodule update --init --remote
+      - name: Prepare to squash commit if last commit was automatic
+        run: >
+          export last_author=`git log -1 --pretty=format:'%an'` &&
+          export last_message=`git log -1 --pretty=format:'%B'` &&
+          if [ "$last_author" = "github-actions[bot]" -a "$last_message" = "Update submodule HEAD" ];
+          then echo "Last commit was automatic.";
+          echo "Soft resetting to previous commit...";
+          git reset --soft HEAD^;
+          else echo "Last commit was not automatic.";
+          echo "Doing nothing...";
+          fi
+      - name: Stage changes
+        run: git add -A
+      - name: Commit if anything changed
+        run: git diff-index --quiet HEAD -- || git commit -m "Update submodule HEAD"
+      - name: Force push changes
+        run: git push -f
