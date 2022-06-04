@@ -1139,7 +1139,7 @@ class AlphaPokeSingleDQN(AlphaPokeSingleEmbedded):
             optimizer=optimizer,
             train_step_counter=train_step_counter,
             td_errors_loss_fn=losses.MeanSquaredError(),
-            gamma=0.99,
+            gamma=0.75,
             n_step_update=3,
             observation_and_action_constraint_splitter=self.split_fn,
         )
@@ -1239,7 +1239,7 @@ class AlphaPokeDoubleDQN(AlphaPokeSingleDQN):
             optimizer=optimizer,
             train_step_counter=train_step_counter,
             td_errors_loss_fn=losses.MeanSquaredError(),
-            gamma=0.99,
+            gamma=0.75,
             n_step_update=3,
             observation_and_action_constraint_splitter=self.split_fn,
         )
