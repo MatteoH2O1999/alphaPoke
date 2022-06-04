@@ -3,7 +3,7 @@ name: Keepalive scheduled workflows
 on:
   workflow_dispatch:
   schedule:
-    - cron: 0 0 1 * *
+    - cron: 0 0 1,15 * *
 
 jobs:
   keepalive_workflow:
