@@ -16,7 +16,9 @@ from agents.seba import Seba
 from agents.twenty_year_old_me import TwentyYearOldMe
 
 
-MODELS_PATH = "./models"
+MODELS_PATH = os.path.join(
+    os.path.dirname(os.path.dirname(os.path.realpath(__file__))), "models"
+)
 if getattr(sys, "frozen", False) and hasattr(sys, "_MEIPASS"):  # pragma: no cover
     MODELS_PATH = os.path.join(sys._MEIPASS, "models")
 
