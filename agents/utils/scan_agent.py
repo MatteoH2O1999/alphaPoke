@@ -23,11 +23,11 @@ class ScanAgent(Player):
         return get_int_action_to_move(self.format, self.format_is_doubles)
 
 
-async def main(battle_format: str):
-    opponent = RandomPlayer(battle_format=battle_format)
-    player = ScanAgent(battle_format=battle_format)
-    await player.battle_against(opponent, 1)
+if __name__ == "__main__":  # pragma: no cover
 
+    async def main(battle_format: str):
+        opponent = RandomPlayer(battle_format=battle_format)
+        player = ScanAgent(battle_format=battle_format)
+        await player.battle_against(opponent, 1)
 
-if __name__ == "__main__":
     asyncio.get_event_loop().run_until_complete(main(input("Insert battle format: ")))
