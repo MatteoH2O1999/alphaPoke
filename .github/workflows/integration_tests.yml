@@ -20,6 +20,8 @@ jobs:
     steps:
       - name: Checkout code
         uses: actions/checkout@v3
+        with:
+          submodules: 'recursive'
       - name: Setup python ${{ inputs.python_version }}
         uses: actions/setup-python@v3
         with:
@@ -33,5 +35,26 @@ jobs:
         run: pip install -r ./requirements.txt --upgrade
       - name: Install development requirements
         run: pip install -r ./requirements-dev.txt --upgrade
+      - name: Get last showdown commit hash
+        id: showdown-hash
+        run: |
+          cd pokemon-showdown/
+          export hash=`git log -1 --pretty=format:%H`
+          echo "::set-output name=hash::$hash"
+      - name: Restore server cache
+        uses: actions/cache@v3
+        with:
+          path: pokemon-showdown/node_modules
+          key: ${{ matrix.os }}-${{ steps.showdown-hash.outputs.hash }}
+          restore-keys: ${{ matrix.os }}
+      - name: Run server in background
+        run: |
+          printf " &" >> ./run_server.sh
+          chmod +x ./run_server.sh
+          ./run_server.sh
+        shell: bash
+      - name: Wait for server
+        run: until $(curl --output /dev/null --silent --head --fail http://localhost:8000); do sleep 1s; done
+        shell: bash
       - name: Run tests
         run: python -m pytest -x ./tests/integration_tests
