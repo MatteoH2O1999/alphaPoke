@@ -49,12 +49,13 @@ jobs:
           restore-keys: ${{ matrix.os }}
       - name: Run server in background
         run: |
+          if [ "$RUNNER_OS" == "macOS" ]; then brew install gnu-sed; export PATH="$(brew --prefix)/opt/gnu-sed/libexec/gnubin:$PATH"; fi
           printf " &" >> ./run_server.sh
           chmod +x ./run_server.sh
           ./run_server.sh
         shell: bash
       - name: Wait for server
-        run: until $(curl --output /dev/null --silent --head --fail http://localhost:8000); do sleep 1s; done
+        run: PYTHONPATH=./ python .github/scripts/check_server.py
         shell: bash
       - name: Run tests
         run: python -m pytest -x ./tests/integration_tests
