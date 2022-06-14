@@ -981,6 +981,10 @@ class AlphaPokeSingleEmbedded(DQNPlayer, ABC):
             ),
         }
 
+    @staticmethod
+    def split_fn(obs):
+        return obs, obs["available_actions"]
+
     @property
     def embedding(self) -> Space:
         available_moves_space = Box(low=0, high=1, shape=(self.space_size,), dtype=int)
@@ -1137,10 +1141,6 @@ class AlphaPokeSingleDQN(AlphaPokeSingleEmbedded):
     @staticmethod
     def get_optimizer():
         return optimizers.Adam(learning_rate=0.0025)
-
-    @staticmethod
-    def split_fn(obs):
-        return obs, obs["available_actions"]
 
     def create_agent(self, q_net, optimizer, train_step_counter):
         return DqnAgent(
