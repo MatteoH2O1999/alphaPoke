@@ -1,7 +1,7 @@
 # Module containing production-level agents with neural networks
 import os
 import numpy as np
-import tensorflow as tf
+import tensorflow as tf  # noqa: using tensorflow-cpu
 
 from abc import ABC
 from gym.spaces import Space, Dict, Box
@@ -22,7 +22,13 @@ from poke_env.player.baselines import (
 )
 from poke_env.player.openai_api import ObservationType
 from poke_env.player.player import Player
-from tensorflow.keras import activations, initializers, layers, losses, optimizers
+from tensorflow.keras import (  # noqa: using tensorflow-cpu
+    activations,
+    initializers,
+    layers,
+    losses,
+    optimizers,
+)
 from tf_agents.agents import TFAgent
 from tf_agents.agents.dqn.dqn_agent import DqnAgent, DdqnAgent
 from tf_agents.agents.tf_agent import LossInfo
@@ -127,13 +133,19 @@ class _ActivePokemonEmbedding:
         if mon is not None:
             current_hp_fraction[0] = mon.current_hp_fraction
             protect_counter[0] = mon.protect_counter
-        available_moves = [None, None, None, None]
-        for i, move in enumerate(mon.moves.values()):
-            if move.id in [m.id for m in battle.available_moves]:
-                if mon.is_dynamaxed:
-                    available_moves[i] = move.dynamaxed
-                else:
-                    available_moves[i] = move
+        available_moves = battle.available_moves[:]
+        if (
+            len(available_moves) > 0
+            and isinstance(available_moves[0], DynamaxMove) != mon.is_dynamaxed
+        ):
+            if isinstance(available_moves[0], DynamaxMove) and not mon.is_dynamaxed:
+                available_moves = [
+                    m._parent for m in available_moves  # noqa: used for bug in poke_env
+                ]
+            elif not isinstance(available_moves[0], DynamaxMove) and mon.is_dynamaxed:
+                available_moves = [m.dynamaxed for m in available_moves]
+        while len(available_moves) < 4:
+            available_moves.append(None)
         return {
             "current_hp_fraction": current_hp_fraction,
             "protect_counter": protect_counter,
@@ -914,12 +926,11 @@ class AlphaPokeSingleEmbedded(DQNPlayer, ABC):
         )
 
     def embed_battle(self, battle: AbstractBattle) -> ObservationType:
-        non_active_player_mons = list(battle.team.values())
+        non_active_player_mons = battle.available_switches[:]
         non_active_opponent_mons = list(battle.opponent_team.values())
-        non_active_player_mons.remove(battle.active_pokemon)
         non_active_opponent_mons.remove(battle.opponent_active_pokemon)
         while len(non_active_player_mons) < 5:
-            non_active_player_mons.append(None)
+            non_active_player_mons.append(None)  # noqa: used for variable length teams
         while len(non_active_opponent_mons) < 5:
             non_active_opponent_mons.append(None)
         available_moves = np.full(self.space_size, 1, dtype=int)
