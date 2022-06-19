@@ -1241,6 +1241,65 @@ class AlphaPokeSingleDQN(AlphaPokeSingleEmbedded):
         return super().log_interval // 10
 
 
+class AlphaPokeDeepSingleDQN(AlphaPokeSingleDQN):
+    @staticmethod
+    def get_network_layers(obs_spec, num_actions):
+        dict_list = obs_spec.copy()
+        to_see = [dict_list]
+        for d in to_see:
+            for key, value in d.items():
+                if isinstance(value, dict):
+                    d[key] = value.copy()
+                    to_see.append(d[key])
+                else:
+                    d[key] = layers.Dense(
+                        value.shape[0],
+                        activation=activations.elu,
+                        kernel_initializer=initializers.VarianceScaling(
+                            scale=1.0, mode="fan_in", distribution="truncated_normal"
+                        ),
+                        use_bias=True,
+                    )
+        layer_list = [
+            NestMap(dict_list, input_spec=obs_spec),
+            NestFlatten(),
+            layers.Concatenate(),
+            layers.Dense(
+                4096,
+                activation=activations.elu,
+                kernel_initializer=initializers.VarianceScaling(
+                    scale=1.0, mode="fan_in", distribution="truncated_normal"
+                ),
+                use_bias=True,
+            ),
+            layers.Dense(
+                1024,
+                activation=activations.elu,
+                kernel_initializer=initializers.VarianceScaling(
+                    scale=1.0, mode="fan_in", distribution="truncated_normal"
+                ),
+                use_bias=True,
+            ),
+            layers.Dense(
+                256,
+                activation=activations.elu,
+                kernel_initializer=initializers.VarianceScaling(
+                    scale=1.0, mode="fan_in", distribution="truncated_normal"
+                ),
+                use_bias=True,
+            ),
+            layers.Dense(
+                num_actions,
+                activation=activations.linear,
+                kernel_initializer=initializers.RandomUniform(
+                    minval=-0.05, maxval=0.05
+                ),
+                use_bias=True,
+            ),
+        ]
+        return layer_list
+
+
 class AlphaPokeDoubleDQN(AlphaPokeSingleDQN):
     def create_agent(self, q_net, optimizer, train_step_counter):
         return DdqnAgent(
@@ -1254,3 +1313,9 @@ class AlphaPokeDoubleDQN(AlphaPokeSingleDQN):
             n_step_update=3,
             observation_and_action_constraint_splitter=self.split_fn,
         )
+
+
+class AlphaPokeDeepDoubleDQN(AlphaPokeDoubleDQN):
+    @staticmethod
+    def get_network_layers(obs_spec, num_actions):
+        return AlphaPokeDeepSingleDQN.get_network_layers(obs_spec, num_actions)
