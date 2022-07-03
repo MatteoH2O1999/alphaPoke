@@ -16,8 +16,9 @@ from poke_env.player.player import Player
 from tf_agents.agents import TFAgent
 from tf_agents.drivers.py_driver import PyDriver
 from tf_agents.environments import suite_gym, tf_py_environment
-from tf_agents.policies import TFPolicy, policy_saver
+from tf_agents.policies import TFPolicy, policy_saver, py_tf_eager_policy
 from tf_agents.replay_buffers.replay_buffer import ReplayBuffer
+from tf_agents.trajectories import TimeStep
 from typing import Awaitable, Callable, Iterator, List, Optional, Union
 
 from utils.action_to_move_function import (
@@ -70,6 +71,43 @@ class _Env(OpenAIGymEnv):
 
     def get_opponent(self) -> Union[Player, str, List[Player], List[str]]:
         return self.opponents
+
+
+class _SavedPolicy:
+    def __init__(self, model_path):
+        self.policy = tf.saved_model.load(model_path)
+        self.time_step_spec = py_tf_eager_policy.SavedModelPyTFEagerPolicy(
+            model_path, load_specs_from_pbtxt=True
+        ).time_step_spec
+
+    def action(self, time_step, state=()):
+        new_observation = _SavedPolicy.to_tensor(
+            time_step.observation, self.time_step_spec.observation
+        )
+        new_reward = _SavedPolicy.to_tensor(
+            time_step.reward, self.time_step_spec.reward
+        )
+        new_discount = _SavedPolicy.to_tensor(
+            time_step.discount, self.time_step_spec.discount
+        )
+        new_step_type = _SavedPolicy.to_tensor(
+            time_step.step_type, self.time_step_spec.step_type
+        )
+        new_time_step = TimeStep(
+            new_step_type, new_reward, new_discount, new_observation
+        )
+        return self.policy.action(new_time_step, state)
+
+    @staticmethod
+    def to_tensor(element, specs):
+        if isinstance(element, dict):
+            for k, v in element.items():
+                element[k] = _SavedPolicy.to_tensor(v, specs[k])
+            return element
+        return tf.convert_to_tensor(element.numpy(), dtype=specs.dtype)
+
+    def __getattr__(self, item):
+        return getattr(self.policy, item)
 
 
 class TFPlayer(Player, ABC):
@@ -129,7 +167,7 @@ class TFPlayer(Player, ABC):
             if not tf.saved_model.contains_saved_model(model):
                 raise ValueError("Expected saved model as model parameter.")
             self.can_train = False
-            self.policy = tf.saved_model.load(model)
+            self.policy = _SavedPolicy(model_path=model)
         if getattr(self.policy, "action", None) is None or not callable(
             self.policy.action
         ):
