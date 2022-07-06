@@ -2,7 +2,9 @@ import asyncio
 import sys
 
 from poke_env.server_configuration import LocalhostServerConfiguration
+from poke_env.player.player import Player
 from poke_env.player.utils import cross_evaluate
+from typing import List
 from utils import InvalidArgument, InvalidArgumentNumber
 from utils.create_agent import create_agent
 from utils.prettify_cross_evaluation import prettify_evaluation
@@ -50,6 +52,10 @@ async def main():
                 )
                 for p in to_append:
                     players.append(p)
+    await cross_evaluate_players(players, challenges)
+
+
+async def cross_evaluate_players(players: List[Player], challenges: int):
     evaluation = await cross_evaluate(players, n_challenges=challenges)
     print(prettify_evaluation(evaluation))
 

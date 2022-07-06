@@ -2,9 +2,11 @@ import asyncio
 import matplotlib.pyplot as plt
 import sys
 
+from poke_env.player.player import Player
 from poke_env.player.utils import evaluate_player
 from poke_env.server_configuration import LocalhostServerConfiguration
 from tabulate import tabulate
+from typing import Iterable
 
 from utils import InvalidArgument
 from utils.create_agent import create_agent
@@ -42,6 +44,12 @@ async def main():
             )
             for p in to_append:
                 players.append(p)
+    await evaluate_players(players, challenges, save)
+
+
+async def evaluate_players(
+    players: Iterable[Player], challenges: int, save: bool, save_path="./logs"
+):
     results = [["Player", "Evaluation"]]
     for player in players:
         evaluation = await evaluate_player(player, challenges, 40)
@@ -51,7 +59,7 @@ async def main():
         plt.figure(dpi=600)
     else:
         plt.figure()
-    plot_eval(results, save, "./logs")
+    plot_eval(results, save, save_path)
 
 
 if __name__ == "__main__":  # pragma: no cover
