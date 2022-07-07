@@ -159,8 +159,12 @@ def test_init_player_model_success():
         "tf_agents.environments.suite_gym.wrap_env"
     ) as mock_wrap, patch(
         "tf_agents.environments.tf_py_environment.TFPyEnvironment"
-    ) as mock_tf_wrap:
+    ) as mock_tf_wrap, patch(
+        "tf_agents.policies.py_tf_eager_policy.SavedModelPyTFEagerPolicy"
+    ) as mock_saved_policy:
         mock_saved_model.return_value = True
+        loaded_specs = MagicMock()
+        mock_saved_policy.return_value = loaded_specs
         mock_load.return_value = AgentMock.policy
         mock_isdir.return_value = True
         player = DummyTFPlayer(
@@ -169,7 +173,8 @@ def test_init_player_model_success():
         mock_saved_model.assert_called_once_with("test path")
         mock_isdir.assert_called_once_with("test path")
         mock_load.assert_called_once_with("test path")
-        assert player.policy is AgentMock.policy
+        assert player.policy.policy is AgentMock.policy
+        assert player.policy.time_step_spec is loaded_specs.time_step_spec
         assert isinstance(player, DummyTFPlayer)
         mock_wrap.assert_called_once()
         mock_tf_wrap.assert_called_once()
@@ -231,15 +236,15 @@ def test_init_player_not_a_model():
 def test_init_player_not_a_policy():
     with patch(
         "tensorflow.saved_model.contains_saved_model"
-    ) as mock_saved_model, patch("tensorflow.saved_model.load") as mock_load, patch(
-        "os.path.isdir"
-    ) as mock_isdir, patch(
+    ) as mock_saved_model, patch("os.path.isdir") as mock_isdir, patch(
         "tf_agents.environments.suite_gym.wrap_env"
     ) as mock_wrap, patch(
         "tf_agents.environments.tf_py_environment.TFPyEnvironment"
-    ) as mock_tf_wrap:
+    ) as mock_tf_wrap, patch(
+        "agents.base_classes.tf_player._SavedPolicy"
+    ) as mock_saved_policy:
         mock_saved_model.return_value = True
-        mock_load.return_value = "Not a policy"
+        mock_saved_policy.return_value = "Not a policy"
         mock_isdir.return_value = True
         player = None
         with pytest.raises(RuntimeError):
@@ -251,7 +256,7 @@ def test_init_player_not_a_policy():
         mock_tf_wrap.assert_called_once()
         mock_isdir.assert_called_once_with("test path")
         mock_saved_model.assert_called_once_with("test path")
-        mock_load.assert_called_once_with("test path")
+        mock_saved_policy.assert_called_once_with(model_path="test path")
 
 
 def test_save_policy_success():
