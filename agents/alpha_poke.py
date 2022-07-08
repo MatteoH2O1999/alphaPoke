@@ -151,6 +151,8 @@ class _ActivePokemonEmbedding:
             "protect_counter": protect_counter,
             "base_stats": _BaseStatsEmbedding.embed_stats(mon),
             "type": _TypeEmbedding.embed_type(mon),
+            "ability": _AbilityEmbedding.embed_ability(mon),
+            "item": _ItemEmbedding.embed_item(mon),
             "boosts": _MonBoostsEmbedding.embed_boosts(mon),
             "status": _StatusEmbedding.embed_status(mon),
             "effects": _EffectsEmbedding.embed_effects(mon),
@@ -180,6 +182,8 @@ class _ActivePokemonEmbedding:
                 "protect_counter": protect_counter_space,
                 "base_stats": _BaseStatsEmbedding.get_embedding(),
                 "type": _TypeEmbedding.get_embedding(),
+                "ability": _AbilityEmbedding.get_embedding(),
+                "item": _ItemEmbedding.get_embedding(),
                 "boosts": _MonBoostsEmbedding.get_embedding(),
                 "status": _StatusEmbedding.get_embedding(),
                 "effects": _EffectsEmbedding.get_embedding(),
@@ -205,6 +209,8 @@ class _PokemonEmbedding:
             "current_hp_fraction": current_hp_fraction,
             "base_stats": _BaseStatsEmbedding.embed_stats(mon),
             "type": _TypeEmbedding.embed_type(mon),
+            "ability": _AbilityEmbedding.embed_ability(mon),
+            "item": _ItemEmbedding.embed_item(mon),
             "status": _StatusEmbedding.embed_status(mon),
             "move_1": _MoveEmbedding.embed_move(
                 moves[0], mon, battle.opponent_active_pokemon
@@ -230,6 +236,8 @@ class _PokemonEmbedding:
                 "current_hp_fraction": current_hp_fraction_space,
                 "base_stats": _BaseStatsEmbedding.get_embedding(),
                 "type": _TypeEmbedding.get_embedding(),
+                "ability": _AbilityEmbedding.get_embedding(),
+                "item": _ItemEmbedding.get_embedding(),
                 "status": _StatusEmbedding.get_embedding(),
                 "move_1": _MoveEmbedding.get_embedding(),
                 "move_2": _MoveEmbedding.get_embedding(),
@@ -259,6 +267,8 @@ class _EnemyActivePokemonEmbedding:
             "protect_counter": protect_counter,
             "base_stats": _BaseStatsEmbedding.embed_stats(mon),
             "type": _TypeEmbedding.embed_type(mon),
+            "ability": _AbilityEmbedding.embed_ability(mon),
+            "item": _ItemEmbedding.embed_item(mon),
             "status": _StatusEmbedding.embed_status(mon),
             "boosts": _MonBoostsEmbedding.embed_boosts(mon),
             "move_1": _MoveEmbedding.embed_move(moves[0], mon, battle.active_pokemon),
@@ -279,6 +289,8 @@ class _EnemyActivePokemonEmbedding:
                 "protect_counter": protect_counter_space,
                 "base_stats": _BaseStatsEmbedding.get_embedding(),
                 "type": _TypeEmbedding.get_embedding(),
+                "ability": _AbilityEmbedding.get_embedding(),
+                "item": _ItemEmbedding.get_embedding(),
                 "status": _StatusEmbedding.get_embedding(),
                 "boosts": _MonBoostsEmbedding.get_embedding(),
                 "move_1": _MoveEmbedding.get_embedding(),
@@ -303,6 +315,8 @@ class _EnemyPokemonEmbedding:
             "current_hp_fraction": current_hp_fraction,
             "base_stats": _BaseStatsEmbedding.embed_stats(mon),
             "type": _TypeEmbedding.embed_type(mon),
+            "ability": _AbilityEmbedding.embed_ability(mon),
+            "item": _ItemEmbedding.embed_item(mon),
             "status": _StatusEmbedding.embed_status(mon),
             "move_1": _MoveEmbedding.embed_move(moves[0], mon, battle.active_pokemon),
             "move_2": _MoveEmbedding.embed_move(moves[1], mon, battle.active_pokemon),
@@ -320,6 +334,8 @@ class _EnemyPokemonEmbedding:
                 "current_hp_fraction": current_hp_fraction_space,
                 "base_stats": _BaseStatsEmbedding.get_embedding(),
                 "type": _TypeEmbedding.get_embedding(),
+                "ability": _AbilityEmbedding.get_embedding(),
+                "item": _ItemEmbedding.get_embedding(),
                 "status": _StatusEmbedding.get_embedding(),
                 "move_1": _MoveEmbedding.get_embedding(),
                 "move_2": _MoveEmbedding.get_embedding(),
@@ -711,7 +727,7 @@ class _TypeEmbedding:
 class _ItemEmbedding:
     @staticmethod
     def embed_item(mon: Pokemon):
-        if mon.item is None or mon.item == UNKNOWN_ITEM:
+        if mon is None or not mon.item or mon.item == UNKNOWN_ITEM:
             return np.full(len(ITEMS), -1, dtype=int)
         battle_item = mon.item
         items = np.full(len(ITEMS), 0, dtype=int)
@@ -736,7 +752,7 @@ class _AbilityEmbedding:
         if mon is None:
             return np.full(len(ABILITIES), -1, dtype=int)
         battle_abilities = np.full(len(ABILITIES), 0, dtype=int)
-        if mon.ability is None:
+        if not mon.ability:
             possible_abilities = mon.possible_abilities
             if len(possible_abilities) == 1:
                 for ability in possible_abilities:
