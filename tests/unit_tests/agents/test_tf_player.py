@@ -1,4 +1,5 @@
 import pytest
+import tensorflow as tf
 
 from gym import Space
 from poke_env.environment.abstract_battle import AbstractBattle
@@ -12,10 +13,11 @@ from tf_agents.agents import TFAgent
 from tf_agents.drivers.py_driver import PyDriver
 from tf_agents.replay_buffers.replay_buffer import ReplayBuffer
 from tf_agents.policies import TFPolicy
+from tf_agents.trajectories import TimeStep
 from typing import Iterator, Union, List
 from unittest.mock import create_autospec, patch, MagicMock, call
 
-from agents.base_classes.tf_player import TFPlayer, _Env
+from agents.base_classes.tf_player import TFPlayer, _Env, _SavedPolicy
 
 
 def test_env():
@@ -54,6 +56,110 @@ def test_env():
     action_to_move.assert_called_once_with(env.agent, 3, current_battle)
     embed_battle.assert_called_once_with(current_battle)
     embedding_description.assert_not_called()
+
+
+def test_saved_policy_init():
+    with patch(
+        "tf_agents.policies.py_tf_eager_policy.SavedModelPyTFEagerPolicy"
+    ) as mock_saved_policy, patch("tensorflow.saved_model.load") as mock_load:
+        test_path = "test path"
+        mock_spec = MagicMock()
+        mock_policy = MagicMock()
+        mock_saved_policy.return_value = mock_spec
+        mock_load.return_value = mock_policy
+
+        policy = _SavedPolicy(model_path=test_path)
+
+        assert policy.policy is mock_policy
+        assert policy.time_step_spec is mock_spec.time_step_spec
+        mock_saved_policy.assert_called_once_with(test_path, load_specs_from_pbtxt=True)
+        mock_load.assert_called_once_with(test_path)
+
+
+def test_saved_policy_action():
+    with patch(
+        "tf_agents.policies.py_tf_eager_policy.SavedModelPyTFEagerPolicy"
+    ) as mock_saved_policy, patch("tensorflow.saved_model.load") as mock_load, patch(
+        "agents.base_classes.tf_player._SavedPolicy.to_tensor"
+    ) as mock_to_tensor:
+        test_path = "test path"
+        mock_spec = MagicMock()
+        mock_policy = MagicMock()
+        mock_saved_policy.return_value = mock_spec
+        mock_load.return_value = mock_policy
+        policy = _SavedPolicy(model_path=test_path)
+        mock_to_tensor.return_value = "test"
+        time_step = TimeStep("type", "reward", "discount", "observation")
+
+        policy.action(time_step)
+
+        mock_policy.action.assert_called_once_with(
+            TimeStep("test", "test", "test", "test"), ()
+        )
+        assert mock_to_tensor.call_count == 4
+        time_step_spec = mock_spec.time_step_spec
+        calls = [
+            call("type", time_step_spec.step_type),
+            call("reward", time_step_spec.reward),
+            call("discount", time_step_spec.discount),
+            call("observation", time_step_spec.observation),
+        ]
+        mock_to_tensor.assert_has_calls(calls, any_order=True)
+
+
+def test_saved_policy_to_tensor():
+    start = {
+        "obs1": tf.constant([0.1, 0.1, 0.2], dtype=tf.float64),
+        "obs2": {
+            "nested_obs1": tf.constant(1, dtype=tf.int32),
+            "nested_obs2": {"further_nest": tf.constant([1, 2], dtype=tf.int64)},
+        },
+    }
+    spec = {
+        "obs1": tf.TensorSpec(shape=(3,), dtype=tf.float32),
+        "obs2": {
+            "nested_obs1": tf.TensorSpec(shape=(), dtype=tf.int64),
+            "nested_obs2": {"further_nest": tf.TensorSpec(shape=(2,), dtype=tf.int64)},
+        },
+    }
+    end = {
+        "obs1": tf.constant([0.1, 0.1, 0.2], dtype=tf.float32),
+        "obs2": {
+            "nested_obs1": tf.constant(1, dtype=tf.int64),
+            "nested_obs2": {"further_nest": tf.constant([1, 2], dtype=tf.int64)},
+        },
+    }
+
+    to_tensor = _SavedPolicy.to_tensor(start, spec)
+
+    assert tf.reduce_all(tf.equal(end["obs1"], to_tensor["obs1"]))
+    assert tf.reduce_all(
+        tf.equal(end["obs2"]["nested_obs1"], to_tensor["obs2"]["nested_obs1"])
+    )
+    assert tf.reduce_all(
+        tf.equal(
+            end["obs2"]["nested_obs2"]["further_nest"],
+            to_tensor["obs2"]["nested_obs2"]["further_nest"],
+        )
+    )
+
+
+def test_saved_policy_getattr():
+    with patch(
+        "tf_agents.policies.py_tf_eager_policy.SavedModelPyTFEagerPolicy"
+    ) as mock_saved_policy, patch("tensorflow.saved_model.load") as mock_load:
+        test_path = "test path"
+        mock_spec = MagicMock()
+        mock_policy = MagicMock()
+        mock_saved_policy.return_value = mock_spec
+        mock_load.return_value = mock_policy
+        policy = _SavedPolicy(model_path=test_path)
+
+        attribute = policy.attribute_that_does_not_exist
+        policy.method_that_does_not_exist()
+
+        assert attribute is mock_policy.attribute_that_does_not_exist
+        mock_policy.method_that_does_not_exist.assert_called_once()
 
 
 class AgentMock:
