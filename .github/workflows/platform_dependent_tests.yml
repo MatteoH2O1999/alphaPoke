@@ -30,9 +30,7 @@ jobs:
       - name: Install wheel
         run: pip install --upgrade wheel
       - name: Install requirements
-        run: pip install -r ./requirements.txt --upgrade
-      - name: Install development requirements
-        run: pip install -r ./requirements-dev.txt --upgrade
+        run: pip install -r ./requirements.txt -r ./requirements-dev.txt
       - name: Run tests
         run: coverage run -m pytest -x ./tests/unit_tests
       - name: Generate report

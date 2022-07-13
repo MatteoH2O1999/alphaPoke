@@ -32,9 +32,7 @@ jobs:
       - name: Install wheel
         run: pip install --upgrade wheel
       - name: Install requirements
-        run: pip install -r ./requirements.txt --upgrade
-      - name: Install development requirements
-        run: pip install -r ./requirements-dev.txt --upgrade
+        run: pip install -r ./requirements.txt -r ./requirements-dev.txt
       - name: Get last showdown commit hash
         id: showdown-hash
         run: |
