@@ -1,7 +1,7 @@
 from agents.dad import Dad
 from agents.eight_year_old_me import EightYearOldMe
 from agents.sarsa_stark import SarsaStark, ExpertSarsaStark
-from agents.seba import Seba
+from agents.advanced_heuristics import Seba
 from agents.twenty_year_old_me import TwentyYearOldMe
 from utils.create_agent import create_agent
 
@@ -27,8 +27,8 @@ def test_load_20_year_old_me():
     assert not player.format_is_doubles
 
 
-def test_load_seba():
-    player = create_agent("seba", battle_format="gen8randombattle")[0]
+def test_load_advanced_heuristics():
+    player = create_agent("advanced-heuristics", battle_format="gen8randombattle")[0]
     assert isinstance(player, Seba)
     assert player.format == "gen8randombattle"
     assert not player.format_is_doubles

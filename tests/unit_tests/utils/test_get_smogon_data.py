@@ -1,7 +1,13 @@
 from poke_env.data import GEN_TO_POKEDEX
 from unittest.mock import MagicMock, patch
 
-from utils.get_smogon_data import get_random_battle_learnset, get_items, get_abilities
+from utils.get_smogon_data import (
+    MEGA_STONES,
+    Z_CRYSTALS,
+    get_abilities,
+    get_items,
+    get_random_battle_learnset,
+)
 
 
 def test_get_random_battle_learnset_gen8():
@@ -83,6 +89,7 @@ def get_fake_json():
 
 
 def test_get_items():
+    get_items.cache_clear()
     with patch("requests.get") as mock_req_get, patch("json5.loads") as mock_loads:
         data = MagicMock()
         mock_req_get.return_value = data
@@ -92,3 +99,14 @@ def test_get_items():
         assert [i.name for i in items] == ["item1", "item2", "item3"]
         mock_req_get.assert_called_once()
         mock_loads.assert_called_once_with(data.content)
+    get_items.cache_clear()
+
+
+def test_mega_stones():
+    for stone in MEGA_STONES:
+        assert stone in get_items().__members__, f"{stone} not in possible items"
+
+
+def test_z_crystals():
+    for crystal in Z_CRYSTALS:
+        assert crystal in get_items().__members__, f"{crystal} not in possible items"

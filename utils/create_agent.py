@@ -12,7 +12,7 @@ from agents.dad import Dad
 from agents.eight_year_old_me import EightYearOldMe
 from agents.expert_rl import ExpertRLAgent
 from agents.sarsa_stark import SarsaStark, ExpertSarsaStark
-from agents.seba import Seba
+from agents.advanced_heuristics import AdvancedHeuristics
 from agents.twenty_year_old_me import TwentyYearOldMe
 
 
@@ -50,8 +50,8 @@ def create_agent(
         agent = [EightYearOldMe(**kwargs)]
     elif agent_name == "20-year-old-me":
         agent = [TwentyYearOldMe(**kwargs)]
-    elif agent_name == "seba":
-        agent = [Seba(**kwargs)]
+    elif agent_name == "advanced-heuristics":
+        agent = [AdvancedHeuristics(**kwargs)]
     elif "simpleRL-best" in agent_name:
         with open(
             f"{MODELS_PATH}/simpleRL/{battle_format}/best.pokeai", "rb"

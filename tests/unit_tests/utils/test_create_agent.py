@@ -10,7 +10,7 @@ from agents.dad import Dad
 from agents.eight_year_old_me import EightYearOldMe
 from agents.expert_rl import ExpertRLAgent
 from agents.sarsa_stark import SarsaStark, ExpertSarsaStark
-from agents.seba import Seba
+from agents.advanced_heuristics import AdvancedHeuristics
 from agents.twenty_year_old_me import TwentyYearOldMe
 from utils.create_agent import create_agent, UnsupportedAgentType
 
@@ -78,18 +78,14 @@ def test_20_year_old_me_creation():
     check_agent_configuration(agent[0])
 
 
-def test_seba_creation():
-    cli_name = "seba"
-    with patch("agents.seba.get_random_battle_learnset") as mock_learnset:
-        mock_learnset.return_value = 42
-        agent = create_agent(cli_name, **get_mock_args())
-        assert isinstance(agent, List)
-        assert len(agent) == 1
-        assert isinstance(agent[0], Seba)
-        assert agent[0]._max_concurrent_battles == 45
-        check_agent_configuration(agent[0])
-        assert agent[0].learnset == 42  # noqa: agent[0] is of class Seba
-        mock_learnset.assert_called_once_with(8)
+def test_advanced_heuristics_creation():
+    cli_name = "advanced-heuristics"
+    agent = create_agent(cli_name, **get_mock_args())
+    assert isinstance(agent, List)
+    assert len(agent) == 1
+    assert isinstance(agent[0], AdvancedHeuristics)
+    assert agent[0]._max_concurrent_battles == 45
+    check_agent_configuration(agent[0])
 
 
 def test_simple_rl_player_best_creation():

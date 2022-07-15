@@ -43,7 +43,7 @@ from tf_agents.specs import tensor_spec
 from typing import Iterator, Union, List
 
 from agents.base_classes.dqn_player import DQNPlayer
-from agents.seba import Seba
+from agents.advanced_heuristics import AdvancedHeuristics
 from utils.action_to_move_function import InvalidAction
 from utils.close_player import close_player
 from utils.get_smogon_data import get_abilities, get_items
@@ -1029,7 +1029,7 @@ class AlphaPokeSingleEmbedded(DQNPlayer, ABC):
             RandomPlayer,
             MaxBasePowerPlayer,
             SimpleHeuristicsPlayer,
-            Seba,
+            AdvancedHeuristics,
         ]
         return [cls(battle_format=self.battle_format) for cls in opponents_classes]
 
