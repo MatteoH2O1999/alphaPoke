@@ -87,6 +87,12 @@ class AdvancedHeuristics(Player):
                 and battle_info.to_dynamax is not None
                 and battle_info.to_dynamax.species == battle.active_pokemon.species
             ):
+                best_move = self.get_best_attack_move(
+                    battle.active_pokemon,
+                    battle.opponent_active_pokemon,
+                    battle.available_moves,
+                    dynamax=True,
+                )
                 return self.create_order(best_move, dynamax=True)
             elif (
                 battle.can_mega_evolve
@@ -110,12 +116,12 @@ class AdvancedHeuristics(Player):
         return switches[0]
 
     def get_best_attack_move(
-        self, mon: Pokemon, opponent: Pokemon, moves: List[Move]
+        self, mon: Pokemon, opponent: Pokemon, moves: List[Move], dynamax: bool = False
     ) -> Optional[Move]:
         selected = None
         max_value = 0
         for move in moves:
-            if mon.is_dynamaxed and not isinstance(move, DynamaxMove):
+            if (mon.is_dynamaxed or dynamax) and not isinstance(move, DynamaxMove):
                 move = move.dynamaxed
             move_value = (
                 move.base_power * move.accuracy * self.damage_multiplier(move, opponent)
