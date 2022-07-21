@@ -1095,6 +1095,30 @@ class AlphaPokeSingleEmbedded(DQNPlayer, ABC):
                 training_file.write(f"{step};{evaluation};{win_rate}\n")
 
 
+class AlphaPokeSingleBattleModelLoader(AlphaPokeSingleEmbedded):
+    def __init__(self, model: str, *args, **kwargs):
+        if model is None:
+            raise ValueError("Expected model to be not None")
+        if "max_concurrent_battles" in kwargs:
+            kwargs.pop("max_concurrent_battles")
+        super().__init__(*args, **kwargs, model=model)
+
+    def get_agent(self) -> TFAgent:
+        pass
+
+    def get_replay_buffer(self) -> ReplayBuffer:
+        pass
+
+    def get_replay_buffer_iterator(self) -> Iterator:
+        pass
+
+    def get_collect_driver(self) -> PyDriver:
+        pass
+
+    def get_random_driver(self) -> PyDriver:
+        pass
+
+
 class AlphaPokeSingleDQN(AlphaPokeSingleEmbedded):
     def get_agent(self) -> TFAgent:
         action_tensor_spec = tensor_spec.from_spec(self.environment.action_spec())

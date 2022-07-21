@@ -7,6 +7,7 @@ from poke_env.player.player import Player
 from poke_env.server_configuration import LocalhostServerConfiguration
 from typing import List
 
+from agents.alpha_poke import AlphaPokeSingleBattleModelLoader
 from agents.basic_rl import SimpleRLAgent
 from agents.dad import Dad
 from agents.eight_year_old_me import EightYearOldMe
@@ -150,6 +151,9 @@ def create_agent(
             agent.append(
                 ExpertSarsaStark(**kwargs, keep_training=keep_training, model=model)
             )
+    elif "alphaPokeSingle-" in agent_name:
+        model_path = agent_name.split("-", 1)[1]
+        agent = [AlphaPokeSingleBattleModelLoader(model=model_path, **kwargs)]
     else:
         raise UnsupportedAgentType(f"{cli_name} is not a valid agent type")
     return agent

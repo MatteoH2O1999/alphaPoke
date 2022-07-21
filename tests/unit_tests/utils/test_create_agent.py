@@ -5,6 +5,7 @@ from io import BytesIO
 from typing import List
 from unittest.mock import patch
 
+from agents.alpha_poke import AlphaPokeSingleBattleModelLoader
 from agents.basic_rl import SimpleRLAgent
 from agents.dad import Dad
 from agents.eight_year_old_me import EightYearOldMe
@@ -326,3 +327,28 @@ def test_expert_sarsa_stark_all_train_creation():
                 assert a._max_concurrent_battles == 1
                 check_agent_configuration(a)
                 check_training_configuration(a, True)  # noqa
+
+
+def test_alpha_poke_single_battle_creation():
+    cli_name = "alphaPokeSingle-test_path"
+    with patch(
+        "tf_agents.policies.py_tf_eager_policy.SavedModelPyTFEagerPolicy"
+    ) as mock_saved_policy, patch("tensorflow.saved_model.load") as mock_load, patch(
+        "os.path.isdir"
+    ) as mock_is_dir, patch(
+        "tensorflow.saved_model.contains_saved_model"
+    ) as mock_contains:
+        mock_is_dir.return_value = True
+        mock_contains.return_value = True
+        agent = create_agent(cli_name, **get_mock_args())
+        assert isinstance(agent, List)
+        assert len(agent) == 1
+        assert isinstance(agent[0], AlphaPokeSingleBattleModelLoader)
+        assert agent[0]._max_concurrent_battles == 1
+        check_agent_configuration(agent[0])
+        mock_saved_policy.assert_called_once_with(
+            "test_path", load_specs_from_pbtxt=True
+        )
+        mock_load.assert_called_once_with("test_path")
+        mock_is_dir.assert_called_once_with("test_path")
+        mock_contains.assert_called_once_with("test_path")
