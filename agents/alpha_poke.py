@@ -1305,6 +1305,14 @@ class AlphaPokeDeepSingleDQN(AlphaPokeSingleDQN):
             NestFlatten(),
             layers.Concatenate(),
             layers.Dense(
+                8192,
+                activation=activations.elu,
+                kernel_initializer=initializers.VarianceScaling(
+                    scale=1.0, mode="fan_in", distribution="truncated_normal"
+                ),
+                use_bias=True,
+            ),
+            layers.Dense(
                 4096,
                 activation=activations.elu,
                 kernel_initializer=initializers.VarianceScaling(
