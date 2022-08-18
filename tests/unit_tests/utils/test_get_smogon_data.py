@@ -1,6 +1,8 @@
 from poke_env.data import GEN_TO_POKEDEX
 from unittest.mock import MagicMock, patch
 
+import utils.get_smogon_data
+
 from utils.get_smogon_data import (
     MEGA_STONES,
     Z_CRYSTALS,
@@ -63,6 +65,7 @@ def get_fake_dict():
 
 
 def test_get_abilities_gen6():
+    vars(utils.get_smogon_data).pop("Abilities6")
     tmp = GEN_TO_POKEDEX.copy()
     GEN_TO_POKEDEX.clear()
     GEN_TO_POKEDEX.update(get_fake_dict())
@@ -71,9 +74,12 @@ def test_get_abilities_gen6():
     assert abilities == ["ability1", "ability2", "ability3"]
     GEN_TO_POKEDEX.clear()
     GEN_TO_POKEDEX.update(tmp)
+    vars(utils.get_smogon_data).pop("Abilities6")
+    get_abilities(6)
 
 
 def test_get_abilities_gen8():
+    vars(utils.get_smogon_data).pop("Abilities8")
     tmp = GEN_TO_POKEDEX.copy()
     GEN_TO_POKEDEX.clear()
     GEN_TO_POKEDEX.update(get_fake_dict())
@@ -82,6 +88,8 @@ def test_get_abilities_gen8():
     assert abilities == ["ability2", "ability3", "ability4", "ability5"]
     GEN_TO_POKEDEX.clear()
     GEN_TO_POKEDEX.update(tmp)
+    vars(utils.get_smogon_data).pop("Abilities8")
+    get_abilities(8)
 
 
 def get_fake_json():
@@ -89,7 +97,7 @@ def get_fake_json():
 
 
 def test_get_items():
-    get_items.cache_clear()
+    vars(utils.get_smogon_data).pop("Items")
     with patch("requests.get") as mock_req_get, patch("json5.loads") as mock_loads:
         data = MagicMock()
         mock_req_get.return_value = data
@@ -99,7 +107,8 @@ def test_get_items():
         assert [i.name for i in items] == ["item1", "item2", "item3"]
         mock_req_get.assert_called_once()
         mock_loads.assert_called_once_with(data.content)
-    get_items.cache_clear()
+    vars(utils.get_smogon_data).pop("Items")
+    get_items()
 
 
 def test_mega_stones():

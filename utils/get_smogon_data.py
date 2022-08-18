@@ -7,6 +7,8 @@ from functools import lru_cache
 from poke_env.data import GEN_TO_POKEDEX
 from poke_env.utils import to_id_str
 
+GENERATIONS = 8
+
 MEGA_STONES = [
     "abomasite",
     "absolite",
@@ -146,19 +148,23 @@ def get_random_battle_learnset(gen: int):
 
 
 def get_abilities(gen: int):
-    pokedex = GEN_TO_POKEDEX[gen]
+    if f"Abilities{gen}" in globals().keys():
+        return globals()[f"Abilities{gen}"]
+    pokedex = GEN_TO_POKEDEX[max(gen, 4)]
     abilities = []
     for pokemon in pokedex.values():
         for ability in pokemon["abilities"].values():
             if len(ability) > 0 and to_id_str(ability) not in abilities:
                 abilities.append(to_id_str(ability))
     abilities.sort()
+    to_return = Enum(f"Abilities{gen}", abilities, module=__name__)
+    globals()[f"Abilities{gen}"] = to_return
+    return to_return
 
-    return Enum("Abilities", abilities)  # noqa: functional API
 
-
-@lru_cache(1)
 def get_items():
+    if "Items" in globals().keys():
+        return globals()["Items"]
     data = requests.get("https://play.pokemonshowdown.com/data/text/items.json5")
     data = json5.loads(data.content)
     json_items = list(data.keys())
@@ -166,4 +172,11 @@ def get_items():
     for item in json_items:
         items.append(to_id_str(item))
     items.sort()
-    return Enum("Items", items)  # noqa: functional API
+    to_return = Enum("Items", items, module=__name__)
+    globals()["Items"] = to_return
+    return to_return
+
+
+get_items()
+for i in range(1, GENERATIONS, 1):
+    get_abilities(i)
