@@ -153,7 +153,11 @@ def create_agent(
             )
     elif "alphaPokeSingle-" in agent_name:
         model_path = agent_name.split("-", 1)[1]
-        agent = [AlphaPokeSingleBattleModelLoader(model=model_path, **kwargs)]
+        agent = [
+            AlphaPokeSingleBattleModelLoader(
+                model=f"{MODELS_PATH}/tf_models/{model_path}", **kwargs
+            )
+        ]
     else:
         raise UnsupportedAgentType(f"{cli_name} is not a valid agent type")
     return agent

@@ -5,6 +5,7 @@ import tensorflow as tf
 
 from abc import ABC, abstractmethod
 from asyncio import Event
+from code_extractor import extract_code, load_code
 from functools import lru_cache
 from gym import Space
 from gym.utils.env_checker import check_env
@@ -19,7 +20,7 @@ from tf_agents.environments import suite_gym, tf_py_environment
 from tf_agents.policies import TFPolicy, policy_saver, py_tf_eager_policy
 from tf_agents.replay_buffers.replay_buffer import ReplayBuffer
 from tf_agents.trajectories import TimeStep
-from typing import Awaitable, Callable, Iterator, List, Optional, Union
+from typing import Awaitable, Callable, Iterator, List, Optional, Union, Type
 
 from utils.action_to_move_function import (
     get_int_action_to_move,
@@ -116,6 +117,17 @@ class TFPlayer(Player, ABC):
     ):
         self._reward_buffer = {}
         self.battle_format = kwargs.get("battle_format", "gen8randombattle")
+        self.embed_battle_function = None
+        self.embedding_description = None
+        if model is not None:
+            print(f"Using model {model}...")
+            print("Extracting model embedding functions...")
+            with open(os.path.join(model, "embed_battle_func.json")) as file:
+                embed_battle_function_string = file.read()
+            self.embed_battle_function = load_code(embed_battle_function_string)
+            with open(os.path.join(model, "embedding_description.json")) as file:
+                embedding_description_string = file.read()
+            self.embedding_description = load_code(embedding_description_string)(self)
         kwargs["start_challenging"] = False
         if test:
             print("Testing environment...")
@@ -126,7 +138,9 @@ class TFPlayer(Player, ABC):
             self.calc_reward_func,
             self.action_to_move_func,
             self.embed_battle_func,
-            self.embedding,
+            self.embedding_description
+            if self.embedding_description is not None
+            else self.embedding,
             self.space_size,
             self.opponents if model is None else None,
             *args,
@@ -162,6 +176,7 @@ class TFPlayer(Player, ABC):
             print("Creating policy saver...")
             self.saver = policy_saver.PolicySaver(self.agent.policy)
         else:
+            model = os.path.join(model, "model")
             if not os.path.isdir(model):
                 raise ValueError("Expected directory as model parameter.")
             if not tf.saved_model.contains_saved_model(model):
@@ -187,6 +202,8 @@ class TFPlayer(Player, ABC):
 
     @property
     def embed_battle_func(self) -> Callable[[AbstractBattle], ObservationType]:
+        if self.embed_battle_function is not None:
+            return lambda battle: self.embed_battle_function(self, battle)
         return self.embed_battle
 
     @abstractmethod
@@ -257,13 +274,28 @@ class TFPlayer(Player, ABC):
         if os.path.isdir(save_dir) and len(os.listdir(save_dir)) > 0:
             raise ValueError(f"{save_dir} is not empty.")
         os.makedirs(save_dir, exist_ok=True)
-        self.saver.save(save_dir)
+        os.makedirs(os.path.join(save_dir, "model"))
+        self.saver.save(os.path.join(save_dir, "model"))
+        print("Saving embedding function...")
+        extracted_embed = extract_code(
+            self.embed_battle, get_requirements=True, freeze_code=True
+        )
+        with open(os.path.join(save_dir, "embed_battle_func.json"), "w+") as file:
+            file.write(extracted_embed)
+        print("Saving embedding description...")
+        extracted_description = extract_code(
+            self.__class__.embedding.fget, get_requirements=True, freeze_code=True
+        )
+        with open(os.path.join(save_dir, "embedding_description.json"), "w+") as file:
+            file.write(extracted_description)
 
     @property
     @lru_cache()
     def action_to_move_func(
         self,
-    ) -> Callable[[Player, int, AbstractBattle, Optional[bool]], BattleOrder]:
+    ) -> Callable[
+        [Player, int, AbstractBattle, Optional[Type[Exception]]], BattleOrder
+    ]:
         format_lowercase = self.battle_format.lower()
         double = (
             "vgc" in format_lowercase
@@ -290,7 +322,9 @@ class TFPlayer(Player, ABC):
             self.calc_reward_func,
             self.action_to_move_func,
             self.embed_battle_func,
-            self.embedding,
+            self.embedding_description
+            if self.embedding_description is not None
+            else self.embedding,
             self.space_size,
             opponent,
             battle_format=self.battle_format,
@@ -307,7 +341,9 @@ class TFPlayer(Player, ABC):
             self.calc_reward_func,
             self.action_to_move_func,
             self.embed_battle_func,
-            self.embedding,
+            self.embedding_description
+            if self.embedding_description is not None
+            else self.embedding,
             self.space_size,
             opponents
             if opponents is not None and active

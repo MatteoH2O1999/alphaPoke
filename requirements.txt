@@ -8,6 +8,7 @@ tabulate
 progress
 numpy
 gym
+code-extractor
 tensorflow-cpu
 tf-agents
 git+https://github.com/hsahovic/poke-env.git

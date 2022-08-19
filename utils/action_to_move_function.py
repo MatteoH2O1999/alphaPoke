@@ -2,14 +2,12 @@
 from poke_env.environment.abstract_battle import AbstractBattle
 from poke_env.player.battle_order import BattleOrder, ForfeitBattleOrder
 from poke_env.player.player import Player
-from typing import Optional, Callable
-
-from utils.invalid_argument import InvalidAction
+from typing import Optional, Callable, Type
 
 
 def get_int_action_to_move(
     battle_format: str, is_double: bool
-) -> Callable[[Player, int, AbstractBattle, Optional[bool]], BattleOrder]:
+) -> Callable[[Player, int, AbstractBattle, Optional[Type[Exception]]], BattleOrder]:
     if is_double:
         raise NotImplementedError("Double battles are not yet implemented.")
     else:
@@ -30,7 +28,7 @@ def get_int_action_space_size(battle_format: str, is_double: bool) -> int:
 
 
 def action_to_move_gen8single(
-    agent: Player, action: int, battle: AbstractBattle, random_if_invalid=True
+    agent: Player, action: int, battle: AbstractBattle, exception_if_invalid=None
 ) -> BattleOrder:
     if action == -1:
         return ForfeitBattleOrder()
@@ -62,6 +60,6 @@ def action_to_move_gen8single(
     elif 0 <= action - 16 < len(battle.available_switches):
         return agent.create_order(battle.available_switches[action - 16])
     else:
-        if not random_if_invalid:
-            raise InvalidAction()
+        if exception_if_invalid is not None:
+            raise exception_if_invalid()
         return agent.choose_random_move(battle)

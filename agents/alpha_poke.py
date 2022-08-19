@@ -953,7 +953,7 @@ class AlphaPokeSingleEmbedded(DQNPlayer, ABC):
         int_to_move_func = self.action_to_move_func
         for i in range(len(available_moves)):
             try:
-                int_to_move_func(self, i, battle, False)
+                int_to_move_func(self, i, battle, InvalidAction)
             except InvalidAction:
                 available_moves[i] = 0
         return {
