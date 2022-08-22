@@ -44,9 +44,9 @@ from typing import Iterator, Union, List
 
 from agents.base_classes.dqn_player import DQNPlayer
 from agents.advanced_heuristics import AdvancedHeuristics
-from utils.action_to_move_function import InvalidAction
 from utils.close_player import close_player
 from utils.get_smogon_data import get_abilities, get_items
+from utils.invalid_argument import InvalidAction
 
 STATS = {
     "hp": 0,
