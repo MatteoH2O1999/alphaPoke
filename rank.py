@@ -119,8 +119,10 @@ class PlayerProcess(multiprocessing.Process):
         self.stop_on = 1
 
     def run(self) -> None:
+        print(f"Resetting elo for player {self.username}...")
         self.reset_elo()
         plt.switch_backend("agg")
+        print(f"Creating agent of type {self.agent_type}...")
         self.agent = create_agent(
             self.agent_type,
             self.battle_format,
@@ -133,7 +135,9 @@ class PlayerProcess(multiprocessing.Process):
         self.plot_path = os.path.join(self.save_path, file_name)
         elo_stats = [[0], [1000]]
         while self.cont or self.stop_on >= self.count:
+            print(f"Starting battle for agent {self.username}...")
             asyncio.get_event_loop().run_until_complete(self.agent.ladder(1))
+            print(f"Battle finished for agent {self.username}...")
             elo_stats[0].append(self.count)
             last_elo = elo_stats[1][-1]
             new_elo = get_ratings(self.username, self.battle_format)["elo"]
@@ -228,6 +232,7 @@ class ResetProcess(multiprocessing.Process):
         super().__init__(*args, **kwargs)
 
     def run(self) -> None:
+        print(f"Starting reset process for player {self.username}...")
         player_config = PlayerConfiguration(self.username, self.password)
         agent = ResetPlayer(
             player_configuration=player_config,
@@ -235,13 +240,17 @@ class ResetProcess(multiprocessing.Process):
             server_configuration=ShowdownServerConfiguration,
         )
         current_elo = get_ratings(self.username, self.battle_format)["elo"]
+        print(f"Current elo for player {self.username}: {current_elo}")
         while current_elo != 1000:
+            print(f"Starting battle for player {self.username}...")
             asyncio.get_event_loop().run_until_complete(agent.ladder(1))
+            print(f"Battle forfeited for player {self.username}")
             new_elo = get_ratings(self.username, self.battle_format)["elo"]
             while new_elo == current_elo:
                 time.sleep(1)
                 new_elo = get_ratings(self.username, self.battle_format)["elo"]
             current_elo = new_elo
+            print(f"Current elo for player {self.username}: {current_elo}")
 
 
 if __name__ == "__main__":  # pragma: no cover
