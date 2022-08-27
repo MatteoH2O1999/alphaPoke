@@ -13,6 +13,8 @@ def get_ratings(username, battle_format):
             json_data = requests.get(
                 f"https://pokemonshowdown.com/users/{to_id_str(username)}.json"
             )
+            assert json_data is not None
+            data = json.loads(json_data.content)
             done = True
         except requests.exceptions.SSLError:
             print("SSL Error...")
@@ -22,8 +24,10 @@ def get_ratings(username, battle_format):
             print("Connection Error...")
             time.sleep(10)
             print("Retrying...")
-    assert json_data is not None
-    data = json.loads(json_data.content)
+        except json.JSONDecodeError:
+            print("JSONDecodeError...")
+            time.sleep(10)
+            print("Retrying...")
     rating_data = data["ratings"][battle_format]
     for key, value in rating_data.items():
         if key == "gxe":
