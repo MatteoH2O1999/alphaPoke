@@ -135,9 +135,9 @@ class PlayerProcess(multiprocessing.Process):
         self.plot_path = os.path.join(self.save_path, file_name)
         elo_stats = [[0], [1000]]
         while self.cont or self.stop_on >= self.count:
-            print(f"Starting battle for agent {self.username}...")
+            print(f"Starting battle {self.count} for agent {self.username}...")
             asyncio.get_event_loop().run_until_complete(self.agent.ladder(1))
-            print(f"Battle finished for agent {self.username}...")
+            print(f"Battle {self.count} finished for agent {self.username}...")
             elo_stats[0].append(self.count)
             last_elo = elo_stats[1][-1]
             new_elo = get_ratings(self.username, self.battle_format)["elo"]
@@ -166,6 +166,7 @@ class PlayerProcess(multiprocessing.Process):
             self.agent.training or self.agent.train_while_playing
         ):
             update_model(self.agent, "./models")
+        print(f"Saving logs for player {self.username}...")
         with open(
             os.path.join(self.save_path, f"{self.agent.__class__.__name__}.csv"), "w"
         ) as data_file:
