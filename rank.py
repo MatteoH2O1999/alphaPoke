@@ -243,9 +243,9 @@ class ResetProcess(multiprocessing.Process):
         current_elo = get_ratings(self.username, self.battle_format)["elo"]
         print(f"Current elo for player {self.username}: {current_elo}")
         while current_elo != 1000:
-            print(f"Starting battle for player {self.username}...")
+            print(f"Starting battle to forfeit for player {self.username}...")
             asyncio.get_event_loop().run_until_complete(agent.ladder(1))
-            print(f"Battle forfeited for player {self.username}")
+            print(f"Battle forfeited for player {self.username}...")
             new_elo = get_ratings(self.username, self.battle_format)["elo"]
             while new_elo == current_elo:
                 time.sleep(1)
