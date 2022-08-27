@@ -110,7 +110,7 @@ jobs:
           name: temp_upload
           failOnError: true
       - name: Create release
-        if: startsWith(github.ref, 'refs/tags/v')
+        if: startsWith(github.ref, 'refs/tags/')
         uses: softprops/action-gh-release@v1
         with:
           files: to_upload/*
