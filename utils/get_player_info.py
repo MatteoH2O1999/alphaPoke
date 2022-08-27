@@ -18,6 +18,10 @@ def get_ratings(username, battle_format):
             print("SSL Error...")
             time.sleep(10)
             print("Retrying...")
+        except requests.exceptions.ConnectionError:
+            print("Connection Error...")
+            time.sleep(10)
+            print("Retrying...")
     assert json_data is not None
     data = json.loads(json_data.content)
     rating_data = data["ratings"][battle_format]
