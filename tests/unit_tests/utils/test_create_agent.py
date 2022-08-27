@@ -1,9 +1,10 @@
+import os
 import pickle
 import pytest
 
 from io import BytesIO
 from typing import List
-from unittest.mock import patch
+from unittest.mock import call, patch
 
 from agents.alpha_poke import AlphaPokeSingleBattleModelLoader
 from agents.basic_rl import SimpleRLAgent
@@ -13,7 +14,7 @@ from agents.expert_rl import ExpertRLAgent
 from agents.sarsa_stark import SarsaStark, ExpertSarsaStark
 from agents.advanced_heuristics import AdvancedHeuristics
 from agents.twenty_year_old_me import TwentyYearOldMe
-from utils.create_agent import create_agent, UnsupportedAgentType
+from utils.create_agent import create_agent, UnsupportedAgentType, MODELS_PATH
 
 _TEST_MODEL = {"test": 42}
 
@@ -337,7 +338,15 @@ def test_alpha_poke_single_battle_creation():
         "os.path.isdir"
     ) as mock_is_dir, patch(
         "tensorflow.saved_model.contains_saved_model"
-    ) as mock_contains:
+    ) as mock_contains, patch(
+        "builtins.open"
+    ) as mock_open, patch(
+        "agents.base_classes.tf_player.load_code"
+    ), patch(
+        "tf_agents.environments.suite_gym.wrap_env"
+    ), patch(
+        "tf_agents.environments.tf_py_environment.TFPyEnvironment"
+    ):
         mock_is_dir.return_value = True
         mock_contains.return_value = True
         agent = create_agent(cli_name, **get_mock_args())
@@ -347,8 +356,33 @@ def test_alpha_poke_single_battle_creation():
         assert agent[0]._max_concurrent_battles == 1
         check_agent_configuration(agent[0])
         mock_saved_policy.assert_called_once_with(
-            "test_path", load_specs_from_pbtxt=True
+            os.path.join(MODELS_PATH, "tf_models", "test_path", "model"),
+            load_specs_from_pbtxt=True,
         )
-        mock_load.assert_called_once_with("test_path")
-        mock_is_dir.assert_called_once_with("test_path")
-        mock_contains.assert_called_once_with("test_path")
+        mock_load.assert_called_once_with(
+            os.path.join(MODELS_PATH, "tf_models", "test_path", "model")
+        )
+        mock_is_dir.assert_called_once_with(
+            os.path.join(MODELS_PATH, "tf_models", "test_path", "model")
+        )
+        mock_contains.assert_called_once_with(
+            os.path.join(MODELS_PATH, "tf_models", "test_path", "model")
+        )
+        mock_open.assert_has_calls(
+            [
+                call(
+                    os.path.join(
+                        MODELS_PATH, "tf_models", "test_path", "embed_battle_func.json"
+                    )
+                ),
+                call(
+                    os.path.join(
+                        MODELS_PATH,
+                        "tf_models",
+                        "test_path",
+                        "embedding_description.json",
+                    )
+                ),
+            ],
+            any_order=True,
+        )

@@ -271,5 +271,5 @@ def test_gen8single_failure_exception():
     switches = [Pokemon(species="charizard"), Pokemon(species="pikachu")]
     battle._available_switches = switches
     with pytest.raises(InvalidAction):
-        action_to_move_gen8single(mock_agent, 18, battle, False)
+        action_to_move_gen8single(mock_agent, 18, battle, InvalidAction)
     mock_agent.choose_random_move.assert_not_called()
