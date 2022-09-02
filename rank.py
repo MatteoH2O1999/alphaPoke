@@ -1,6 +1,8 @@
 # Allows bots to play on the ladder
 import asyncio
+import asyncio.exceptions
 import datetime
+import gc
 import getpass
 import math
 import matplotlib.pyplot as plt
@@ -20,6 +22,7 @@ from poke_env.player_configuration import PlayerConfiguration
 from typing import Awaitable, Union
 
 from agents.base_classes.trainable_player import TrainablePlayer
+from utils.close_player import close_player
 from utils.create_agent import create_agent
 from utils.invalid_argument import InvalidArgumentNumber
 from utils.get_player_info import get_ratings
@@ -27,6 +30,7 @@ from utils.save_updated_model import update_model
 
 
 MAX_WAIT_TIME_FOR_ELO_UPDATE = 120
+MAX_BATTLE_TIME = 3600
 
 
 def main():
@@ -136,7 +140,31 @@ class PlayerProcess(multiprocessing.Process):
         elo_stats = [[0], [1000]]
         while self.cont or self.stop_on >= self.count:
             print(f"Starting battle {self.count} for agent {self.username}...")
-            asyncio.get_event_loop().run_until_complete(self.agent.ladder(1))
+            try:
+                asyncio.get_event_loop().run_until_complete(
+                    asyncio.wait_for(self.agent.ladder(1), MAX_BATTLE_TIME)
+                )
+            except asyncio.exceptions.TimeoutError:
+                print(f"Error with battle {self.count} for agent {self.username}...")
+                model = None
+                if isinstance(self.agent, TrainablePlayer) and (
+                    self.agent.training or self.agent.train_while_playing
+                ):
+                    model = self.agent.model
+                close_player(self.agent)
+                self.agent = create_agent(
+                    self.agent_type,
+                    self.battle_format,
+                    PlayerConfiguration(self.username, self.password),
+                    ShowdownServerConfiguration,
+                    True,
+                    self.save_replays,
+                )
+                if model is not None:
+                    assert isinstance(self.agent, TrainablePlayer)
+                    self.agent.model = model
+                gc.collect()
+                continue
             print(f"Battle {self.count} finished for agent {self.username}...")
             elo_stats[0].append(self.count)
             last_elo = elo_stats[1][-1]
@@ -243,6 +271,7 @@ class ResetProcess(multiprocessing.Process):
         current_elo = get_ratings(self.username, self.battle_format)["elo"]
         print(f"Current elo for player {self.username}: {current_elo}")
         while current_elo != 1000:
+            time.sleep(20)
             print(f"Starting battle to forfeit for player {self.username}...")
             asyncio.get_event_loop().run_until_complete(agent.ladder(1))
             print(f"Battle forfeited for player {self.username}...")
