@@ -151,7 +151,11 @@ class PlayerProcess(multiprocessing.Process):
                     self.agent.training or self.agent.train_while_playing
                 ):
                     model = self.agent.model
+                print(f"Closing player {self.username}...")
                 close_player(self.agent)
+                print(
+                    f"Creating new agent of type {self.agent_type} for account {self.username}"
+                )
                 self.agent = create_agent(
                     self.agent_type,
                     self.battle_format,
@@ -168,26 +172,39 @@ class PlayerProcess(multiprocessing.Process):
             print(f"Battle {self.count} finished for agent {self.username}...")
             elo_stats[0].append(self.count)
             last_elo = elo_stats[1][-1]
+            print(f"Last elo for agent {self.username}: {last_elo}...")
             new_elo = get_ratings(self.username, self.battle_format)["elo"]
             counter = MAX_WAIT_TIME_FOR_ELO_UPDATE
             while new_elo == last_elo and counter > 0:
+                print(f"Elo of agent {self.username} not updated yet, retrying...")
                 time.sleep(1)
                 new_elo = get_ratings(self.username, self.battle_format)["elo"]
                 if last_elo == 1000:
                     counter -= 1
             elo_stats[1].append(new_elo)
+            print(f"Getting lock on stop_on and cont_int for player {self.username}...")
             with self.stop_on_shared.get_lock():
-                if self.stop_on_shared.value < self.count:
-                    self.stop_on_shared.value = self.count
-                self.stop_on = self.stop_on_shared.value
-            with self.cont_int.get_lock():
-                if self.cont_int.value == 1:
-                    self.cont = True
-                elif self.cont_int.value == 0:
-                    self.cont = False
-                else:
-                    raise RuntimeError(
-                        f"Invalid value. Expected 0 or 1, got {self.cont_int.value}"
+                with self.cont_int.get_lock():
+                    if self.stop_on_shared.value < self.count:
+                        print(
+                            f"Updating stop_on value from {self.stop_on_shared.value} to {self.count}..."
+                        )
+                        self.stop_on_shared.value = self.count
+                    if self.stop_on != self.stop_on_shared.value:
+                        print(
+                            f"Updating stop_on variable for agent {self.username} from {self.stop_on} to {self.stop_on_shared.value}"
+                        )
+                    self.stop_on = self.stop_on_shared.value
+                    if self.cont_int.value == 1:
+                        self.cont = True
+                    elif self.cont_int.value == 0:
+                        self.cont = False
+                    else:
+                        raise RuntimeError(
+                            f"Invalid value. Expected 0 or 1, got {self.cont_int.value}"
+                        )
+                    print(
+                        f"Value of cont variable for agent {self.username}: {self.cont}..."
                     )
             self.count += 1
         if isinstance(self.agent, TrainablePlayer) and (
