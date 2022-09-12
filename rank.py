@@ -29,7 +29,7 @@ from utils.get_player_info import get_ratings
 from utils.save_updated_model import update_model
 
 
-MAX_WAIT_TIME_FOR_ELO_UPDATE = 300
+MAX_WAIT_TIME_FOR_ELO_UPDATE = 120
 MAX_BATTLE_TIME = 3600
 
 
@@ -175,11 +175,13 @@ class PlayerProcess(multiprocessing.Process):
             print(f"Last elo for agent {self.username}: {last_elo}...")
             new_elo = get_ratings(self.username, self.battle_format)["elo"]
             counter = MAX_WAIT_TIME_FOR_ELO_UPDATE
+            if last_elo != 1000:
+                counter *= 10
             while new_elo == last_elo and counter > 0:
-                print(f"Elo of agent {self.username} not updated yet, retrying...")
-                time.sleep(20)
+                time.sleep(1)
                 new_elo = get_ratings(self.username, self.battle_format)["elo"]
-                counter -= 20
+                counter -= 1
+            print(f"New elo for agent {self.username}: {new_elo}...")
             elo_stats[1].append(new_elo)
             print(f"Getting lock on stop_on and cont_int for player {self.username}...")
             with self.stop_on_shared.get_lock():

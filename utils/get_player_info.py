@@ -10,12 +10,10 @@ def get_ratings(username, battle_format):
     data = None
     while not done:
         try:
-            print(f"Getting data for account {username}...")
             json_data = requests.get(
                 f"https://pokemonshowdown.com/users/{to_id_str(username)}.json"
             )
             assert json_data is not None
-            print(f"Converting smogon json data to {username} data...")
             data = json.loads(json_data.content)
             assert data is not None
             done = True
