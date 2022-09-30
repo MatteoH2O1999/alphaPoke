@@ -105,6 +105,7 @@ jobs:
           name: temp_upload
           path: to_upload
       - name: Delete artifacts
+        if: startsWith(github.ref, 'refs/tags/')
         uses: geekyeggo/delete-artifact@v1
         with:
           name: temp_upload
