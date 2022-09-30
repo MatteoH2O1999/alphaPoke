@@ -92,10 +92,29 @@ jobs:
         with:
           path: dist/${{ matrix.dist_file }}
           name: temp_upload
+  build_latex:
+    runs-on: ubuntu-latest
+    name: Build latex report
+    needs: cross_platform_build
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
+      - name: Build latex
+        uses: xu-cheng/latex-action@v2
+        with:
+          root_file: paper/src/main.tex
+          work_in_root_file_dir: true
+      - name: Rename PDF
+        run: mv paper/src/main.pdf paper/src/Report.pdf
+      - name: Upload PDF
+        uses: actions/upload-artifact@v2
+        with:
+          name: temp_upload
+          path: paper/src/Report.pdf
   create_release:
     name: Create release and upload executables
     runs-on: ubuntu-latest
-    needs: cross_platform_build
+    needs: build_latex
     steps:
       - name: Checkout code
         uses: actions/checkout@v3
