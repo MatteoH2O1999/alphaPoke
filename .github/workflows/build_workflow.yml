@@ -92,6 +92,7 @@ jobs:
         with:
           path: dist/${{ matrix.dist_file }}
           name: temp_upload
+          retention-days: 1
   build_latex:
     runs-on: ubuntu-latest
     name: Build latex report
@@ -107,10 +108,11 @@ jobs:
       - name: Rename PDF
         run: mv paper/src/main.pdf paper/src/Report.pdf
       - name: Upload PDF
-        uses: actions/upload-artifact@v2
+        uses: actions/upload-artifact@v3
         with:
           name: temp_upload
           path: paper/src/Report.pdf
+          retention-days: 1
   create_release:
     name: Create release and upload executables
     runs-on: ubuntu-latest
