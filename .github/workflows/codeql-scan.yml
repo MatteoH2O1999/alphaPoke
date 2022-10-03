@@ -5,6 +5,7 @@ on:
 
 jobs:
   code-scanning:
+    name: CodeQL scan
     permissions:
       security-events: write
     runs-on: ubuntu-latest

@@ -10,6 +10,7 @@ on:
 jobs:
   pytest:
     runs-on: ${{ matrix.os }}
+    name: Pytest
     strategy:
       matrix:
         os: [windows-latest, ubuntu-latest, macos-latest]
@@ -42,4 +43,4 @@ jobs:
         uses: codecov/codecov-action@v2
         if: inputs.testing
         with:
-          env_vars: ${{ matrix.os }},${{ matrix.python-version }}
+          env_vars: OS=${{ matrix.os }},PYVER=${{ matrix.python-version }}
