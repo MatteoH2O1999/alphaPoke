@@ -40,7 +40,7 @@ async def main(index):
     current_time_string = current_time.strftime("%d-%m-%Y %H-%M-%S")
     os.makedirs("./logs", exist_ok=True)
     eval_challenges = 6000
-    placement = 40
+    placement = 30
     agent_type = sys.argv[3 + index].strip()
     if not sys.argv[1].isnumeric():
         raise InvalidArgument(
