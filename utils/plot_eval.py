@@ -19,7 +19,7 @@ def plot_eval(evaluations, save=False, path="./logs"):
         "Max base power player",
         "Simple heuristics player",
     ]
-    baseline_values = [1, 7.665994, 128.757145]
+    baseline_values = [1, 7.665993, 128.757145]
     for player, value, color in zip(baseline_players, baseline_values, colors):
         plt.axhline(
             value,
