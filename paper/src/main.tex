@@ -2,6 +2,8 @@
 \usepackage[utf8]{inputenc}
 \usepackage{biblatex}
 \usepackage{hyperref}
+\usepackage{graphicx}
+
 
 \addbibresource{bibliography.bib}
 
@@ -17,11 +19,17 @@
 \tableofcontents
 \newpage
 
+%\chapter{The uni project}
+
 \section{Introduction}
+
+The objective of this project is to create an agent capable of learning how to play Pokémon without any prior knowledge and without complex actions (every possible action in the environment is available to the agent directly).
+A first experiment is created without using neural networks to show how the complex environment of a Pokémon battle cannot be modeled by a simple Q-table (which has no generalization capabilities).
+The second experiment uses a neural network and provides far better results, though still far from being usable against a human player that more or less knows how to play.
 
 \section{The Problem}
 
-A \textbf{Pokémon\textsuperscript{\tiny TM}} match is an extremely complex environment and training an agent in such and environment is no easy feat. The complexity is caused by different factors:
+A \textbf{Pokémon\textsuperscript{\tiny TM}} match is an extremely complex environment and training an agent in such an environment is no easy feat. The complexity is caused by different factors:
 \begin{itemize}
     \item it is a stochastic game;
     \item it is a game with incomplete information;
@@ -146,7 +154,7 @@ The project is implemented in Python 3 and available on Github\cite{repo}.
 In order to communicate with the \textit{Pokèmon Showdown} server\cite{smogon} the python package \textit{poke-env}\cite{pokeenv} is used.
 For the neural network implementation, Tensorflow\cite{tensorflow} and TF-Agents\cite{TFAgents} are used.
 
-\section{First solution: Q-Learning}
+\section{First solution: Q-Learning} \label{sarsa_results}
 
 The first implemented solution tries to have an agent learn how to play Pokémon without using neural networks, leveraging only the Q-Learning algorithm against a state-action table.
 In order to do this the observation space has to be reduced.
@@ -222,14 +230,14 @@ where
 For this project, $\alpha$ starts at 1 and stops at 0.2 and $\gamma$ is set at 0.2.
 In addition to this, the policy used to choose the action is $\epsilon$-greedy with an $\epsilon$ starting at 1 and decaying to 0.01.
 
-\subsection{Results} \label{sarsa_results}
+\subsection{Results}
 
 Even thought the environment was heavily simplified, an agent trained without a neural network is not capable of learning an effective policy to play Pokémon.
 When tested against a random player in 10000 battles, the agent's winrate seems to stabilize around 54-55\%.
 
 %Winrate (10000 battaglie): 54.2%
 
-\section{Second solution: NN Q-Learning}
+\section{Second solution: NN Q-Learning} \label{DQN_results}
 
 Given the complexity of the environment, it was no surprise that a simple state-action Q-table was not enough for an agent to learn an effective policy.
 In order to account for this complexity, the second solution uses a neural network instead of a state-action Q-table to estimate the value of each action while in a certain state.
@@ -296,13 +304,14 @@ The neural network takes as input the encoding described in \ref{encoding}.
 It is structured as follows:
 \begin{enumerate}
     \item Input layer;
-    \item Hidden nested dense layer for group of features using \textbf{ELU} activation function and \textbf{Variance Scaling} initialzer; \label{nested_dense};
+    \item Hidden nested dense layer for group of features using \textbf{ELU} activation function and \textbf{Variance Scaling} initialzer; \label{nested_dense}
     \item Flatten \ref{nested_dense};
     \item Hidden dense layer composed of 1024 neurons using \textbf{ELU} activation function and \textbf{Variance Scaling} initialzer;
     \item Output dense layer composed of 21 neurons using \textbf{linear} activation function and \textbf{random uniform} initializer (the $i$-th neuron outputs the estimated value of choosing the $i$-th action while in the input state).
 \end{enumerate}
 The neural network uses the \textbf{ADAM} optimizer with a learning rate of 0.0025 and computes errors using \textbf{MSE}.
 The discount factor $\gamma$ is set to 0.75 and, to speed up training, $n$\textit{-step update} is used with a value of 3, thus enabling the agent to look farther into the future while learning.
+In order to avoid a maximization bias during training, the \textit{double DQN} technique is used.
 
 \subsubsection{\textit{n}-step update}
 
@@ -324,14 +333,21 @@ In order to learn, the agent needs to store past time steps and replaying them t
 In this case, for every training step, the buffer outputs 256 sequences of 4 \underline{consecutive} steps (because of n-step-update = 3) chosen at random.
 The replay buffer can contain at most 100000 time steps.
 
+\subsubsection{Double DQN}
+
+When using a singe neural network to estimate Q-values, the training tends to overestimate them because of the intrinsic overestimation bias contained in the update formula: if $a'=max_{a'}Q^*(s',a')$, the overestimated action will get chosen more frequently, thus creating a maximization bias.
+The solution is to use two estimators for the Q-values and use one to update the other\cite{doubleDQNpaper}.
+
 \subsubsection{Training loop}
 
 The agent's learning is controlled by the following loop:
 \begin{enumerate}
-    \item 
+    \item Execute 10 steps with the current policy;
+    \item Get from the replay buffer 256 sequences of 3 time steps;
+    \item Train the neural network.
 \end{enumerate}
 
-\subsection{Results}
+\subsection{Results} \label{NN_complexity}
 
 After 50000 training steps, the results are much better than the ones obtained in \ref{sarsa_results}.
 When tested against a random player in 10000 battles, the agent's winrate stabilizes around 87-88\%.
@@ -342,6 +358,42 @@ Future experiments will probably focus on more complex NN structures and more ad
 %Winrate (10000 battaglie): 87.92%
 
 \section{Results on the official ladder}
+
+Even though the results obtained in \ref{DQN_results} are encouraging, no real progress has been made against real players.
+As shown in Figure \ref{ladder_results}, no trained agent actually managed to stabilize at an elo greater then the starting one (1000).
+Figures \ref{peak_elo} and \ref{avg_elo} show the trained agents' and baselines' peak and average elo respectively.
+As stated in \ref{NN_complexity}, the neural networks used for the project are probably not complex enough to model a Pokémon battle environment.
+
+\begin{figure}
+    \centering
+    \includegraphics[width=\textwidth]{img/rank.png}
+    \caption{Ladder results}
+    \label{ladder_results}
+\end{figure}
+
+\begin{figure}
+    \centering
+    \includegraphics[width=\textwidth]{img/peak.png}
+    \caption{Peak elo for trained agents and baselines}
+    \label{peak_elo}
+\end{figure}
+
+\begin{figure}
+    \centering
+    \includegraphics[width=\textwidth]{img/mean.png}
+    \caption{Average elo for trained agents and baselines}
+    \label{avg_elo}
+\end{figure}
+
+\section{Where to improve}
+
+In order to obtain better results there are different angles:
+\begin{itemize}
+    \item use a more advanced learning algorithm, like C51 or REINFORCE;
+    \item use a more complex neural network;
+    \item improve the encoding of the environment to simplify the learning process;
+    \item increase the number of training steps for more complex neural networks.
+\end{itemize}
 
 \clearpage
 
