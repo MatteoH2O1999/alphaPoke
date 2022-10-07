@@ -1101,7 +1101,16 @@ class AlphaPokeSingleBattleModelLoader(AlphaPokeSingleEmbedded):
             raise ValueError("Expected model to be not None")
         if "max_concurrent_battles" in kwargs:
             kwargs.pop("max_concurrent_battles")
+        current_class_name = self.__class__.__name__
+        model_name = os.path.basename(model)
+        model_string = model
+        while "tf_models" in os.path.dirname(os.path.dirname(model_string)):
+            model_string = os.path.dirname(model_string)
+            model_name = os.path.basename(model_string) + model_name.capitalize()
+        model_name = model_name.replace("-", "")
+        self.__class__.__name__ = model_name
         super().__init__(*args, **kwargs, model=model)
+        self.__class__.__name__ = current_class_name
 
     def get_agent(self) -> TFAgent:
         pass
