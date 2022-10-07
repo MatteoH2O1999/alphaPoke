@@ -22,6 +22,16 @@ class _ClosePlayerThread(Thread):
         loop.run_until_complete(self.stop_player())
 
     async def stop_player(self):
+        from agents.base_classes.tf_player import TFPlayer
+
         disable(CRITICAL)
         await self.player.stop_listening()
+        if isinstance(self.player, TFPlayer):
+            self.clean_tf_player()
         disable(NOTSET)
+
+    def clean_tf_player(self):
+        from agents.base_classes.tf_player import TFPlayer
+
+        assert isinstance(self.player, TFPlayer)
+        self.player.policy = None
