@@ -1,7 +1,8 @@
+from agents.advanced_heuristics import AdvancedHeuristics
+from agents.alpha_poke import AlphaPokeSingleBattleModelLoader
 from agents.dad import Dad
 from agents.eight_year_old_me import EightYearOldMe
 from agents.sarsa_stark import SarsaStark, ExpertSarsaStark
-from agents.advanced_heuristics import AdvancedHeuristics
 from agents.twenty_year_old_me import TwentyYearOldMe
 from gui_data import PLAYER_TYPE_DICT
 
@@ -14,6 +15,10 @@ AGENT_CLASSES = {
     "simpleSarsaStark-best": SarsaStark,
     "expertSarsaStark-best": ExpertSarsaStark,
 }
+
+for cli_name, _, _ in PLAYER_TYPE_DICT.values():
+    if "alphaPokeSingle-" in cli_name:
+        AGENT_CLASSES[cli_name] = AlphaPokeSingleBattleModelLoader
 
 
 def agents():

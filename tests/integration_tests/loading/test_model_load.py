@@ -1,7 +1,8 @@
+from agents.advanced_heuristics import AdvancedHeuristics
+from agents.alpha_poke import AlphaPokeSingleBattleModelLoader
 from agents.dad import Dad
 from agents.eight_year_old_me import EightYearOldMe
 from agents.sarsa_stark import SarsaStark, ExpertSarsaStark
-from agents.advanced_heuristics import AdvancedHeuristics
 from agents.twenty_year_old_me import TwentyYearOldMe
 from utils.create_agent import create_agent
 
@@ -48,3 +49,14 @@ def test_load_expert_sarsa():
     assert player.format == "gen8randombattle"
     assert not player.format_is_doubles
     assert player.model != {}
+
+
+def test_load_alpha_poke_single():
+    player = create_agent(
+        "alphaPokeSingle-doubleDQNsingle/simple-embedding",
+        battle_format="gen8randombattle",
+    )[0]
+    assert isinstance(player, AlphaPokeSingleBattleModelLoader)
+    assert player.format == "gen8randombattle"
+    assert not player.format_is_doubles
+    assert not player.can_train

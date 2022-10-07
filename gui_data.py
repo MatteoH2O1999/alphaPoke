@@ -21,6 +21,11 @@ EXPERT_SARSA_DESCRIPTION = (
     "and using a higher level action space ('Use supereffective move' "
     "instead of 'Use move 4'). Its performance is similar to a Max Base Power Player."
 )
+DOUBLE_DQN_SINGLE_BATTLE_1024_DESCRIPTION = (
+    "A player trained on a dense neural network with 1024 neurons with ELU activation function. "
+    "Uses a low level action space. "
+    "Its performance is similar to a Max Base Power Player."
+)
 
 DAD_SUPPORTED_BATTLES = {"[Gen 8] Random Battle": "gen8randombattle"}
 EIGHT_YEAR_OLD_ME_SUPPORTED_BATTLES = {"[Gen 8] Random Battle": "gen8randombattle"}
@@ -29,6 +34,9 @@ SIMPLE_RL_SUPPORTED_BATTLES = {"[Gen 8] Random Battle": "gen8randombattle"}
 EXPERT_RL_SUPPORTED_BATTLES = {"[Gen 8] Random Battle": "gen8randombattle"}
 SIMPLE_SARSA_SUPPORTED_BATTLES = {"[Gen 8] Random Battle": "gen8randombattle"}
 EXPERT_SARSA_SUPPORTED_BATTLES = {"[Gen 8] Random Battle": "gen8randombattle"}
+DOUBLE_DQN_SINGLE_BATTLE_1024_SUPPORTED_BATTLES = {
+    "[Gen 8] Random Battle": "gen8randombattle"
+}
 
 PLAYER_TYPE_DICT = {
     "Random Player": (
@@ -55,5 +63,10 @@ PLAYER_TYPE_DICT = {
         "expertSarsaStark-best",
         EXPERT_SARSA_DESCRIPTION,
         EXPERT_SARSA_SUPPORTED_BATTLES,
+    ),
+    "Double DQN Neural-Network-1024 Player": (
+        "alphaPokeSingle-doubleDQNsingle/simple-embedding",
+        DOUBLE_DQN_SINGLE_BATTLE_1024_DESCRIPTION,
+        DOUBLE_DQN_SINGLE_BATTLE_1024_SUPPORTED_BATTLES,
     ),
 }
