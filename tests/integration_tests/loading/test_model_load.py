@@ -4,6 +4,7 @@ from agents.dad import Dad
 from agents.eight_year_old_me import EightYearOldMe
 from agents.sarsa_stark import SarsaStark, ExpertSarsaStark
 from agents.twenty_year_old_me import TwentyYearOldMe
+from utils.close_player import close_player
 from utils.create_agent import create_agent
 
 
@@ -60,3 +61,4 @@ def test_load_alpha_poke_single():
     assert player.format == "gen8randombattle"
     assert not player.format_is_doubles
     assert not player.can_train
+    close_player(player)
