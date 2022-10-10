@@ -91,3 +91,7 @@ In our case , clicking the `Accept challenge from account1` the bot will wait fo
 Enjoy the bot.
 
 glhf.
+
+## Scientific report
+
+In the [release](https://github.com/MatteoH2O1999/alphaPoke/releases) section you can also find a PDF report for all the trained agents in the repository.
