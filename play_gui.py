@@ -246,6 +246,7 @@ def setup_buttons_frame(frame: ttk.LabelFrame):
         asyncio.set_event_loop(asyncio.new_event_loop())
         agent_type_name = PLAYER_TYPE_DICT[FORM_DATA.agent_type][0]
         b_format = PLAYER_TYPE_DICT[FORM_DATA.agent_type][2][FORM_DATA.battle_format]
+        disable_everything()
         agent = get_agent(
             agent_type_name,
             b_format,
@@ -253,8 +254,6 @@ def setup_buttons_frame(frame: ttk.LabelFrame):
             FORM_DATA.password,
             FORM_DATA.timer,
         )
-        print(agent)
-        disable_everything()
         asyncio.get_event_loop().run_until_complete(
             agent.send_challenges(FORM_DATA.user_to_challenge, 1)
         )
@@ -269,6 +268,7 @@ def setup_buttons_frame(frame: ttk.LabelFrame):
         asyncio.set_event_loop(asyncio.new_event_loop())
         agent_type_name = PLAYER_TYPE_DICT[FORM_DATA.agent_type][0]
         b_format = PLAYER_TYPE_DICT[FORM_DATA.agent_type][2][FORM_DATA.battle_format]
+        disable_everything()
         agent = get_agent(
             agent_type_name,
             b_format,
@@ -276,7 +276,6 @@ def setup_buttons_frame(frame: ttk.LabelFrame):
             FORM_DATA.password,
             FORM_DATA.timer,
         )
-        disable_everything()
         asyncio.get_event_loop().run_until_complete(
             agent.accept_challenges(FORM_DATA.user_to_challenge, 1)
         )
