@@ -58,9 +58,9 @@ jobs:
           coverage xml
           coverage report
       - name: Upload coverage to Codecov
-        uses: codecov/codecov-action@v2
+        uses: codecov/codecov-action@v3
         with:
-          env_vars: OS=${{ matrix.os }},PYVER=${{ matrix.python-version }}
+          env_vars: ${{ matrix.os }},${{ matrix.python-version }}
 
   integration_tests:
     runs-on: ${{ matrix.os }}
