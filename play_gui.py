@@ -1,3 +1,6 @@
+##############################################################################################
+# Main entrypoint for the repository. When run a GUI will be created to manage the execution #
+##############################################################################################
 import asyncio
 import os
 import tkinter as tk

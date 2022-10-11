@@ -1,4 +1,9 @@
 # Allows bots to play on the ladder
+##########################################################################################################
+# Usage: python rank.py BATTLE_FORMAT SAVE_REPLAYS LOGS_SAVE_PATH NUM_CHALLENGES(optional) [AGENT_TYPE]  #
+#                                                                                                        #
+# Example: python rank.py gen8randombattle False ./logs 1000 simpleRL-best dad                           #
+##########################################################################################################
 import asyncio
 import asyncio.exceptions
 import datetime

@@ -1,3 +1,8 @@
+###############################################################
+# Usage: python eval.py NUM_CHALLENGES SAVE_PLOT [AGENT_TYPE] #
+#                                                             #
+# Example: python eval.py 10000 False dad expertRL-best       #
+###############################################################
 import asyncio
 import matplotlib.pyplot as plt
 import sys

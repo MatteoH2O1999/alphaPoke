@@ -1,3 +1,8 @@
+####################################################################################
+# Usage: python cross_eval.py NUM_CHALLENGES BATTLE_FORMAT [(AGENT_TYPE QUANTITY)] #
+#                                                                                  #
+# Example: python cross_eval.py 1000 gen8randombattle dad 1 expertRL-best 2        #
+####################################################################################
 import asyncio
 import sys
 

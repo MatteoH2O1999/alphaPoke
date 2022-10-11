@@ -1,3 +1,7 @@
+#######################################################################
+# Usage: simply run the script and follow the prompts on the terminal #
+# Note: Only works with subclasses of TFPlayer                        #
+#######################################################################
 from agents.alpha_poke import (
     AlphaPokeDeepDoubleDQN,
     AlphaPokeDeepSingleDQN,

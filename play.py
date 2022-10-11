@@ -1,4 +1,7 @@
 # Play against a specified username
+#####################################################################
+# Usage: run the script and follow the instructions of the terminal #
+#####################################################################
 import asyncio
 
 from getpass import getpass

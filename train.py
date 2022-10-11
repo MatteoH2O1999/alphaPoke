@@ -1,4 +1,11 @@
 # Manages the training cycle for RL agents
+##########################################################################################
+# Usage: python train.py NUM_CHALLENGES BATTLE_FORMAT [AGENT_TYPE]                       #
+#                                                                                        #
+# Example: python train.py 1000 gen8randombattle expertSarsaStark simpleRL expertRL      #
+#                                                                                        #
+# Note: Only works with subclasses of TrainablePlayer                                    #
+##########################################################################################
 import asyncio
 import copy
 import datetime
