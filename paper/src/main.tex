@@ -329,7 +329,7 @@ This allows the agent to bootstrap from further in the future.
 
 \subsubsection{Replay buffer}
 
-In order to learn, the agent needs to store past time steps and replaying them to learn.
+In order to learn, the agent needs to store past time steps and replay them to learn.
 In this case, for every training step, the buffer outputs 256 sequences of 4 \underline{consecutive} steps (because of n-step-update = 3) chosen at random.
 The replay buffer can contain at most 100000 time steps.
 
@@ -353,7 +353,7 @@ After 50000 training steps, the results are much better than the ones obtained i
 When tested against a random player in 10000 battles, the agent's winrate stabilizes around 87-88\%.
 In addition, analyzing some replays of the matches it seems that a little bit of human-like strategies are present, even though the agent sill has an unhealthy preference for continuously switching between its Pokémon.
 This is probably caused by a neural network that is probably too simple to model all the nuances a Pokémon battle would require (too shallow and with an insufficient number of neurons per layer).
-Future experiments will probably focus on more complex NN structures and more advanced learning algorithms (like double-DQN, C51, etc.).
+Future experiments will probably focus on more complex NN structures and more advanced learning algorithms (like REINFORCE, C51, etc.).
 
 %Winrate (10000 battaglie): 87.92%
 
