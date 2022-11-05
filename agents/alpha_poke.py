@@ -69,6 +69,18 @@ ABILITIES = get_abilities(8)
 ITEMS = get_items()
 
 
+class _CastLayer(layers.Layer):
+    def __init__(self, out_dtype=tf.float64):
+        super(_CastLayer, self).__init__()
+        self.out_dtype = out_dtype
+
+    def call(self, inputs, *args, **kwargs):
+        return tf.cast(inputs, dtype=self.out_dtype)
+
+    def get_config(self):
+        return {"out_dtype": self.out_dtype}
+
+
 class _BattlefieldEmbedding:
     @staticmethod
     def embed_battlefield(battle: AbstractBattle):
@@ -1156,14 +1168,7 @@ class AlphaPokeSingleDQN(AlphaPokeSingleEmbedded):
                     d[key] = value.copy()
                     to_see.append(d[key])
                 else:
-                    d[key] = layers.Dense(
-                        value.shape[0],
-                        activation=activations.elu,
-                        kernel_initializer=initializers.VarianceScaling(
-                            scale=1.0, mode="fan_in", distribution="truncated_normal"
-                        ),
-                        use_bias=True,
-                    )
+                    d[key] = _CastLayer()
         layer_list = [
             NestMap(dict_list, input_spec=obs_spec),
             NestFlatten(),
@@ -1301,14 +1306,7 @@ class AlphaPokeDeepSingleDQN(AlphaPokeSingleDQN):
                     d[key] = value.copy()
                     to_see.append(d[key])
                 else:
-                    d[key] = layers.Dense(
-                        value.shape[0],
-                        activation=activations.elu,
-                        kernel_initializer=initializers.VarianceScaling(
-                            scale=1.0, mode="fan_in", distribution="truncated_normal"
-                        ),
-                        use_bias=True,
-                    )
+                    d[key] = _CastLayer()
         layer_list = [
             NestMap(dict_list, input_spec=obs_spec),
             NestFlatten(),

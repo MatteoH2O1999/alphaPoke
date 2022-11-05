@@ -11,10 +11,7 @@ class DQNPlayer(TFPlayer, ABC):
         self.agent.train_step_counter.assign(0)
         print("Evaluating initial policy...")
         self.eval_function(self.agent.train_step_counter.numpy())
-        if (
-            self.wrapped_env.challenge_task is None
-            or self.wrapped_env.challenge_task.done()
-        ):
+        if self.wrapped_env.done(0):
             print("Starting challenge loop...")
             self.wrapped_env.start_challenging()
         print("Collecting samples with random policy...")

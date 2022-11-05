@@ -20,7 +20,7 @@ from tf_agents.environments import suite_gym, tf_py_environment
 from tf_agents.policies import TFPolicy, policy_saver, py_tf_eager_policy
 from tf_agents.replay_buffers.replay_buffer import ReplayBuffer
 from tf_agents.trajectories import TimeStep
-from typing import Awaitable, Callable, Iterator, List, Optional, Union, Type
+from typing import Awaitable, Callable, Iterator, List, Optional, Union, Type, Tuple
 
 from utils.action_to_move_function import (
     get_int_action_to_move,
@@ -72,6 +72,27 @@ class _Env(OpenAIGymEnv):
 
     def get_opponent(self) -> Union[Player, str, List[Player], List[str]]:
         return self.opponents
+
+    def reset(
+        self,
+        *,
+        seed: Optional[int] = None,
+        return_info: bool = False,
+        options: Optional[dict] = None,
+    ) -> Union[ObservationType, Tuple[ObservationType, dict]]:
+        ret, info = super().reset(seed=seed, return_info=return_info, options=options)
+        if return_info:
+            return ret, info
+        return ret
+
+    def step(
+        self, action
+    ) -> Union[
+        Tuple[ObservationType, float, bool, bool, dict],
+        Tuple[ObservationType, float, bool, dict],
+    ]:
+        obs, reward, terminated, truncated, info = super().step(action)
+        return obs, reward, terminated or truncated, info
 
 
 class _SavedPolicy:
@@ -484,7 +505,7 @@ class TFPlayer(Player, ABC):
         await challenge_task
 
     async def battle_against(
-        self, opponent: Player, n_battles: int
+        self, opponent: Player, n_battles: int = 1
     ) -> None:  # pragma: no cover
         challenge_task = asyncio.ensure_future(
             self.internal_agent.battle_against(opponent, n_battles)
