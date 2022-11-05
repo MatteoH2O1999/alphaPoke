@@ -11,4 +11,4 @@ gym
 code-extractor
 tensorflow-cpu
 tf-agents
-git+https://github.com/hsahovic/poke-env.git
+git+https://github.com/MatteoH2O1999/poke-env@FixSeed
