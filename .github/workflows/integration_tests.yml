@@ -23,7 +23,7 @@ jobs:
         with:
           submodules: 'recursive'
       - name: Setup python ${{ inputs.python_version }}
-        uses: actions/setup-python@v3
+        uses: actions/setup-python@v4
         with:
           python-version: ${{ inputs.python_version }}
           cache: 'pip'
