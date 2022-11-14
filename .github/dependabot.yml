@@ -21,7 +21,8 @@ updates:
 - package-ecosystem: gitsubmodule
   directory: '/'
   schedule:
-    interval: daily
+    interval: weekly
+    day: monday
     time: '00:00'
   open-pull-requests-limit: 10
   reviewers:
