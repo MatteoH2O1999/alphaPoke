@@ -20,7 +20,7 @@ jobs:
         uses: actions/checkout@v3
         with:
           submodules: 'recursive'
-      - name: Setup python ${{ env.python_version }}
+      - name: Setup Python ${{ env.python_version }}
         uses: actions/setup-python@v4
         with:
           python-version: ${{ env.python_version }}

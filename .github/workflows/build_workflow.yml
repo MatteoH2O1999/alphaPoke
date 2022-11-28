@@ -56,7 +56,7 @@ jobs:
     steps:
       - name: Checkout code
         uses: actions/checkout@v3
-      - name: Setup python ${{ env.PYTHON_BUILD_VERSION }}
+      - name: Setup Python ${{ env.PYTHON_BUILD_VERSION }}
         uses: actions/setup-python@v4
         with:
             python-version: ${{ env.PYTHON_BUILD_VERSION }}
