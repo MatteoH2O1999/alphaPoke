@@ -57,7 +57,7 @@ def test_choose_move_1():
         assert order == "order"
         mock_input.assert_called_once()
         mock_func.assert_called_once()
-        mock_a2m.assert_called_once_with(player, 1, mock_battle, False)
+        mock_a2m.assert_called_once_with(player, 1, mock_battle, None)
 
 
 def test_choose_move_6():
@@ -74,4 +74,4 @@ def test_choose_move_6():
         assert order == "order"
         mock_input.assert_called_once()
         mock_func.assert_called_once()
-        mock_a2m.assert_called_once_with(player, 6, mock_battle, False)
+        mock_a2m.assert_called_once_with(player, 6, mock_battle, None)

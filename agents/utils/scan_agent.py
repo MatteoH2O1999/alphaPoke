@@ -17,7 +17,7 @@ class ScanAgent(Player):
         print("Insert action int.")
         action = input("Action: ")
         action_to_move_func = self.get_action_to_move_func()
-        return action_to_move_func(self, int(action), battle, False)
+        return action_to_move_func(self, int(action), battle, None)
 
     def get_action_to_move_func(self):
         return get_int_action_to_move(self.format, self.format_is_doubles)
