@@ -36,7 +36,7 @@ jobs:
         run: |
           cd pokemon-showdown/
           export hash=`git log -1 --pretty=format:%H`
-          echo "::set-output name=hash::$hash"
+          echo "hash=$hash" >> $GITHUB_OUTPUT
       - name: Restore server cache
         uses: actions/cache@v3
         with:
