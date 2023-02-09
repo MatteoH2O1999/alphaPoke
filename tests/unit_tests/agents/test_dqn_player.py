@@ -31,7 +31,6 @@ from agents.base_classes.dqn_player import DQNPlayer
 
 
 class DummyDQNPlayer(DQNPlayer):
-
     mock_agent: TFAgent
     mock_buffer: ReplayBuffer
     mock_iterator: Iterator

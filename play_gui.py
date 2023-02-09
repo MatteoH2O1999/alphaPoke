@@ -160,7 +160,6 @@ def get_agent(cli_name, battle_format, username, password, start_timer):
 
 
 def setup_player_frame(frame: ttk.LabelFrame):
-
     # Username input
     username_label = ttk.Label(
         frame, text=LABELS["username"], anchor="e", width=LABEL_WIDTH
