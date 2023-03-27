@@ -97,7 +97,7 @@ class _Env(OpenAIGymEnv):
         return_info: bool = False,
         options: Optional[dict] = None,
     ) -> Union[ObservationType, Tuple[ObservationType, dict]]:
-        ret, info = super().reset(seed=seed, return_info=return_info, options=options)
+        ret, info = super().reset(seed=seed, return_info=True, options=options)
         if return_info:
             return ret, info
         return ret
