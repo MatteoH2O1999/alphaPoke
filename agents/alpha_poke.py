@@ -39,13 +39,6 @@ from poke_env.player.baselines import (
 )
 from poke_env.player.openai_api import ObservationType
 from poke_env.player.player import Player
-from tensorflow.keras import (  # noqa: using tensorflow-cpu
-    activations,
-    initializers,
-    layers,
-    losses,
-    optimizers,
-)
 from tf_agents.agents import TFAgent
 from tf_agents.agents.dqn.dqn_agent import DqnAgent, DdqnAgent
 from tf_agents.agents.tf_agent import LossInfo
@@ -86,7 +79,7 @@ ABILITIES = get_abilities(8)
 ITEMS = get_items()
 
 
-class _CastLayer(layers.Layer):
+class _CastLayer(tf.keras.layers.Layer):
     def __init__(self, out_dtype=tf.float64):
         super(_CastLayer, self).__init__()
         self.out_dtype = out_dtype
@@ -957,10 +950,16 @@ class AlphaPokeSingleEmbedded(DQNPlayer, ABC):
     def victory_value(self) -> float:
         return 1.0
 
+    def max_reward(self) -> float:
+        return float("inf")
+
+    def min_reward(self) -> float:
+        return float("-inf")
+
     def calc_reward(
         self, last_battle: AbstractBattle, current_battle: AbstractBattle
     ) -> float:
-        return self.reward_computing_helper(
+        reward = self.reward_computing_helper(
             current_battle,
             fainted_value=self.fainted_value(),
             hp_value=self.hp_value(),
@@ -969,6 +968,11 @@ class AlphaPokeSingleEmbedded(DQNPlayer, ABC):
             status_value=self.status_value(),
             victory_value=self.victory_value(),
         )
+        if reward > self.max_reward():
+            reward = self.max_reward()
+        if reward < self.min_reward():
+            reward = self.min_reward()
+        return reward
 
     def embed_battle(self, battle: AbstractBattle) -> ObservationType:
         non_active_player_mons = battle.available_switches[:]
@@ -1189,19 +1193,19 @@ class AlphaPokeSingleDQN(AlphaPokeSingleEmbedded):
         layer_list = [
             NestMap(dict_list, input_spec=obs_spec),
             NestFlatten(),
-            layers.Concatenate(),
-            layers.Dense(
+            tf.keras.layers.Concatenate(),
+            tf.keras.layers.Dense(
                 1024,
-                activation=activations.elu,
-                kernel_initializer=initializers.VarianceScaling(
+                activation=tf.keras.activations.elu,
+                kernel_initializer=tf.keras.initializers.VarianceScaling(
                     scale=1.0, mode="fan_in", distribution="truncated_normal"
                 ),
                 use_bias=True,
             ),
-            layers.Dense(
+            tf.keras.layers.Dense(
                 num_actions,
-                activation=activations.linear,
-                kernel_initializer=initializers.RandomUniform(
+                activation=tf.keras.activations.linear,
+                kernel_initializer=tf.keras.initializers.RandomUniform(
                     minval=-0.05, maxval=0.05
                 ),
                 use_bias=True,
@@ -1211,7 +1215,7 @@ class AlphaPokeSingleDQN(AlphaPokeSingleEmbedded):
 
     @staticmethod
     def get_optimizer():
-        return optimizers.Adam(learning_rate=0.0025)
+        return tf.keras.optimizers.Adam(learning_rate=0.0025)
 
     def create_agent(self, q_net, optimizer, train_step_counter):
         return DqnAgent(
@@ -1220,7 +1224,7 @@ class AlphaPokeSingleDQN(AlphaPokeSingleEmbedded):
             q_network=q_net,
             optimizer=optimizer,
             train_step_counter=train_step_counter,
-            td_errors_loss_fn=losses.MeanSquaredError(),
+            td_errors_loss_fn=tf.keras.losses.MeanSquaredError(),
             gamma=0.75,
             n_step_update=3,
             observation_and_action_constraint_splitter=self.split_fn,
@@ -1327,43 +1331,43 @@ class AlphaPokeDeepSingleDQN(AlphaPokeSingleDQN):
         layer_list = [
             NestMap(dict_list, input_spec=obs_spec),
             NestFlatten(),
-            layers.Concatenate(),
-            layers.Dense(
+            tf.keras.layers.Concatenate(),
+            tf.keras.layers.Dense(
                 8192,
-                activation=activations.elu,
-                kernel_initializer=initializers.VarianceScaling(
+                activation=tf.keras.activations.elu,
+                kernel_initializer=tf.keras.initializers.VarianceScaling(
                     scale=1.0, mode="fan_in", distribution="truncated_normal"
                 ),
                 use_bias=True,
             ),
-            layers.Dense(
+            tf.keras.layers.Dense(
                 4096,
-                activation=activations.elu,
-                kernel_initializer=initializers.VarianceScaling(
+                activation=tf.keras.activations.elu,
+                kernel_initializer=tf.keras.initializers.VarianceScaling(
                     scale=1.0, mode="fan_in", distribution="truncated_normal"
                 ),
                 use_bias=True,
             ),
-            layers.Dense(
+            tf.keras.layers.Dense(
                 1024,
-                activation=activations.elu,
-                kernel_initializer=initializers.VarianceScaling(
+                activation=tf.keras.activations.elu,
+                kernel_initializer=tf.keras.initializers.VarianceScaling(
                     scale=1.0, mode="fan_in", distribution="truncated_normal"
                 ),
                 use_bias=True,
             ),
-            layers.Dense(
+            tf.keras.layers.Dense(
                 256,
-                activation=activations.elu,
-                kernel_initializer=initializers.VarianceScaling(
+                activation=tf.keras.activations.elu,
+                kernel_initializer=tf.keras.initializers.VarianceScaling(
                     scale=1.0, mode="fan_in", distribution="truncated_normal"
                 ),
                 use_bias=True,
             ),
-            layers.Dense(
+            tf.keras.layers.Dense(
                 num_actions,
-                activation=activations.linear,
-                kernel_initializer=initializers.RandomUniform(
+                activation=tf.keras.activations.linear,
+                kernel_initializer=tf.keras.initializers.RandomUniform(
                     minval=-0.05, maxval=0.05
                 ),
                 use_bias=True,
@@ -1380,7 +1384,7 @@ class AlphaPokeDoubleDQN(AlphaPokeSingleDQN):
             q_network=q_net,
             optimizer=optimizer,
             train_step_counter=train_step_counter,
-            td_errors_loss_fn=losses.MeanSquaredError(),
+            td_errors_loss_fn=tf.keras.losses.MeanSquaredError(),
             gamma=0.75,
             n_step_update=3,
             observation_and_action_constraint_splitter=self.split_fn,
