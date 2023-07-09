@@ -1,5 +1,3 @@
--c ./constraints.txt
-
 requests
 json5
 matplotlib
@@ -9,6 +7,5 @@ progress
 numpy<1.24.0
 gym
 code-extractor
-tensorflow-cpu
-tf-agents
-git+https://github.com/MatteoH2O1999/poke-env@FixSeed
+git+https://github.com/MatteoH2O1999/poke-env@FixSeedtf-agents<0.17.0
+git+https://github.com/hsahovic/poke-env@master
