@@ -27,7 +27,8 @@ from poke_env.environment.effect import Effect
 from poke_env.environment.field import Field
 from poke_env.environment.move import DynamaxMove, Move
 from poke_env.environment.move_category import MoveCategory
-from poke_env.environment.pokemon import Pokemon, UNKNOWN_ITEM
+from poke_env.environment.pokemon import Pokemon
+from poke_env.data.gen_data import GenData
 from poke_env.environment.pokemon_type import PokemonType
 from poke_env.environment.side_condition import SideCondition, STACKABLE_CONDITIONS
 from poke_env.environment.status import Status
@@ -749,7 +750,7 @@ class _TypeEmbedding:
 class _ItemEmbedding:
     @staticmethod
     def embed_item(mon: Pokemon):
-        if mon is None or not mon.item or mon.item == UNKNOWN_ITEM:
+        if mon is None or not mon.item or mon.item == GenData.UNKNOWN_ITEM:
             return np.full(len(ITEMS), -1, dtype=int)
         battle_item = mon.item
         items = np.full(len(ITEMS), 0, dtype=int)
