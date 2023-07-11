@@ -60,8 +60,8 @@ def test_env():
         start_listening=False,
         start_challenging=False,
     )
-    current_battle = Battle("tag", "username", None)  # noqa
-    last_battle = Battle("tag", "username", None)  # noqa
+    current_battle = Battle("tag", "username", None, 8)  # noqa
+    last_battle = Battle("tag", "username", None, 8)  # noqa
 
     assert env.username == "Username 1"
     assert env.calc_reward(last_battle, current_battle) == 69.0
@@ -529,10 +529,10 @@ def test_reward_computing_helper():
         player = DummyTFPlayer(
             start_listening=False, battle_format="gen8randombattle", test=False
         )
-        battle_1 = Battle("bat1", player.username, player.logger)
-        battle_2 = Battle("bat2", player.username, player.logger)
-        battle_3 = Battle("bat3", player.username, player.logger)
-        battle_4 = Battle("bat4", player.username, player.logger)
+        battle_1 = Battle("bat1", player.username, player.logger, 8)
+        battle_2 = Battle("bat2", player.username, player.logger, 8)
+        battle_3 = Battle("bat3", player.username, player.logger, 8)
+        battle_4 = Battle("bat4", player.username, player.logger, 8)
 
         assert (
             player.reward_computing_helper(
@@ -588,8 +588,10 @@ def test_reward_computing_helper():
             == -5
         )
 
-        battle_3._team = {i: Pokemon(species="slaking") for i in range(4)}
-        battle_3._opponent_team = {i: Pokemon(species="slowbro") for i in range(3)}
+        battle_3._team = {i: Pokemon(species="slaking", gen=8) for i in range(4)}
+        battle_3._opponent_team = {
+            i: Pokemon(species="slowbro", gen=8) for i in range(3)
+        }
 
         battle_3._team[0].status = Status["FRZ"]
         battle_3._team[1]._current_hp = 100

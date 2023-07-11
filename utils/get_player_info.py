@@ -19,7 +19,7 @@ import json
 import time
 import requests
 
-from poke_env.utils import to_id_str
+from poke_env.data.normalize import to_id_str
 
 
 def get_ratings(username, battle_format):
