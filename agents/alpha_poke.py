@@ -558,7 +558,7 @@ class _MoveCategoryEmbedding:
         if move is None:
             return np.full(len(MoveCategory), -1, dtype=int)
         category = np.full(len(MoveCategory), 0, dtype=int)
-        category[move.category.value - 1] = 1
+        category[MoveCategory[move.category.name].value - 1] = 1
         return category
 
     @staticmethod
@@ -583,8 +583,8 @@ class _MoveStatusEmbedding:
             status = np.full(len(Status), 0, dtype=int)
             chance = np.full(len(Status), 0, dtype=np.float64)
             if move.status is not None:
-                status[move.status.value - 1] = 1
-                chance[move.status.value - 1] = 1.0
+                status[Status[move.status.name].value - 1] = 1
+                chance[Status[move.status.name].value - 1] = 1.0
             else:
                 secondary = move.secondary
                 for d in secondary:
@@ -731,7 +731,7 @@ class _TypeEmbedding:
             raise RuntimeError(f"Expected Move or Pokemon, got {type(mon_or_move)}.")
         for mon_type in battle_types:
             if mon_type is not None:
-                types[mon_type.value - 1] = 1
+                types[PokemonType[mon_type.name].value - 1] = 1
         return types
 
     @staticmethod
@@ -804,7 +804,7 @@ class _WeatherEmbedding:
         weather = battle.weather
         weathers = np.full(len(Weather), 0, dtype=int)
         for w, value in weather.items():
-            weathers[w.value - 1] = 1
+            weathers[Weather[w.name].value - 1] = 1
         return weathers
 
     @staticmethod
@@ -826,7 +826,7 @@ class _StatusEmbedding:
             status = mon.status
             statuses = np.full(len(Status), 0, dtype=int)
             if status is not None:
-                statuses[status.value - 1] = 1
+                statuses[Status[status.name].value - 1] = 1
         else:
             statuses = np.full(len(Status), -1, dtype=int)
         return statuses
@@ -851,7 +851,7 @@ class _EffectsEmbedding:
             battle_effects = mon.effects
         effects = np.full(len(Effect), -1, dtype=int)
         for effect, counter in battle_effects.items():
-            effects[effect.value - 1] = counter
+            effects[Effect[effect.name].value - 1] = counter
         return effects
 
     @staticmethod
@@ -875,14 +875,16 @@ class _SideConditionEmbedding:
         opponent_side_conditions = np.full(len(SideCondition), 0, dtype=int)
         for condition, value in battle_side_conditions.items():
             if condition in STACKABLE_CONDITIONS.keys():
-                side_conditions[condition.value - 1] = value
+                side_conditions[SideCondition[condition.name].value - 1] = value
             else:
-                side_conditions[condition.value - 1] = 1
+                side_conditions[SideCondition[condition.name].value - 1] = 1
         for condition, value in opponent_battle_side_conditions.items():
             if condition in STACKABLE_CONDITIONS.keys():
-                opponent_side_conditions[condition.value - 1] = value
+                opponent_side_conditions[
+                    SideCondition[condition.name].value - 1
+                ] = value
             else:
-                opponent_side_conditions[condition.value - 1] = 1
+                opponent_side_conditions[SideCondition[condition.name].value - 1] = 1
         return {
             "player_conditions": side_conditions,
             "opponent_conditions": opponent_side_conditions,
@@ -893,8 +895,10 @@ class _SideConditionEmbedding:
         low_bound = [0 for _ in range(len(SideCondition))]
         high_bound = [1 for _ in range(len(SideCondition))]
         for condition in STACKABLE_CONDITIONS.keys():
-            low_bound[condition.value - 1] = 0
-            high_bound[condition.value - 1] = STACKABLE_CONDITIONS[condition]
+            low_bound[SideCondition[condition.name].value - 1] = 0
+            high_bound[SideCondition[condition.name].value - 1] = STACKABLE_CONDITIONS[
+                condition
+            ]
         bound_box = Box(
             low=np.array(low_bound, dtype=int),
             high=np.array(high_bound, dtype=int),
@@ -910,7 +914,7 @@ class _FieldEmbedding:
         fields = np.full(len(Field), 0, dtype=int)
         battle_fields = battle.fields
         for field, value in battle_fields.items():
-            fields[field.value - 1] = 1
+            fields[Field[field.name].value - 1] = 1
         return fields
 
     @staticmethod
