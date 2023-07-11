@@ -15,7 +15,7 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <https://www.gnu.org/licenses/>.
 #
-from poke_env.data import GEN_TO_POKEDEX
+from poke_env.data.gen_data import GenData
 from unittest.mock import MagicMock, patch
 
 import utils.get_smogon_data
@@ -82,31 +82,29 @@ def get_fake_dict():
 
 
 def test_get_abilities_gen6():
-    vars(utils.get_smogon_data).pop("Abilities6")
-    tmp = GEN_TO_POKEDEX.copy()
-    GEN_TO_POKEDEX.clear()
-    GEN_TO_POKEDEX.update(get_fake_dict())
-    abilities = list([v.name for v in get_abilities(6)])
-    assert len(get_abilities(6)) == 3
-    assert abilities == ["ability1", "ability2", "ability3"]
-    GEN_TO_POKEDEX.clear()
-    GEN_TO_POKEDEX.update(tmp)
-    vars(utils.get_smogon_data).pop("Abilities6")
-    get_abilities(6)
+    with patch("poke_env.data.gen_data.GenData") as mock_gen_data:
+        mock_data = GenData.from_gen(6)
+        mock_data.pokedex = get_fake_dict()[6]
+        mock_gen_data.from_gen.return_value = mock_data
+        vars(utils.get_smogon_data).pop("Abilities6")
+        abilities = list([v.name for v in get_abilities(6)])
+        assert len(get_abilities(6)) == 3
+        assert abilities == ["ability1", "ability2", "ability3"]
+        vars(utils.get_smogon_data).pop("Abilities6")
+        get_abilities(6)
 
 
 def test_get_abilities_gen8():
-    vars(utils.get_smogon_data).pop("Abilities8")
-    tmp = GEN_TO_POKEDEX.copy()
-    GEN_TO_POKEDEX.clear()
-    GEN_TO_POKEDEX.update(get_fake_dict())
-    abilities = list([v.name for v in get_abilities(8)])
-    assert len(get_abilities(8)) == 4
-    assert abilities == ["ability2", "ability3", "ability4", "ability5"]
-    GEN_TO_POKEDEX.clear()
-    GEN_TO_POKEDEX.update(tmp)
-    vars(utils.get_smogon_data).pop("Abilities8")
-    get_abilities(8)
+    with patch("poke_env.data.gen_data.GenData") as mock_gen_data:
+        mock_data = GenData.from_gen(8)
+        mock_data.pokedex = get_fake_dict()[8]
+        mock_gen_data.from_gen.return_value = mock_data
+        vars(utils.get_smogon_data).pop("Abilities8")
+        abilities = list([v.name for v in get_abilities(8)])
+        assert len(get_abilities(8)) == 4
+        assert abilities == ["ability2", "ability3", "ability4", "ability5"]
+        vars(utils.get_smogon_data).pop("Abilities8")
+        get_abilities(8)
 
 
 def get_fake_json():

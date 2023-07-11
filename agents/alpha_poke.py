@@ -22,12 +22,13 @@ import tensorflow as tf  # noqa: using tensorflow-cpu
 
 from abc import ABC
 from gym.spaces import Space, Dict, Box
+from poke_env.data.gen_data import GenData
 from poke_env.environment.abstract_battle import AbstractBattle
 from poke_env.environment.effect import Effect
 from poke_env.environment.field import Field
 from poke_env.environment.move import DynamaxMove, Move
 from poke_env.environment.move_category import MoveCategory
-from poke_env.environment.pokemon import Pokemon, UNKNOWN_ITEM
+from poke_env.environment.pokemon import Pokemon
 from poke_env.environment.pokemon_type import PokemonType
 from poke_env.environment.side_condition import SideCondition, STACKABLE_CONDITIONS
 from poke_env.environment.status import Status
@@ -77,6 +78,8 @@ INFINITE_WEATHER = [Weather.DELTASTREAM, Weather.PRIMORDIALSEA, Weather.DESOLATE
 ABILITIES = get_abilities(8)
 
 ITEMS = get_items()
+
+UNKNOWN_ITEM = GenData.UNKNOWN_ITEM
 
 
 class _CastLayer(tf.keras.layers.Layer):

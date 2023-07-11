@@ -21,8 +21,8 @@ import requests
 
 from enum import Enum
 from functools import lru_cache
-from poke_env.data import GEN_TO_POKEDEX
-from poke_env.utils import to_id_str
+from poke_env.data.gen_data import GenData
+from poke_env.data.normalize import to_id_str
 
 GENERATIONS = 8
 
@@ -167,7 +167,7 @@ def get_random_battle_learnset(gen: int):
 def get_abilities(gen: int):
     if f"Abilities{gen}" in globals().keys():
         return globals()[f"Abilities{gen}"]
-    pokedex = GEN_TO_POKEDEX[max(gen, 4)]
+    pokedex = GenData.from_gen(max(gen, 4)).pokedex
     abilities = []
     for pokemon in pokedex.values():
         for ability in pokemon["abilities"].values():

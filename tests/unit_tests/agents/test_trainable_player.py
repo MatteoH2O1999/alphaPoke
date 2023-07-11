@@ -84,7 +84,7 @@ def test_choose_move_not_battle():
 
 
 def test_choose_move_no_training():
-    battle = Battle("battle_tag", "username", None)  # noqa
+    battle = Battle("battle_tag", "username", None, 8)  # noqa
     agent = DummyTrainablePlayer(start_listening=False)
     agent._calc_reward = MagicMock()
     agent._calc_reward.return_value = 0.0
@@ -109,7 +109,7 @@ def test_choose_move_no_training():
 
 
 def test_choose_move_train():
-    battle = Battle("battle_tag", "username", None)  # noqa
+    battle = Battle("battle_tag", "username", None, 8)  # noqa
     agent = DummyTrainablePlayer(start_listening=False, training=True)
     agent._calc_reward = MagicMock()
     agent._calc_reward.return_value = 0.0
@@ -206,7 +206,7 @@ def test_choose_action_epsilon():
 
 
 def test_action_to_move():
-    battle = Battle("battle_tag", "username", None)  # noqa
+    battle = Battle("battle_tag", "username", None, 8)  # noqa
     agent = DummyTrainablePlayer(start_listening=False, training=True)
     agent.action_to_move_function = MagicMock()
     return_string = "test"
@@ -216,7 +216,7 @@ def test_action_to_move():
 
 
 def test_battle_to_state():
-    battle = Battle("battle_tag", "username", None)  # noqa
+    battle = Battle("battle_tag", "username", None, 8)  # noqa
     agent = DummyTrainablePlayer(start_listening=False, training=True)
     agent.battle_to_state_func = MagicMock()
     return_string = "test"
@@ -266,7 +266,7 @@ def test_get_lr_train():
 
 
 def test_battle_finished_callback_no_train():
-    battle = Battle("battle_tag", "username", None)  # noqa
+    battle = Battle("battle_tag", "username", None, 8)  # noqa
     agent = DummyTrainablePlayer(start_listening=False)
     agent._calc_reward = MagicMock()
     agent._battle_to_state = MagicMock()
@@ -279,9 +279,9 @@ def test_battle_finished_callback_no_train():
 
 
 def test_battle_finished_callback_train_battle_not_finished():
-    battle = Battle("battle_tag", "username", None)  # noqa
+    battle = Battle("battle_tag", "username", None, 8)  # noqa
     battle._finished = False
-    other_battle = Battle("1", "1", None)  # noqa
+    other_battle = Battle("1", "1", None, 8)  # noqa
     agent = DummyTrainablePlayer(start_listening=False, training=True)
     agent.last_state = other_battle
     agent._calc_reward = MagicMock()
@@ -297,9 +297,9 @@ def test_battle_finished_callback_train_battle_not_finished():
 
 
 def test_battle_finished_callback_train_battle_finished():
-    battle = Battle("battle_tag", "username", None)  # noqa
+    battle = Battle("battle_tag", "username", None, 8)  # noqa
     battle._finished = True
-    other_battle = Battle("1", "1", None)  # noqa
+    other_battle = Battle("1", "1", None, 8)  # noqa
     agent = DummyTrainablePlayer(start_listening=False, training=True)
     agent.last_state = other_battle
     agent.last_action = 2
@@ -319,7 +319,7 @@ def test_battle_finished_callback_train_battle_finished():
 
 
 def test_copy_battle():
-    battle = Battle("battle_tag", "username", None)  # noqa
+    battle = Battle("battle_tag", "username", None, 8)  # noqa
     agent = DummyTrainablePlayer(start_listening=False)
     with patch("copy.deepcopy") as mock_copy:
         mock_copy.return_value = 42
