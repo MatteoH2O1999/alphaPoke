@@ -33,3 +33,20 @@ updates:
     prefix: update
     prefix-development: chore
     include: scope
+
+# Fetch and update submodules
+- package-ecosystem: pip
+  directory: '/'
+  schedule:
+    interval: weekly
+    day: monday
+    time: '00:00'
+  open-pull-requests-limit: 10
+  reviewers:
+    - MatteoH2O1999
+  assignees:
+    - MatteoH2O1999
+  commit-message:
+    prefix: fix
+    prefix-development: chore
+    include: scope
