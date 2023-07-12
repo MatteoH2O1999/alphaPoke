@@ -7,6 +7,6 @@ progress
 numpy
 gym
 code-extractor
-tensorflow-cpu<2.13.0
+tensorflow-cpu<2.14.0
 tf-agents<0.17.0
 poke-env==0.7.1
