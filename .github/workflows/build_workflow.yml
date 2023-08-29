@@ -99,7 +99,7 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v3
       - name: Build latex
-        uses: xu-cheng/latex-action@v2
+        uses: xu-cheng/latex-action@v3
         with:
           root_file: paper/src/main.tex
           work_in_root_file_dir: true
