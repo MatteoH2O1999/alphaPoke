@@ -55,7 +55,7 @@ jobs:
       max-parallel: 1
     steps:
       - name: Checkout code
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
       - name: Setup Python ${{ env.PYTHON_BUILD_VERSION }}
         uses: actions/setup-python@v4
         with:
@@ -97,7 +97,7 @@ jobs:
     needs: cross_platform_build
     steps:
       - name: Checkout code
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
       - name: Build latex
         uses: xu-cheng/latex-action@v3
         with:
@@ -117,7 +117,7 @@ jobs:
     needs: build_latex
     steps:
       - name: Checkout code
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
       - name: Download artifacts
         uses: actions/download-artifact@v3
         with:
