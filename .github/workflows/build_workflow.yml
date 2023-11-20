@@ -7,7 +7,7 @@ on:
   workflow_dispatch:
 
 env:
-  PYTHON_BUILD_VERSION: '3.10'
+  PYTHON_BUILD_VERSION: '3.11'
 
 jobs:
   platform_independent_tests:
