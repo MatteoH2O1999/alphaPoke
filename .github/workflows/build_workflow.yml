@@ -86,7 +86,7 @@ jobs:
           cd dist
           zip -r "${{ matrix.dist_file }}" "${{ matrix.release_file }}.app"
       - name: Upload executable
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4
         with:
           path: dist/${{ matrix.dist_file }}
           name: temp_upload
@@ -106,7 +106,7 @@ jobs:
       - name: Rename PDF
         run: mv paper/src/main.pdf paper/src/Report.pdf
       - name: Upload PDF
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4
         with:
           name: temp_upload
           path: paper/src/Report.pdf
