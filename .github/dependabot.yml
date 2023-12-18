@@ -50,3 +50,8 @@ updates:
     prefix: fix
     prefix-development: chore
     include: scope
+  groups:
+    tensorflow:
+      patterns:
+        - "tensorflow*"
+        - "tf-agents"
