@@ -102,9 +102,7 @@ class _Env(OpenAIGymEnv):
             return ret, info
         return ret
 
-    def step(
-        self, action
-    ) -> Union[
+    def step(self, action) -> Union[
         Tuple[ObservationType, float, bool, bool, dict],
         Tuple[ObservationType, float, bool, dict],
     ]:
@@ -176,9 +174,11 @@ class TFPlayer(Player, ABC):
             self.calc_reward_func,
             self.action_to_move_func,
             self.embed_battle_func,
-            self.embedding_description
-            if self.embedding_description is not None
-            else self.embedding,
+            (
+                self.embedding_description
+                if self.embedding_description is not None
+                else self.embedding
+            ),
             self.space_size,
             self.opponents if model is None else None,
             *args,
@@ -360,9 +360,11 @@ class TFPlayer(Player, ABC):
             self.calc_reward_func,
             self.action_to_move_func,
             self.embed_battle_func,
-            self.embedding_description
-            if self.embedding_description is not None
-            else self.embedding,
+            (
+                self.embedding_description
+                if self.embedding_description is not None
+                else self.embedding
+            ),
             self.space_size,
             opponent,
             battle_format=self.battle_format,
@@ -379,15 +381,17 @@ class TFPlayer(Player, ABC):
             self.calc_reward_func,
             self.action_to_move_func,
             self.embed_battle_func,
-            self.embedding_description
-            if self.embedding_description is not None
-            else self.embedding,
+            (
+                self.embedding_description
+                if self.embedding_description is not None
+                else self.embedding
+            ),
             self.space_size,
-            opponents
-            if opponents is not None and active
-            else self.opponents
-            if active
-            else None,
+            (
+                opponents
+                if opponents is not None and active
+                else self.opponents if active else None
+            ),
             battle_format=self.battle_format,
             start_challenging=active,
         )

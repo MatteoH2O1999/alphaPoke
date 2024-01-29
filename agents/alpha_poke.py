@@ -883,9 +883,9 @@ class _SideConditionEmbedding:
                 side_conditions[SideCondition[condition.name].value - 1] = 1
         for condition, value in opponent_battle_side_conditions.items():
             if condition in STACKABLE_CONDITIONS.keys():
-                opponent_side_conditions[
-                    SideCondition[condition.name].value - 1
-                ] = value
+                opponent_side_conditions[SideCondition[condition.name].value - 1] = (
+                    value
+                )
             else:
                 opponent_side_conditions[SideCondition[condition.name].value - 1] = 1
         return {
