@@ -27,9 +27,9 @@ from functools import lru_cache
 from gym import Space
 from gym.utils.env_checker import check_env
 from poke_env.environment.abstract_battle import AbstractBattle
-from poke_env.player.baselines import RandomPlayer
+from poke_env.player.random_player import RandomPlayer
 from poke_env.player.battle_order import BattleOrder
-from poke_env.player.openai_api import OpenAIGymEnv, ObservationType
+from poke_env.player.openai_api import OpenAIGymEnv, ObsType
 from poke_env.player.player import Player
 from tf_agents.agents import TFAgent
 from tf_agents.drivers.py_driver import PyDriver
@@ -52,7 +52,7 @@ class _Env(OpenAIGymEnv):
         username: str,
         calc_reward: Callable[[AbstractBattle, AbstractBattle], float],
         action_to_move: Callable[[Player, int, AbstractBattle], BattleOrder],
-        embed_battle: Callable[[AbstractBattle], ObservationType],
+        embed_battle: Callable[[AbstractBattle], ObsType],
         embedding_description: Space,
         action_space_size: int,
         opponents: Union[Player, str, List[Player], List[str]],
@@ -78,7 +78,7 @@ class _Env(OpenAIGymEnv):
     def action_to_move(self, action: int, battle: AbstractBattle) -> BattleOrder:
         return self.action_to_move_func(self.agent, action, battle)
 
-    def embed_battle(self, battle: AbstractBattle) -> ObservationType:
+    def embed_battle(self, battle: AbstractBattle) -> ObsType:
         return self.embed_battle_func(battle)
 
     def describe_embedding(self) -> Space:
@@ -96,15 +96,15 @@ class _Env(OpenAIGymEnv):
         seed: Optional[int] = None,
         return_info: bool = False,
         options: Optional[dict] = None,
-    ) -> Union[ObservationType, Tuple[ObservationType, dict]]:
+    ) -> Union[ObsType, Tuple[ObsType, dict]]:
         ret, info = super().reset(seed=seed, return_info=True, options=options)
         if return_info:
             return ret, info
         return ret
 
     def step(self, action) -> Union[
-        Tuple[ObservationType, float, bool, bool, dict],
-        Tuple[ObservationType, float, bool, dict],
+        Tuple[ObsType, float, bool, bool, dict],
+        Tuple[ObsType, float, bool, dict],
     ]:
         obs, reward, terminated, truncated, info = super().step(action)
         return obs, reward, terminated or truncated, info
@@ -239,15 +239,13 @@ class TFPlayer(Player, ABC):
         pass
 
     @property
-    def embed_battle_func(self) -> Callable[[AbstractBattle], ObservationType]:
+    def embed_battle_func(self) -> Callable[[AbstractBattle], ObsType]:
         if self.embed_battle_function is not None:
             return lambda battle: self.embed_battle_function(self, battle)
         return self.embed_battle
 
     @abstractmethod
-    def embed_battle(
-        self, battle: AbstractBattle
-    ) -> ObservationType:  # pragma: no cover
+    def embed_battle(self, battle: AbstractBattle) -> ObsType:  # pragma: no cover
         pass
 
     @property

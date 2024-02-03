@@ -35,10 +35,10 @@ from poke_env.environment.status import Status
 from poke_env.environment.weather import Weather
 from poke_env.player.baselines import (
     MaxBasePowerPlayer,
-    RandomPlayer,
     SimpleHeuristicsPlayer,
 )
-from poke_env.player.openai_api import ObservationType
+from poke_env.player.random_player import RandomPlayer
+from poke_env.player.openai_api import ObsType
 from poke_env.player.player import Player
 from tf_agents.agents import TFAgent
 from tf_agents.agents.dqn.dqn_agent import DqnAgent, DdqnAgent
@@ -981,7 +981,7 @@ class AlphaPokeSingleEmbedded(DQNPlayer, ABC):
             reward = self.min_reward()
         return reward
 
-    def embed_battle(self, battle: AbstractBattle) -> ObservationType:
+    def embed_battle(self, battle: AbstractBattle) -> ObsType:
         non_active_player_mons = battle.available_switches[:]
         non_active_opponent_mons = list(battle.opponent_team.values())
         non_active_opponent_mons.remove(battle.opponent_active_pokemon)

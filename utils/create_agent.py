@@ -21,7 +21,7 @@ import pickle
 import sys
 
 from poke_env.player.player import Player
-from poke_env.server_configuration import LocalhostServerConfiguration
+from poke_env.ps_client.server_configuration import LocalhostServerConfiguration
 from typing import List
 
 from agents.alpha_poke import AlphaPokeSingleBattleModelLoader
@@ -44,7 +44,7 @@ if getattr(sys, "frozen", False) and hasattr(sys, "_MEIPASS"):  # pragma: no cov
 def create_agent(
     cli_name,
     battle_format,
-    player_configuration=None,
+    account_configuration=None,
     server_configuration=LocalhostServerConfiguration,
     start_timer=False,
     save_replay=False,
@@ -53,7 +53,7 @@ def create_agent(
 ) -> List[Player]:
     agent_name = cli_name.strip()
     kwargs = dict(
-        player_configuration=player_configuration,
+        account_configuration=account_configuration,
         battle_format=battle_format,
         max_concurrent_battles=max_concurrent_battles,
         save_replays=save_replay,

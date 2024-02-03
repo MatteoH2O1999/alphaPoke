@@ -20,7 +20,7 @@ import asyncio
 
 from poke_env.environment.abstract_battle import AbstractBattle
 from poke_env.player.battle_order import BattleOrder
-from poke_env.player.baselines import RandomPlayer
+from poke_env.player.random_player import RandomPlayer
 from poke_env.player.player import Player
 from typing import Awaitable, Union
 

@@ -1,7 +1,7 @@
 import asyncio
 from typing import Awaitable, Union
 
-from poke_env.server_configuration import LocalhostServerConfiguration
+from poke_env.ps_client import LocalhostServerConfiguration
 from poke_env.environment.abstract_battle import AbstractBattle
 from poke_env.player.battle_order import ForfeitBattleOrder, BattleOrder
 from poke_env.player.random_player import RandomPlayer

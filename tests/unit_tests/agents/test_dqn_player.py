@@ -17,7 +17,7 @@
 #
 from gym.spaces import Box, Space
 from poke_env.environment.abstract_battle import AbstractBattle
-from poke_env.player.openai_api import ObservationType
+from poke_env.player.openai_api import ObsType
 from poke_env.player.player import Player
 from tf_agents.agents import TFAgent
 from tf_agents.agents.tf_agent import LossInfo
@@ -48,7 +48,7 @@ class DummyDQNPlayer(DQNPlayer):
     ) -> float:
         return 42.0
 
-    def embed_battle(self, battle: AbstractBattle) -> ObservationType:
+    def embed_battle(self, battle: AbstractBattle) -> ObsType:
         return [1]
 
     @property

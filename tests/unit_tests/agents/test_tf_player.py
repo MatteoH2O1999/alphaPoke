@@ -25,7 +25,7 @@ from poke_env.environment.battle import Battle
 from poke_env.environment.pokemon import Pokemon
 from poke_env.environment.status import Status
 from poke_env.player.battle_order import ForfeitBattleOrder
-from poke_env.player.openai_api import ObservationType
+from poke_env.player.openai_api import ObsType
 from poke_env.player.player import Player
 from tf_agents.agents import TFAgent
 from tf_agents.drivers.py_driver import PyDriver
@@ -199,7 +199,7 @@ class DummyTFPlayer(TFPlayer):
     ) -> float:
         return 42.0
 
-    def embed_battle(self, battle: AbstractBattle) -> ObservationType:
+    def embed_battle(self, battle: AbstractBattle) -> ObsType:
         return "Embedded battle"
 
     @property
